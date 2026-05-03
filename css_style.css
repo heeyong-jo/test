@@ -445,15 +445,16 @@ textarea.input-field{resize:vertical;min-height:80px;}
 /* 사진 위 카메라 버튼 */
 .sf-cam-btn {
   position: absolute;
-  bottom: 0;
-  right: 0;
+  bottom: -6px;
+  right: -5px;                     
   background: rgba(61,15,82,0.75);
   color: #fff;
   font-size: 13px;
   padding: 3px 6px;
   cursor: pointer;
-  border-radius: 6px 0 0 0;
+  border-radius: 6px;
   line-height: 1;
+  z-index: 1;                     
 }
 
 

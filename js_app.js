@@ -34,6 +34,7 @@ window.addEventListener('load', () => {
     if (typeof renderScheduleView === 'function') renderScheduleView();
     if (typeof renderTodayVerse === 'function') renderTodayVerse();
     if (typeof renderPosts === 'function') renderPosts();
+    if (typeof loadStaff === 'function') loadStaff();   // ← 섬기는 분들 로드
 
 
     // 자동 로그인 체크 (7일 이내)

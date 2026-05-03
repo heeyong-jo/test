@@ -414,7 +414,7 @@ textarea.input-field{resize:vertical;min-height:80px;}
   position: relative;
   width: 120px;
   height: 120px;
-  border-radius: 14px;           /* ★ 원형 대신 사각형 */
+  border-radius: 4px;           /* ★ 원형 대신 사각형 */
   overflow: hidden;
   flex-shrink: 0;
   background: #f0eaf8;
@@ -534,9 +534,9 @@ textarea.input-field{resize:vertical;min-height:80px;}
 
 /* 담임목사 사진은 조금 더 크게 (130x130 사각형) */
 .sf-photo-wrap--lg {
-  width: 130px;
-  height: 130px;
-  border-radius: 16px;   /* 사각형 유지 */
+  width: 140px;
+  height: 140px;
+  border-radius: 6px;   /* 사각형 유지 */
 }
 
 
@@ -600,4 +600,8 @@ textarea.input-field{resize:vertical;min-height:80px;}
   padding: 4px 12px;
   font-size: 11px;
   cursor: pointer;
+}
+.sf-actions {
+  position: relative;
+  z-index: 1;
 }

@@ -1,9 +1,10 @@
-// =====================================================================
+﻿// =====================================================================
 // js_staff.js — 섬기는 분들
 // - 사진: base64 → Firebase Realtime DB 저장
 // - 수정/추가/삭제: admin 전용
 // - Firebase 경로: /staff
 // =====================================================================
+
 
 const DEFAULT_STAFF = [
   {
@@ -73,12 +74,14 @@ const DEFAULT_STAFF = [
   { groupKey:"admin_office", label:"행정실", members:[{name:"김은경 (행정)권사",photo:"",roles:[]}] }
 ];
 
+
 // ── 상태 ──────────────────────────────────────────────────────────
 let staffData        = null;
 let staffPendingPhoto = "";
 let staffEditGroup   = "";
 let staffEditIdx     = -1;
 let staffEditAction  = "";   // "add" | "edit"
+
 
 // ── Firebase 로드 ─────────────────────────────────────────────────
 function loadStaff() {
@@ -96,10 +99,12 @@ function loadStaff() {
   });
 }
 
+
 // ── 관리자 여부 ───────────────────────────────────────────────────
 function staffIsAdmin() {
   return typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'admin';
 }
+
 
 // ── 렌더링 ────────────────────────────────────────────────────────
 function renderStaff() {
@@ -108,6 +113,7 @@ function renderStaff() {
   const isAdmin = staffIsAdmin();
   let html = '';
 
+
   staffData.forEach(group => {
     html += `
     <div class="sf-group">
@@ -115,6 +121,7 @@ function renderStaff() {
         <span>${group.label}</span>
         ${isAdmin ? `<button class="sf-btn-add" onclick="staffOpenAdd('${group.groupKey}')">➕ 추가</button>` : ''}
       </div>`;
+
 
     if (group.groupKey === 'pastor') {
       group.members.forEach((m, mIdx) => {
@@ -156,23 +163,27 @@ function renderStaff() {
     html += `</div>`;
   });
 
+
   wrap.innerHTML = html;
 }
+
 
 // ── 카드에서 바로 사진 교체 ──────────────────────────────────────
 function staffInlinePhoto(input, groupKey, mIdx) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 1.5 * 1024 * 1024) { alert('사진은 1.5MB 이하로 올려주세요.'); return; }
-  const reader = new FileReader();
-  reader.onload = e => {
+  if (file.size > 1.5 * 1024 * 1024) { // 리사이즈 하므로 원본 1.5MB까지 허용
+    alert('사진은 1.5MB 이하로 올려주세요.');
+    return;
+  }
+  resizeStaffImage(file).then(dataUrl => {
     const group = staffData.find(g => g.groupKey === groupKey);
     if (!group) return;
-    group.members[mIdx].photo = e.target.result;
+    group.members[mIdx].photo = dataUrl;
     saveStaff(() => renderStaff());
-  };
-  reader.readAsDataURL(file);
+  }).catch(() => alert('사진 처리 중 오류가 발생했습니다.'));
 }
+
 
 // ── 모달: 추가 열기 ───────────────────────────────────────────────
 function staffOpenAdd(groupKey) {
@@ -188,6 +199,7 @@ function staffOpenAdd(groupKey) {
   staffModalPhotoClear();
   document.getElementById('modal-staff').style.display = 'flex';
 }
+
 
 // ── 모달: 수정 열기 ───────────────────────────────────────────────
 function staffOpenEdit(groupKey, mIdx) {
@@ -213,32 +225,30 @@ function staffOpenEdit(groupKey, mIdx) {
   document.getElementById('modal-staff').style.display = 'flex';
 }
 
+
 // ── 모달 사진 선택 ────────────────────────────────────────────────
 function staffModalPhotoChange(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 1.5 * 1024 * 1024) { alert('사진은 1.5MB 이하로 올려주세요.'); return; }
-  const reader = new FileReader();
-  reader.onload = e => {
-    staffPendingPhoto = e.target.result;
+  if (file.size > 1.5 * 1024 * 1024) {
+    alert('사진은 1.5MB 이하로 올려주세요.');
+    return;
+  }
+  resizeStaffImage(file).then(dataUrl => {
+    staffPendingPhoto = dataUrl;
     document.getElementById('sf-modal-prev').src           = staffPendingPhoto;
     document.getElementById('sf-modal-prev').style.display = 'block';
     document.getElementById('sf-modal-ph').style.display   = 'none';
-  };
-  reader.readAsDataURL(file);
+  }).catch(() => alert('사진 처리 중 오류가 발생했습니다.'));
 }
 
-function staffModalPhotoClear() {
-  document.getElementById('sf-modal-prev').src           = '';
-  document.getElementById('sf-modal-prev').style.display = 'none';
-  document.getElementById('sf-modal-ph').style.display   = 'flex';
-}
 
 // ── 모달 저장 ─────────────────────────────────────────────────────
 function staffSave() {
   const name    = document.getElementById('sf-input-name').value.trim();
   const content = document.getElementById('sf-input-content').value.trim();
   if (!name) { alert('이름을 입력하세요.'); return; }
+
 
   const isPastor = (staffEditGroup === 'pastor');
   const lines = content ? content.split('\n').map(s=>s.trim()).filter(Boolean) : [];
@@ -249,8 +259,10 @@ function staffSave() {
     ...(isPastor ? { books: lines } : {})
   };
 
+
   const group = staffData.find(g => g.groupKey === staffEditGroup);
   if (!group) return;
+
 
   if (staffEditAction === 'add') {
     group.members.push(entry);
@@ -258,8 +270,10 @@ function staffSave() {
     group.members[staffEditIdx] = { ...group.members[staffEditIdx], ...entry };
   }
 
+
   saveStaff(() => { staffCloseModal(); renderStaff(); });
 }
+
 
 // ── 삭제 ──────────────────────────────────────────────────────────
 function staffDeleteMember(groupKey, mIdx) {
@@ -270,6 +284,7 @@ function staffDeleteMember(groupKey, mIdx) {
   saveStaff(() => renderStaff());
 }
 
+
 // ── Firebase 저장 ─────────────────────────────────────────────────
 function saveStaff(cb) {
   firebase.database().ref('staff').set(staffData)
@@ -277,8 +292,40 @@ function saveStaff(cb) {
     .catch(err => { console.error('staff 저장 실패', err); alert('저장 중 오류가 발생했습니다.'); });
 }
 
+
 // ── 모달 닫기 ─────────────────────────────────────────────────────
 function staffCloseModal() {
   document.getElementById('modal-staff').style.display = 'none';
   staffPendingPhoto = '';
+}
+// ── 사진 리사이즈 (최대 가로 400px, 세로 480px, JPEG 품질 0.85) ────
+function resizeStaffImage(file, maxW = 400, maxH = 480, quality = 0.85) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = e => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxW || height > maxH) {
+          const ratio = Math.min(maxW / width, maxH / height);
+          width  = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        } else {
+          // 작은 사진은 그대로 유지
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width  = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(dataUrl);
+        canvas.remove();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }

@@ -370,6 +370,15 @@
   </div>
 
 
+<!-- 👥 섬기는 분들 카드 -->
+<div class="card">
+  <div class="card-title">👥 섬기는 분들</div>
+  <div id="staff-container">
+    <div style="text-align:center;padding:20px;color:var(--text2);font-size:13px;">불러오는 중...</div>
+  </div>
+</div
+
+
   <div class="card">
     <div class="card-title">🗺 위치 안내</div>
     <div class="map-container" style="height:220px;">
@@ -401,14 +410,21 @@
     <div style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
       <div style="background:var(--bg); border-radius:12px; padding:12px 14px;">
         <div style="font-size:11px; font-weight:700; color:var(--purple); margin-bottom:3px;">🚌 대중교통</div>
-        <div style="font-size:12px; color:var(--text2); line-height:1.7;">목포역에서 차량 10분 · 산정동 방면 버스 이용<br>고하대로 하차 후 신안비치1차 아파트 맞은편 건물 3층</div>
+        <div style="font-size:12px; color:var(--text2); line-height:1.7;">​1. 지하철 (전철)<br>
+​인천도시철도 2호선 가재울역 ​4번 출구.<br>
+​2. 버스<br>
+가재울역 인근 정류장 '가재울역' 또는 '가재울사거리'<br>
+​간선버스: 10, 12, 24, 28, 42, 67-1, 80<br>
+​지선버스: 592, 593<br>
+​좌석버스: 800</div>
       </div>
       <div style="background:var(--bg); border-radius:12px; padding:12px 14px;">
         <div style="font-size:11px; font-weight:700; color:var(--purple); margin-bottom:3px;">🚗 자가용</div>
       </div>
 
 
-        <div style="font-size:12px; color:var(--text2); line-height:1.7;">전남 목포시 고하대로 672 (산정동 1633-14)<br>SK엔크린 맞은편, 신안비치 1차 아파트 아래 위치</div>
+        <div style="font-size:12px; color:var(--text2); line-height:1.7;">인천광역시 서구 열우물로 247 <br>가재울역 4번 출구</div>
+         </div>
       </div>
     </div>
   </div>
@@ -515,8 +531,8 @@
     <div style="display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:1px solid var(--border);">
       <div style="font-size:36px;">⛪</div>
       <div>
-        <div style="font-size:15px;font-weight:800;color:var(--text);">함께하는교회</div>
-        <div style="font-size:11px;color:var(--purple);font-weight:600;">담임 김소녕 목사</div>
+        <div style="font-size:15px;font-weight:800;color:var(--text);">가좌제일교회</div>
+        <div style="font-size:11px;color:var(--purple);font-weight:600;">담임 김명서 목사</div>
       </div>
       <div style="margin-left:auto;background:var(--bg);border-radius:10px;padding:6px 12px;">
         <span style="font-size:11px;color:var(--text2);">로그인: </span>
@@ -550,28 +566,7 @@
   </div>
 
 
-  <!-- 헌금 관리 -->
-  <div class="accord-card admin-only">
-    <div class="accord-header" onclick="toggleAccord('offering')">
-      <div class="accord-title">
-        <span class="accord-icon">💰</span>
-        <div><div style="font-weight:700;font-size:14px;color:var(--text);">헌금 관리</div><div style="font-size:11px;color:var(--text2);margin-top:2px;" id="ac-offering-sub">이달 합계 0원</div></div>
-      </div>
-      <div class="accord-arrow" id="ac-offering-arrow">›</div>
-    </div>
-    <div class="accord-body" id="ac-offering-body">
-      <div class="grid2" style="margin-bottom:12px;">
-        <div class="stat-box" style="padding:10px 8px;background:#f0fdf4;"><div class="stat-label">주일헌금</div><div class="stat-val c-green" style="font-size:16px;" id="ao-sunday">0</div><div class="stat-sub">원</div></div>
-        <div class="stat-box" style="padding:10px 8px;background:#f0fdf4;"><div class="stat-label">십일조</div><div class="stat-val c-green" style="font-size:16px;" id="ao-tithe">0</div><div class="stat-sub">원</div></div>
-        <div class="stat-box" style="padding:10px 8px;background:#f0fdf4;"><div class="stat-label">감사헌금</div><div class="stat-val c-purple" style="font-size:16px;" id="ao-thanks">0</div><div class="stat-sub">원</div></div>
-        <div class="stat-box" style="padding:10px 8px;background:#dcfce7;"><div class="stat-label">월 합계</div><div class="stat-val c-green" style="font-size:16px;" id="ao-total">0</div><div class="stat-sub">원</div></div>
-      </div>
-      <button onclick="openAddOffering()" style="width:100%;padding:11px;background:linear-gradient(135deg,#2d7d46,#4caf6e);border:none;border-radius:12px;color:white;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:12px;">+ 헌금 입력</button>
-      <div id="accord-offering-list"></div>
-    </div>
-  </div>
-
-
+  
   <!-- 가입 승인 -->
   <div class="accord-card admin-manager-only">
     <div class="accord-header" onclick="toggleAccord('approval')">
@@ -813,6 +808,63 @@
 </div>
 
 
+
+
+<div id="modal-staff" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:20000;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;width:92%;max-width:400px;max-height:88vh;overflow-y:auto;padding:20px;">
+
+
+    <!-- 헤더 -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div id="sf-modal-title" style="font-size:16px;font-weight:800;color:var(--purple);">✏️ 정보 수정</div>
+      <button onclick="staffCloseModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#888;">✕</button>
+    </div>
+
+
+    <!-- 사진 업로드 영역 -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px;">사진</div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:80px;height:96px;border-radius:12px;overflow:hidden;border:2px dashed var(--border);position:relative;flex-shrink:0;">
+          <img id="sf-modal-prev" src="" style="display:none;width:100%;height:100%;object-fit:cover;">
+          <div id="sf-modal-ph" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:30px;color:#c9b8e8;">👤</div>
+        </div>
+        <div>
+          <label style="display:inline-block;background:var(--purple);color:#fff;border-radius:20px;padding:7px 14px;font-size:12px;cursor:pointer;">
+            📷 사진 선택
+            <input type="file" accept="image/*" onchange="staffModalPhotoChange(this)" style="display:none;">
+          </label>
+          <div style="font-size:11px;color:var(--text2);margin-top:6px;line-height:1.5;">JPG/PNG, 1.5MB 이하<br>증명사진 권장</div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- 이름 -->
+    <div style="margin-bottom:12px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;">이름 *</div>
+      <input id="sf-input-name" type="text" placeholder="예: 홍길동 목사"
+        style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;">
+    </div>
+
+
+    <!-- 담당사역 / 저서 -->
+    <div style="margin-bottom:16px;">
+      <div id="sf-content-label" style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;">담당사역 (줄바꿈으로 구분)</div>
+      <textarea id="sf-input-content" rows="6" placeholder="예: 소망목장&#10;새가족위원회"
+        style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;resize:vertical;"></textarea>
+    </div>
+
+
+    <!-- 저장 버튼 -->
+    <button onclick="staffSave()"
+      style="width:100%;background:var(--purple);color:#fff;border:none;padding:13px;border-radius:30px;font-size:15px;font-weight:700;cursor:pointer;">
+      💾 저장하기
+    </button>
+  </div>
+</div>
+
+
 <!-- 분할된 JS 파일 로드 (원본 script는 제거) -->
 <script src="js_confige.js"></script>
 <script src="js_storage.js"></script>
@@ -826,6 +878,7 @@
 <script src="js_meditations.js"></script>
 <script src="js_bible.js"></script>
 <script src="js_service.js"></script>
+<script src="js_staff.js"></script>
 <script src="js_app.js"></script>
 
 

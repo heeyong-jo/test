@@ -1,11 +1,13 @@
 ﻿// ── 함께하는교회 Service Worker ──
-const CACHE_NAME = 'hamkke-church-v7’;
+const CACHE_NAME = 'hamkke-church-v10’;
 const CACHE_FILES = [
   './',
   './index.html',
   './manifest.json',
   './icon.png'
 ];
+
+
 
 
 // 설치: 핵심 파일 캐시
@@ -22,6 +24,8 @@ self.addEventListener('install', e => {
 });
 
 
+
+
 // 활성화: 오래된 캐시 정리
 self.addEventListener('activate', e => {
   e.waitUntil(
@@ -33,6 +37,8 @@ self.addEventListener('activate', e => {
   );
   self.clients.claim();
 });
+
+
 
 
 // 요청 가로채기: 캐시 우선, 없으면 네트워크

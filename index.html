@@ -314,10 +314,13 @@
       </div>
     </div>
   </div>
-  <div class="card">
-    <!-- 👨‍💼 담임목사 인사말 카드 추가 -->
-  <div class="card">
-    <div class="card-title">👨‍💼 담임목사 인사말</div>
+  <!-- 기존 인사말 카드와 card-title 사이에 수정 버튼 추가 -->
+<div class="card">
+  <div class="card-title" style="justify-content:space-between;">
+    <span>👨‍💼 담임목사 인사말</span>
+    <button class="edit-mode-btn admin-only" onclick="openEditGreeting()" id="greeting-edit-btn" style="display:none;">✏️ 수정</button>
+  </div>
+  <div id="greeting-content">
     <div style="background:linear-gradient(135deg,#f9f2f9,#f5eaf5);border-radius:16px;padding:18px;margin-bottom:6px;">
       <div style="font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:12px;">
         "인생은 만남입니다.<br><br>
@@ -341,11 +344,16 @@
       </div>
     </div>
   </div>
+</div>
 
 
   <!-- 📜 교회 연혁 카드 추가 -->
-  <div class="card">
-    <div class="card-title">📜 교회 연혁</div>
+  <<div class="card">
+  <div class="card-title" style="justify-content:space-between;">
+    <span>📜 교회 연혁</span>
+    <button class="edit-mode-btn admin-only" onclick="openEditHistory()" id="history-edit-btn" style="display:none;">✏️ 수정</button>
+  </div>
+  <div id="history-content">
     <div style="display:flex;flex-direction:column;gap:12px;">
       <div style="border-left:3px solid var(--purple);padding-left:14px;">
         <div style="font-weight:800;color:var(--purple);margin-bottom:4px;">1972년 1월 23일</div>
@@ -368,6 +376,9 @@
       </div>
     </div>
   </div>
+</div>
+
+
 
 
   <div class="card">
@@ -781,6 +792,25 @@
   </div>
 </div>
 <div id="toast"></div>
+
+
+<div id="modal-edit-churchinfo" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="churchinfo-modal-title">✏️ 수정</div>
+      <button class="modal-close" onclick="closeModal('modal-edit-churchinfo')">✕</button>
+    </div>
+    <div class="input-group" id="greeting-edit-area" style="display:none;">
+      <div class="input-label">인사말</div>
+      <textarea class="input-field" id="edit-greeting-text" rows="8" placeholder="인사말을 입력하세요..."></textarea>
+    </div>
+    <div class="input-group" id="history-edit-area" style="display:none;">
+      <div class="input-label">연혁 (연도 : 내용, 줄바꿈으로 구분)</div>
+      <textarea class="input-field" id="edit-history-text" rows="10" placeholder="1972년 1월 23일: 가좌제일교회 창립&#10;2026년 5월: 공식 앱 론칭"></textarea>
+    </div>
+    <button class="btn-primary" onclick="saveChurchInfo()">저장</button>
+  </div>
+</div>
 
 
 <div class="ad-bar">

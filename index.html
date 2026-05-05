@@ -145,7 +145,7 @@
 <div class="tabs" id="tab-bar">
   <div class="tab active" onclick="showTab(0)" id="tab0">🏠 홈</div>
   <div class="tab" onclick="showTab(1)" id="tab1">📖 말씀</div>
-  <div class="tab" onclick="showTab(2)" id="tab2">🙏 교제</div>
+  <div class="tab" onclick="showTab(2)" id="tab2">📋 게시물</div>
   <div class="tab" onclick="showTab(3)" id="tab3">📸 교회생활</div>
   <div class="tab" onclick="showTab(4)" id="tab4">📍 안내</div>
   <div class="tab" onclick="showTab(5)" id="tab5">📖 성경책</div>
@@ -212,34 +212,82 @@
 </div>
 
 
-<!-- ══════════════════════ p2: 교제 (기도제목) ══════════════════════ -->
+<!-- ══════════════════════ p2: 게시물 ══════════════════════ -->
 <div id="p2" class="page">
-  <div class="sec-hd">
-    <div class="sec-title">🙏 함께 기도해요</div>
-    <button class="btn-secondary" style="padding:7px 14px;font-size:11px;" onclick="openAddPrayer()">✏️ 기도제목 작성</button>
-  </div>
-  <div id="prayer-list"></div>
-<!-- 기도제목 작성 모달 -->
-<div id="modal-prayer" class="modal-overlay">
-  <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title">🙏 기도제목 작성</div>
-      <button class="modal-close" onclick="closeModal('modal-prayer')">✕</button>
-    </div>
-    <div class="input-group">
-      <div class="input-label">제목</div>
-      <input type="text" class="input-field" id="prayer-title" placeholder="기도제목 제목 (선택)">
-    </div>
-    <div class="input-group">
-      <div class="input-label">내용</div>
-      <textarea class="input-field" id="prayer-content" rows="5" placeholder="기도제목을 입력하세요..."></textarea>
-    </div>
-    <div style="display:flex;gap:10px;margin-top:20px;">
-      <button class="btn-primary" onclick="submitPrayer()" style="flex:1;">등록하기</button>
-      <button class="btn-secondary" onclick="closeModal('modal-prayer')" style="flex:1;">취소</button>
+  <!-- 카테고리 선택 -->
+  <div class="card" style="padding:12px;">
+    <div style="display:flex;flex-wrap:wrap;gap:8px;" id="board-category-tabs">
+      <button class="board-cat-btn active" data-cat="일반성도">🙋 일반성도</button>
+      <button class="board-cat-btn" data-cat="꿈지락">👶 꿈지락 (0~4세)</button>
+      <button class="board-cat-btn" data-cat="꿈트리">🧒 꿈트리 (5~7세)</button>
+      <button class="board-cat-btn" data-cat="꿈마루">🧑 꿈마루 (초등)</button>
+      <button class="board-cat-btn" data-cat="꿈하나">👦 꿈하나 (청소년)</button>
+      <button class="board-cat-btn" data-cat="새이플러스">👩‍🎓 새이플러스 (청년부)</button>
     </div>
   </div>
-</div>
+
+
+  <!-- 관리자 소개 (일반성도 제외) -->
+  <div id="board-manager-area" style="display:none;">
+    <div class="card">
+      <div class="card-title">👑 담당</div>
+      <div id="board-manager-content"></div>
+    </div>
+  </div>
+
+
+  <!-- 게시물 목록 -->
+  <div id="board-post-list"></div>
+
+
+  <!-- 글쓰기 버튼 -->
+  <button id="board-write-btn" class="btn-primary" style="margin-bottom:80px;" onclick="openBoardWrite()">✏️ 글쓰기</button>
+
+
+  <!-- 글 상세 보기 (모달) -->
+  <div id="board-detail-overlay" class="modal-overlay" style="align-items:center;">
+    <div class="modal-box" style="border-radius:24px;max-width:600px;max-height:90vh;overflow-y:auto;">
+      <div class="modal-header">
+        <div class="modal-title" id="board-detail-title"></div>
+        <button class="modal-close" onclick="closeBoardDetail()">✕</button>
+      </div>
+      <div id="board-detail-content" style="margin-bottom:16px;"></div>
+      <!-- 댓글 영역 -->
+      <div class="board-comments-section">
+        <div class="board-comments-title">💬 댓글</div>
+        <div id="board-comments-list"></div>
+        <div class="input-group" style="margin-top:12px;">
+          <textarea id="board-comment-input" class="input-field" rows="2" placeholder="댓글을 입력하세요..."></textarea>
+          <button class="btn-primary" onclick="submitBoardComment()" style="margin-top:8px;">등록</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 글쓰기 모달 -->
+  <div id="board-write-overlay" class="modal-overlay" style="align-items:center;">
+    <div class="modal-box" style="border-radius:24px;max-width:600px;">
+      <div class="modal-header">
+        <div class="modal-title">✏️ 글쓰기</div>
+        <button class="modal-close" onclick="closeBoardWrite()">✕</button>
+      </div>
+      <div class="input-group">
+        <div class="input-label">제목</div>
+        <input class="input-field" id="board-write-title" placeholder="제목">
+      </div>
+      <div class="input-group">
+        <div class="input-label">내용</div>
+        <textarea class="input-field" id="board-write-content" rows="6" placeholder="내용을 입력하세요..."></textarea>
+      </div>
+      <div class="input-group">
+        <div class="input-label">사진 첨부</div>
+        <input type="file" id="board-write-photo" accept="image/*" onchange="boardPhotoPreview(this)">
+        <div id="board-photo-preview" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;"></div>
+      </div>
+      <button class="btn-primary" onclick="submitBoardPost()">등록</button>
+    </div>
+  </div>
 </div>
   
 <!-- ═══════════════════ p3: 교회생활 ══════════════════════ -->
@@ -938,6 +986,7 @@
 <script src="js_service.js"></script>
 <script src="js_staff.js"></script>
 <script src="js_app.js"></script>
+<script src="js_board.js"></script>
 
 
 <!-- 카카오 광고 스크립트 (필요시) -->

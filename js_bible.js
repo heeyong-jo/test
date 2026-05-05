@@ -9,6 +9,8 @@ function initBible() {
 }
 
 
+
+
 // 성경/찬송가/부록 선택
 function openBibleSection(section) {
   currentBibleSection = section;
@@ -25,6 +27,8 @@ function openBibleSection(section) {
 }
 
 
+
+
 function closeBibleSection() {
   currentBibleSection = null;
   ['bibleScriptureView', 'bibleHymnView', 'bibleAppendixView'].forEach(id => {
@@ -35,16 +39,20 @@ function closeBibleSection() {
 }
 
 
+
+
 // ==================== 성경책 (구약/신약) ====================
 function initBibleBooks() {
   const otDiv = document.getElementById('otBooks');
   const ntDiv = document.getElementById('ntBooks');
   if (!otDiv || otDiv.innerHTML) return;
-  const otStyle = 'background:#f0e0c4;border:1.5px solid #c8a060;border-radius:12px;padding:10px 4px;text-align:center;cursor:pointer;';
-  const ntStyle = 'background:#f0ddd0;border:1.5px solid #c89080;border-radius:12px;padding:10px 4px;text-align:center;cursor:pointer;';
-  otDiv.innerHTML = OT_BOOKS.map(b => `<div style="${otStyle}" onclick="selectBook('${b.name}')"><div style="font-size:15px;font-weight:800;color:#7a4010;">${b.abbr}</div><div style="font-size:9px;color:#8a5a2a;">${b.name.slice(0,4)}</div><div style="font-size:8px;color:#b89060;">${b.chapters}장</div></div>`).join('');
-  ntDiv.innerHTML = NT_BOOKS.map(b => `<div style="${ntStyle}" onclick="selectBook('${b.name}')"><div style="font-size:15px;font-weight:800;color:#8a2a10;">${b.abbr}</div><div style="font-size:9px;color:#8a5a2a;">${b.name.slice(0,4)}</div><div style="font-size:8px;color:#b89060;">${b.chapters}장</div></div>`).join('');
+  const otStyle = 'background:#fffaf0;border:1.5px solid #c8b896;border-radius:12px;padding:10px 4px;text-align:center;cursor:pointer;';
+  const ntStyle = 'background:#fffaf0;border:1.5px solid #c8b896;border-radius:12px;padding:10px 4px;text-align:center;cursor:pointer;';
+  otDiv.innerHTML = OT_BOOKS.map(b => `<div style="${otStyle}" onclick="selectBook('${b.name}')"><div style="font-size:15px;font-weight:800;color:#6b4f2e;">${b.abbr}</div><div style="font-size:9px;color:#8a6e4e;">${b.name.slice(0,4)}</div><div style="font-size:8px;color:#b8956e;">${b.chapters}장</div></div>`).join('');
+  ntDiv.innerHTML = NT_BOOKS.map(b => `<div style="${ntStyle}" onclick="selectBook('${b.name}')"><div style="font-size:15px;font-weight:800;color:#6b4f2e;">${b.abbr}</div><div style="font-size:9px;color:#8a6e4e;">${b.name.slice(0,4)}</div><div style="font-size:8px;color:#b8956e;">${b.chapters}장</div></div>`).join('');
 }
+
+
 
 
 async function selectBook(bookName) {
@@ -62,6 +70,8 @@ async function selectBook(bookName) {
   }
   container.innerHTML = html;
 }
+
+
 
 
 async function loadChapter(chapter) {
@@ -97,11 +107,15 @@ async function loadChapter(chapter) {
 }
 
 
+
+
 function showBibleList() {
   document.getElementById('bibleListView').style.display = 'block';
   document.getElementById('bibleChapterView').style.display = 'none';
   document.getElementById('bibleVerseView').style.display = 'none';
 }
+
+
 
 
 function showChapterView() {
@@ -110,10 +124,14 @@ function showChapterView() {
 }
 
 
+
+
 function prevChapter() {
   if (currentChapter > 1) loadChapter(currentChapter - 1);
   else showToast('첫 장입니다');
 }
+
+
 
 
 function nextChapter() {
@@ -122,10 +140,14 @@ function nextChapter() {
 }
 
 
+
+
 function changeFontSize(d) {
   fontSize = Math.min(24, Math.max(12, fontSize + d));
   if (currentBook) loadChapter(currentChapter);
 }
+
+
 
 
 // ==================== 찬송가 ====================
@@ -143,6 +165,8 @@ async function loadHymnTitles() {
   hymnTitlesLoaded = true;
   renderHymnGrid();
 }
+
+
 
 
 function renderHymnGrid() {
@@ -176,6 +200,8 @@ function renderHymnGrid() {
     </div>`;
   }).join('');
 }
+
+
 
 
 function openHymn(no) {
@@ -215,16 +241,22 @@ function openHymn(no) {
 }
 
 
+
+
 function prevHymnView() {
   if (currentHymnNo > 1) openHymn(currentHymnNo - 1);
   else showToast('첫 번째 찬송가입니다');
 }
 
 
+
+
 function nextHymnView() {
   if (currentHymnNo < 645) openHymn(currentHymnNo + 1);
   else showToast('마지막 찬송가입니다 (645장)');
 }
+
+
 
 
 function updateHymnNavButtons() {
@@ -241,6 +273,8 @@ function updateHymnNavButtons() {
 }
 
 
+
+
 function closeHymnView() {
   const hymnImageView = document.getElementById('hymnImageView');
   const hymnListView = document.getElementById('hymnListView');
@@ -249,6 +283,8 @@ function closeHymnView() {
   if (hymnListView) hymnListView.style.display = 'block';
   if (imgElement) imgElement.src = '';
 }
+
+
 
 
 function setHymnRange(start, doRender) {
@@ -277,10 +313,14 @@ function setHymnRange(start, doRender) {
 }
 
 
+
+
 function filterHymns(q) {
   hymnSearchQuery = q.trim();
   renderHymnGrid();
 }
+
+
 
 
 function initHymn() {
@@ -297,6 +337,8 @@ function initHymn() {
 }
 
 
+
+
 // ==================== 부록 (교독문, 사도신경, 주기도문, 십계명) ====================
 function toggleAppendix(key) {
   const el = document.getElementById('app-' + key);
@@ -311,10 +353,14 @@ function toggleAppendix(key) {
 }
 
 
+
+
 function changeAppendixFont(d) {
   appendixFontSize = Math.min(22, Math.max(11, appendixFontSize + d));
   applyAppendixFont();
 }
+
+
 
 
 function applyAppendixFont() {

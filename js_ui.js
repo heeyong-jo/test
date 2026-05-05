@@ -59,11 +59,10 @@ function afterTab(n) {
     if (typeof renderTodayVerse === 'function') renderTodayVerse();
   }
   if (n === 2 && typeof renderPrayers === 'function') renderPrayers();
-// p2 게시물 탭이면 스와이프 차단
-if (idx === 2) {
-  document.getElementById('swipe-container').style.touchAction = 'none';
+if (n === 2) {
+document.getElementById('swipe-container').style.touchAction = 'none';
 } else {
-  document.getElementById('swipe-container').style.touchAction = 'pan-x pan-y pinch-zoom';
+document.getElementById('swipe-container').style.touchAction = 'pan-x pan-y pinch-zoom';
 }
   if (n === 3 && typeof renderPosts === 'function') renderPosts();
   if (n === 4) {

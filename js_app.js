@@ -1,6 +1,8 @@
 ﻿// ==================== 앱 초기화 ====================
 
 
+
+
 // Firebase 초기화 (전역 FB 객체는 config.js에서 이미 정의됨)
 window.addEventListener('load', () => {
   // 1. Firebase 데이터 로드 (로컬 또는 실시간)
@@ -20,6 +22,8 @@ window.addEventListener('load', () => {
   }, 300);
 
 
+
+
   // 2. 스플래시 제거 및 초기 렌더링, 자동 로그인 처리
   setTimeout(() => {
     const splash = document.getElementById('splash');
@@ -29,12 +33,16 @@ window.addEventListener('load', () => {
     }
 
 
+
+
     // 기본 UI 렌더링
     if (typeof renderServiceView === 'function') renderServiceView();
     if (typeof renderScheduleView === 'function') renderScheduleView();
     if (typeof renderTodayVerse === 'function') renderTodayVerse();
     if (typeof renderPosts === 'function') renderPosts();
     if (typeof loadStaff === 'function') loadStaff();
+
+
 
 
     // 자동 로그인 체크 (7일 이내)
@@ -50,24 +58,34 @@ window.addEventListener('load', () => {
     }
 
 
+
+
     // 로그인 화면 표시
     showTab(0);
   }, 1000);
 });
 
 
+
+
 // ── 교회 정보 (인사말/연혁) Firebase 연동 ──────────────────────
 const defaultGreeting = `"인생은 만남입니다.\n\n우리는 부모와의 만남에서 인생의 지침을 배우고...\n하나님은 오늘도 당신을 기다리고 계십니다.\n하나님은 당신을 사랑하십니다."`;
 
 
+
+
 const defaultHistory = [
   { year: "1972년 1월 23일", content: "가좌제일교회 창립" },
-  { year: "2026년 5월", content: "교회 공식 앱 '가좌제일교회' 론칭" },
+  { year: "2019년 1월", content: "새 성전으로 이전" },
   { year: "2026년 현재", content: "대한예수교 장로회 통합측 소속 교회" }
 ];
 
 
+
+
 let currentEditMode = ''; // 'greeting' | 'history'
+
+
 
 
 function loadChurchInfo() {
@@ -89,6 +107,8 @@ function loadChurchInfo() {
 }
 
 
+
+
 function renderGreeting(text) {
   document.getElementById('greeting-content').innerHTML = 
     `<div style="background:linear-gradient(135deg,#f9f2f9,#f5eaf5);border-radius:16px;padding:18px;">
@@ -99,6 +119,8 @@ function renderGreeting(text) {
        </div>
      </div>`;
 }
+
+
 
 
 function renderHistory(arr) {
@@ -114,6 +136,8 @@ function renderHistory(arr) {
 }
 
 
+
+
 function openEditGreeting() {
   currentEditMode = 'greeting';
   document.getElementById('churchinfo-modal-title').textContent = '✏️ 인사말 수정';
@@ -125,6 +149,8 @@ function openEditGreeting() {
   });
   document.getElementById('modal-edit-churchinfo').style.display = 'flex';
 }
+
+
 
 
 function openEditHistory() {
@@ -139,6 +165,8 @@ function openEditHistory() {
   });
   document.getElementById('modal-edit-churchinfo').style.display = 'flex';
 }
+
+
 
 
 function saveChurchInfo() {
@@ -167,4 +195,7 @@ function saveChurchInfo() {
         showToast('연혁이 저장되었습니다.');
       });
   }
+}
+function showPrivacyPolicy() {
+  document.getElementById('modal-privacy').style.display = 'flex';
 }

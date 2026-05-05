@@ -214,7 +214,7 @@ textarea.input-field{resize:vertical;min-height:80px;}
   position: fixed;
   inset: 0;
   background: 
-    linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,255,0.5)),  
+    linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,255,0.2)),  
     url('https://raw.githubusercontent.com/heeyong-jo/test/main/5555.png') center/cover no-repeat;          /* 배경 이미지 */
   z-index: 99999;
   display: flex;

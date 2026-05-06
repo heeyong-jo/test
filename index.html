@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="가좌제일교회">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#3d0f52">
+  <meta name="theme-color" content="#5c3d1e">
   <meta property="og:title" content="가좌제일교회교회">
   <meta property="og:description" content="대한예수교 장로회 가좌제일교회 공식 앱">
   <meta property="og:type" content="website">
@@ -54,7 +54,7 @@
       <!-- 로그인/회원가입 탭 -->
       <div style="display:flex;background:rgba(255,255,255,0.1);border-radius:12px;padding:4px;margin-bottom:20px;gap:4px;">
         <button id="auth-tab-login" onclick="switchAuthTab('login')"
-          style="flex:1;padding:10px;border:none;border-radius:10px;background:white;color:#3d0f52;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;">로그인</button>
+          style="flex:1;padding:10px;border:none;border-radius:10px;background:white;color:#5c3d1e;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;">로그인</button>
         <button id="auth-tab-signup" onclick="switchAuthTab('signup')"
           style="flex:1;padding:10px;border:none;border-radius:10px;background:transparent;color:rgba(255,255,255,0.6);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;">회원가입</button>
       </div>
@@ -168,7 +168,7 @@
       <div id="service-list-edit"></div>
       <button class="service-add-btn" onclick="addServiceRow()">+ 예배 추가</button>
       <div style="display:flex;gap:8px;margin-top:10px;">
-        <button onclick="saveServiceEdit()" style="flex:1;padding:11px;background:linear-gradient(135deg,#6b2577,#9c3a8a);border:none;border-radius:12px;color:white;font-size:13px;font-weight:700;cursor:pointer;">✅ 저장</button>
+        <button onclick="saveServiceEdit()" style="flex:1;padding:11px;background:linear-gradient(135deg,#7a5230,#9e6b3e);border:none;border-radius:12px;color:white;font-size:13px;font-weight:700;cursor:pointer;">✅ 저장</button>
         <button onclick="cancelServiceEdit()" style="flex:1;padding:11px;background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;color:var(--purple);font-size:13px;font-weight:600;cursor:pointer;">취소</button>
       </div>
     </div>
@@ -186,11 +186,11 @@
 <!-- ══════════════════════ p1: 말씀 ══════════════════════ -->
 <div id="p1" class="page">
   <div class="card">
-    <div class="card-title">📅 오늘의 말씀</div>
+    <div class="card-title">📅 이번주 말씀</div>
     <div style="background:#f9f2f9;border-radius:16px;padding:20px;margin-bottom:16px;">
       <div style="font-size:24px;margin-bottom:12px;">📖</div>
-      <div id="today-verse-text" style="font-size:18px;font-weight:600;color:#2d1b69;margin-bottom:8px;">"하나님은 사랑이시라"</div>
-      <div id="today-verse-ref" style="color:#6b2577;margin-bottom:6px;font-weight:600;">요한일서 4:16</div>
+      <div id="today-verse-text" style="font-size:18px;font-weight:600;color:#3b2e1e;margin-bottom:8px;">"하나님은 사랑이시라"</div>
+      <div id="today-verse-ref" style="color:var(--purple);margin-bottom:6px;font-weight:600;">요한일서 4:16</div>
       <div id="today-verse-body" style="font-size:13px;color:var(--text2);line-height:1.7;">사랑 안에 거하는 자는 하나님 안에 거하고 하나님이 그 안에 거하시느니라</div>
     </div>
     <div style="display:flex;gap:8px;">
@@ -199,9 +199,9 @@
     </div>
   </div>
   <div class="card" id="write-meditation-card">
-    <div class="card-title">✏️ 오늘의 말씀 나누기</div>
+    <div class="card-title">✏️ 말씀 나누기</div>
     <div class="write-area">
-      <textarea class="write-textarea" id="meditation-input" placeholder="오늘 말씀을 읽고 받은 은혜를 나눠주세요..."></textarea>
+      <textarea class="write-textarea" id="meditation-input" placeholder="말씀을 읽고 받은 은혜를 나눠주세요..."></textarea>
       <div style="overflow:hidden;"><button class="write-submit" onclick="submitMeditation()">등록</button></div>
     </div>
   </div>
@@ -335,7 +335,7 @@
 
 <!-- ══════════════════════ p4: 안내 ══════════════════════ -->
 <div id="p4" class="page">
-  <div class="card" style="background:linear-gradient(145deg,#faf5ff,#f0e8f8);">
+  <div class="card" style="background:linear-gradient(145deg,#fdf5e8,#f5e8d5);">
     <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;">
       <div style="font-size:48px;animation:float 3s ease-in-out infinite;">⛪</div>
       <div>
@@ -431,29 +431,13 @@
 
   <div class="card">
     <div class="card-title">🗺 위치 안내</div>
-    <div class="map-container" style="height:220px;">
-      <div class="map-road-h" style="top:50%;left:0;right:0;height:16px;transform:translateY(-50%);"></div>
-      <div class="map-lbl" style="top:calc(50% - 22px);left:12px;font-size:10px;font-weight:800;color:#374151;">고하대로</div>
-      <div class="map-road-v" style="top:0;bottom:0;left:28%;width:8px;"></div>
-      <div class="map-road-v" style="top:0;bottom:0;left:58%;width:8px;"></div>
-      <div class="map-road-v" style="top:0;bottom:0;left:80%;width:5px;opacity:0.6;"></div>
-      <div class="map-road-h" style="top:22%;left:0;right:0;height:5px;opacity:0.5;"></div>
-      <div class="map-road-h" style="top:76%;left:0;right:0;height:5px;opacity:0.5;"></div>
-      <div style="position:absolute;left:4%;top:85%;font-size:9px;font-weight:700;color:#374151;background:rgba(255,255,255,0.8);padding:2px 6px;border-radius:6px;">목포서부초등학교</div>
-      <div style="position:absolute;left:62%;top:58%;font-size:9px;font-weight:700;color:#374151;background:rgba(255,255,255,0.8);padding:2px 6px;border-radius:6px;">SK엔크린</div>
-<div style="position:absolute;left:35%;top:33%;font-size:9px;font-weight:700;color:#374151;background:rgba(255,255,255,0.8);padding:2px 6px;border-radius:6px;">신안비치1차@</div>
-<div style="position:absolute;left:60%;top:33%;font-size:9px;font-weight:700;color:#374151;background:rgba(255,255,255,0.8);padding:2px 6px;border-radius:6px;">신안비치팔레스@</div>
-      <div style="position:absolute;left:4%;top:8%;font-size:9px;color:#374151;background:rgba(255,255,255,0.8);padding:2px 6px;border-radius:6px;">목포해양경찰서</div>
-      <div class="map-pin" style="left:38%;top:48%;">
-        <div style="animation:float 2s ease-in-out infinite;font-size:26px;">⛪</div>
-        <div class="map-pin-label">가좌제일교회 </div>
-      </div>
-       <!-- 방위표 -->
-      <div style="position:absolute; right:12px; top:12px; width:32px; height:32px; background:rgba(255,255,255,0.9); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold; color:#b91c1c; box-shadow:0 1px 3px rgba(0,0,0,0.2);">N</div>      
-    </div>
+    <div style="border-radius:16px; overflow:hidden; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+  <img src="map-gj.jpg" alt="가좌제일교회 약도"
+    style="width:100%; display:block; object-fit:contain;">
+</div>
     
     <!-- 찾아오는 길 안내 -->
-    <div style="margin-top:20px; background:linear-gradient(135deg,#f5f0fa,#ede5f5); border-radius:16px; padding:16px;">
+    <div style="margin-top:20px; <div style="margin-top:20px; background:linear-gradient(135deg,#f5ede0,#ede0ce); border-radius:16px; padding:16px;">; border-radius:16px; padding:16px;">
       <div style="font-size:13px; font-weight:800; color:var(--purple); margin-bottom:12px; display:flex; align-items:center; gap:6px;">
         <span>📍</span> 찾아오는 길
       </div>
@@ -685,7 +669,7 @@
     <!-- 프로필 보기 -->
     <div id="profile-view">
       <div style="text-align:center;margin-bottom:20px;">
-        <div id="profile-photo-view" style="width:90px;height:90px;border-radius:50%;margin:0 auto 10px;background:linear-gradient(135deg,#c4b0e0,#9c3a8a);display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden;">
+        <div id="profile-photo-view" style="width:90px;height:90px;border-radius:50%;margin:0 auto 10px;background:linear-gradient(135deg,#7a5230,#9e6b3e);display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden;">
           <span id="profile-photo-emoji">🙏</span>
           <img id="profile-photo-img" src="" style="display:none;width:100%;height:100%;object-fit:cover;">
         </div>
@@ -709,7 +693,7 @@
     <!-- 프로필 수정 -->
     <div id="profile-edit" style="display:none;">
       <div style="text-align:center;margin-bottom:18px;">
-        <div id="edit-photo-preview" onclick="document.getElementById('edit-photo-input').click()" style="width:90px;height:90px;border-radius:50%;margin:0 auto 10px;cursor:pointer;background:linear-gradient(135deg,#c4b0e0,#9c3a8a);display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden;border:2px dashed #c4b0e0;position:relative;">
+        <div id="edit-photo-preview" onclick="document.getElementById('edit-photo-input').click()" style="width:90px;height:90px;border-radius:50%;margin:0 auto 10px;cursor:pointer;background:linear-gradient(135deg,#7a5230,#9e6b3e);display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden;border:2px dashed #d4bfa0;position:relative;">
           <span id="edit-photo-emoji">🙏</span>
           <img id="edit-photo-img" src="" style="display:none;width:100%;height:100%;object-fit:cover;">
           <div style="position:absolute;bottom:0;right:0;width:26px;height:26px;background:var(--purple);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;color:white;">📷</div>
@@ -733,7 +717,7 @@
       <div class="input-group"><div class="input-label">가입일</div><input class="input-field" id="em-date" type="date"></div>
       <div class="input-group"><div class="input-label">비고</div><textarea class="input-field" id="em-note" placeholder="특이사항" rows="3"></textarea></div>
       <div style="display:flex;gap:10px;">
-        <button onclick="saveEditMember()" style="flex:1;padding:12px;background:linear-gradient(135deg,#6b2577,#9c3a8a);border:none;border-radius:12px;color:white;font-size:13px;font-weight:700;cursor:pointer;">✅ 저장</button>
+        <button onclick="saveEditMember()" style="flex:1;padding:12px;background:linear-gradient(135deg,#7a5230,#9e6b3e);border:none;border-radius:12px;color:white;font-size:13px;font-weight:700;cursor:pointer;">✅ 저장</button>
         <button onclick="cancelEditMember()" style="flex:1;padding:12px;background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;color:var(--purple);font-size:13px;font-weight:600;cursor:pointer;">취소</button>
       </div>
     </div>
@@ -795,7 +779,7 @@
     <div style="display:flex;gap:6px;margin-bottom:18px;"><div id="vstep1" style="flex:1;padding:8px;border-radius:10px;text-align:center;font-size:12px;font-weight:700;background:var(--purple);color:white;">① 책 선택</div><div id="vstep2" style="flex:1;padding:8px;border-radius:10px;text-align:center;font-size:12px;font-weight:700;background:var(--bg2);color:var(--text2);">② 장 선택</div><div id="vstep3" style="flex:1;padding:8px;border-radius:10px;text-align:center;font-size:12px;font-weight:700;background:var(--bg2);color:var(--text2);">③ 절 선택</div></div>
     <div id="vstep-book"><div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:8px;">📖 구약</div><div id="vs-ot-books" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-height:180px;overflow-y:auto;margin-bottom:12px;"></div><div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:8px;">📖 신약</div><div id="vs-nt-books" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-height:180px;overflow-y:auto;"></div></div>
     <div id="vstep-chapter" style="display:none;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;"><button onclick="vsGoBack('book')" style="background:var(--bg2);border:none;border-radius:20px;padding:6px 14px;font-size:12px;color:var(--purple);font-weight:600;cursor:pointer;">← 뒤로</button><div id="vs-book-selected" style="font-size:14px;font-weight:700;color:var(--text);"></div></div><div id="vs-chapters" style="display:flex;flex-wrap:wrap;gap:8px;max-height:280px;overflow-y:auto;"></div></div>
-    <div id="vstep-verse" style="display:none;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;"><button onclick="vsGoBack('chapter')" style="background:var(--bg2);border:none;border-radius:20px;padding:6px 14px;font-size:12px;color:var(--purple);font-weight:600;cursor:pointer;">← 뒤로</button><div id="vs-chapter-selected" style="font-size:14px;font-weight:700;color:var(--text);"></div></div><div style="background:var(--bg);border-radius:12px;padding:12px;margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;">절 범위 선택</div><div style="display:flex;align-items:center;gap:8px;"><select id="vs-from" class="input-field" style="flex:1;padding:8px;font-size:13px;"></select><span style="color:var(--text2);font-weight:600;">~</span><select id="vs-to" class="input-field" style="flex:1;padding:8px;font-size:13px;"></select></div></div><div id="vs-preview" style="background:var(--bg);border-radius:12px;padding:12px;margin-bottom:14px;font-size:13px;color:var(--text2);line-height:1.7;max-height:160px;overflow-y:auto;"></div><button onclick="applyTodayVerse()" style="width:100%;padding:13px;background:linear-gradient(135deg,#6b2577,#9c3a8a);border:none;border-radius:12px;color:white;font-size:14px;font-weight:700;cursor:pointer;">✅ 오늘의 말씀으로 등록</button></div>
+    <div id="vstep-verse" style="display:none;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;"><button onclick="vsGoBack('chapter')" style="background:var(--bg2);border:none;border-radius:20px;padding:6px 14px;font-size:12px;color:var(--purple);font-weight:600;cursor:pointer;">← 뒤로</button><div id="vs-chapter-selected" style="font-size:14px;font-weight:700;color:var(--text);"></div></div><div style="background:var(--bg);border-radius:12px;padding:12px;margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;">절 범위 선택</div><div style="display:flex;align-items:center;gap:8px;"><select id="vs-from" class="input-field" style="flex:1;padding:8px;font-size:13px;"></select><span style="color:var(--text2);font-weight:600;">~</span><select id="vs-to" class="input-field" style="flex:1;padding:8px;font-size:13px;"></select></div></div><div id="vs-preview" style="background:var(--bg);border-radius:12px;padding:12px;margin-bottom:14px;font-size:13px;color:var(--text2);line-height:1.7;max-height:160px;overflow-y:auto;"></div><button onclick="applyTodayVerse()" style="width:100%;padding:13px;background:linear-gradient(135deg,#7a5230,#9e6b3e);border:none;border-radius:12px;color:white;font-size:14px;font-weight:700;cursor:pointer;">✅ 오늘의 말씀으로 등록</button></div>
   </div>
 </div>
 

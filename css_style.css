@@ -341,7 +341,7 @@ textarea.input-field{resize:vertical;min-height:80px;}
 .board-tab-col {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
   width: 250px;
   flex-shrink: 0;
 }
@@ -398,6 +398,8 @@ textarea.input-field{resize:vertical;min-height:80px;}
 
 
 .board-post-item {
+    max-width: 420px;  
+    width: 100%;
   display: flex;
   align-items: center;
   gap: 10px;

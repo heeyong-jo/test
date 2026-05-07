@@ -82,9 +82,7 @@ function loadPosts() {
           </div>
         </div>`;
     });
-    document.getElementById('board-post-list').innerHTML = html || '<div style="text-align:center;padding:20px;color:var(--text2);">게시물이 없습니다.</div>';
-  });
-}
+    }
 
 
 // ── 글쓰기 열기 ──

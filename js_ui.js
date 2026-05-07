@@ -37,8 +37,8 @@ function closeModal(id) {
 // 탭 전환
 function showTab(n) {
   n = Math.max(0, Math.min(TOTAL_TABS - 1, n));
-  if (n !== 0 && !currentUser) {
-    document.getElementById('screen-login').style.display = 'flex';
+  
+if (n !== 0 && n !== 2 && !currentUser) {    document.getElementById('screen-login').style.display = 'flex';
     return;
   }
   currentTab = n;

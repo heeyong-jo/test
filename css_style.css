@@ -342,7 +342,7 @@ textarea.input-field{resize:vertical;min-height:80px;}
   display: flex;
   flex-direction: column;
   gap: 6px;
-  width: 80px;
+  width: 250px;
   flex-shrink: 0;
 }
 
@@ -392,7 +392,8 @@ textarea.input-field{resize:vertical;min-height:80px;}
 #board-post-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 15px;  
+  align-items: center;      
 }
 
 

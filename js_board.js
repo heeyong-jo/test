@@ -19,7 +19,8 @@ function initBoard() {
   });
   loadBoardManager();
   loadPosts();
-}
+
+
 
 
   const writeBtn = document.getElementById('board-write-btn');

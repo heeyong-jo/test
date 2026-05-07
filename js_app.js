@@ -22,6 +22,12 @@ window.addEventListener('load', () => {
   }, 300);
 
 
+// 탭 클릭 시
+updateBoardWriteBtn();
+
+
+// 상세 모달 열 때
+updateBoardCommentArea();
 
 
   // 2. 스플래시 제거 및 초기 렌더링, 자동 로그인 처리
@@ -66,6 +72,29 @@ window.addEventListener('load', () => {
 });
 
 
+// 글쓰기 버튼: 매니저 이상만 표시
+function updateBoardWriteBtn() {
+  const wrap = document.getElementById('board-write-btn-wrap');
+  if (!wrap) return;
+  const role = currentUser && currentUser.role;
+  // admin 또는 manager만 표시
+  wrap.style.display = (role === 'admin' || role === 'manager') ? 'block' : 'none';
+}
+
+
+// 댓글 입력창: 로그인 유저 전체 허용
+function updateBoardCommentArea() {
+  const inputWrap = document.getElementById('board-comment-input-wrap');
+  const loginMsg  = document.getElementById('board-comment-login-msg');
+  if (!inputWrap || !loginMsg) return;
+  if (currentUser) {
+    inputWrap.style.display = 'block';
+    loginMsg.style.display  = 'none';
+  } else {
+    inputWrap.style.display = 'none';
+    loginMsg.style.display  = 'block';
+  }
+}
 
 
 // ── 교회 정보 (인사말/연혁) Firebase 연동 ──────────────────────

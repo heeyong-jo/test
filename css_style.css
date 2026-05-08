@@ -338,7 +338,7 @@ textarea.input-field{resize:vertical;min-height:80px;}
 
 
 /* ── 게시물 탭: 세로 컬럼 ── */
-..board-tab-col {
+.board-tab-col {
   display: flex;
   flex-direction: column;
   gap: 15px;

@@ -230,9 +230,16 @@ function submitBoardComment() {
     openBoardDetail(currentPostId);
   });
 }
-// ── ① 글쓰기 버튼 & 모달 동적 생성 ──
 function createBoardWriteUI() {
-  if (document.getElementById('board-write-btn-wrap')) return; // 중복 생성 방지
+  if (document.getElementById('board-write-btn-wrap')) return;
+
+
+  const postList = document.getElementById('board-post-list');
+  if (!postList) {
+    // board-post-list가 아직 준비되지 않았으면 100ms 후 재시도
+    setTimeout(createBoardWriteUI, 100);
+    return;
+  }
 
 
   // 글쓰기 버튼
@@ -240,9 +247,6 @@ function createBoardWriteUI() {
   btnWrap.id = 'board-write-btn-wrap';
   btnWrap.style.cssText = 'display:none;margin-bottom:10px;';
   btnWrap.innerHTML = '<button class="btn-primary" style="width:100%;padding:10px;" onclick="openBoardWrite()">✏️ 글쓰기</button>';
-
-
-  const postList = document.getElementById('board-post-list');
   postList.parentNode.insertBefore(btnWrap, postList);
 
 
@@ -280,8 +284,10 @@ function createBoardWriteUI() {
 // ── ② 글 상세보기 모달 동적 생성 ──
 function createBoardDetailModal() {
   if (document.getElementById('board-detail-overlay')) return;
-
-
+  if (!document.body) {
+    setTimeout(createBoardDetailModal, 100);
+    return;
+  }
   const overlay = document.createElement('div');
   overlay.id = 'board-detail-overlay';
   overlay.className = 'modal-overlay';

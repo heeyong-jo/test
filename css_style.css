@@ -341,10 +341,12 @@ textarea.input-field{resize:vertical;min-height:80px;}
 .board-tab-col {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  width: 250px;
+  gap: 20px;                    /* 위아래 탭 사이 간격 */
+  width: 100%;                  /* 좌우 영역 최대한 확보 */
+  max-width: 400px;             /* 기존의 약 2배 */
   flex-shrink: 0;
-  align-items: center;   /* ← 탭 버튼 가로 가운데 */
+  align-items: center;          /* 탭 버튼 가로 가운데 */
+  margin: 0 auto;               /* 컬럼 자체를 가운데 정렬 */
 }
 
 
@@ -354,9 +356,9 @@ textarea.input-field{resize:vertical;min-height:80px;}
   align-items: center;
   justify-content: center;
   text-align: center;
-  width: 250px;           /* ← 고정 너비로 가운데 정렬 */
-  padding: 10px 4px;
-  border-radius: 12px;
+  width: 100%;                  /* 컬럼 너비에 맞춤 */
+  padding: 12px 4px;            /* 상하 더 넉넉하게 */
+  border-radius: 14px;
   font-size: 15px;
   font-weight: 700;
   border: 1.5px solid var(--border);
@@ -364,29 +366,8 @@ textarea.input-field{resize:vertical;min-height:80px;}
   color: var(--text);
   cursor: pointer;
   transition: all 0.2s;
-  line-height: 1.3;
-  gap: 15px;
-}
-
-
-.board-cat-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  width: 100%;
-  padding: 10px 4px;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 700;
-  border: 1.5px solid var(--border);
-  background: white;
-  color: var(--text);
-  cursor: pointer;
-  transition: all 0.2s;
-  line-height: 1.3;
-  gap: 15px;
+  line-height: 1.4;
+  gap: 4px;
 }
 
 
@@ -403,10 +384,9 @@ textarea.input-field{resize:vertical;min-height:80px;}
 
 
 .board-tab-sub {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 500;
   opacity: 0.75;
-  display: block;
 }
 
 
@@ -414,8 +394,8 @@ textarea.input-field{resize:vertical;min-height:80px;}
 #board-post-list {
   display: flex;
   flex-direction: column;
-  gap: 30px;  
-  align-items: center;      
+  gap: 30px;                   /* 게시물 사이 간격 */
+  align-items: center;
 }
 
 
@@ -430,8 +410,8 @@ textarea.input-field{resize:vertical;min-height:80px;}
   cursor: pointer;
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   transition: transform 0.15s;
-  max-width: 420px;        /* ★ 추가 */
-  width: 100%;             /* ★ 추가 */
+  max-width: 420px;
+  width: 100%;
 }
 .board-post-item:hover { transform: translateY(-1px); }
 

@@ -48,6 +48,8 @@ function initBoard() {
   // 초기에는 글쓰기 버튼 숨김
   const writeBtnWrap = document.getElementById('board-write-btn-wrap');
   if (writeBtnWrap) writeBtnWrap.style.display = 'none';
+updateBoardWriteBtn();
+updateBoardCommentArea();
 }
 
 
@@ -96,9 +98,9 @@ function loadPosts() {
       html += `
         <div class="board-post-item" onclick="openBoardDetail('${id}')">
           ${firstPhoto ? `<img class="board-post-thumb" src="${firstPhoto}" alt="">` : '<div class="board-post-thumb" style="display:flex;align-items:center;justify-content:center;">📷</div>'}
-          <div class="board-post-info">
-            <div class="board-post-title">${post.title}</div>
-            <div class="board-post-meta">${post.author} · ${new Date(post.timestamp).toLocaleString()}</div>
+          <div class="board-post-info">    
+<div class="board-post-title">${escapeHtml(post.title)}</div>
+   <div class="board-post-meta">${post.author} · ${new Date(post.timestamp).toLocaleString()}</div>
           </div>
         </div>`;
     });
@@ -191,7 +193,7 @@ function openBoardDetail(postId) {
     if (!post) return;    // ← 삭제된 글 방어
     document.getElementById('board-detail-title').textContent = post.title;
     let html = `<div style="font-size:13px;color:var(--text2);margin-bottom:10px;">${post.author} · ${new Date(post.timestamp).toLocaleString()}</div>`;
-    html += `<div style="white-space:pre-wrap;margin-bottom:12px;">${post.content}</div>`;
+    html += `<div style="white-space:pre-wrap;margin-bottom:12px;">${escapeHtml(post.content)}</div>`;
     if (post.photos) {
       post.photos.forEach(src => {
         html += `<img src="${src}" style="width:100%;border-radius:12px;margin-bottom:6px;">`;
@@ -215,7 +217,7 @@ function renderComments(comments) {
   const list = Object.entries(comments).sort((a,b) => a[1].timestamp - b[1].timestamp);
   let html = '';
   list.forEach(([cid, c]) => {
-    html += `<div style="margin-bottom:8px;"><b>${c.author}</b> ${c.text} <span style="font-size:10px;color:var(--text2);">${new Date(c.timestamp).toLocaleString()}</span></div>`;
+    html += `<div style="margin-bottom:8px;"><b>${escapeHtml(c.author)}</b> ${escapeHtml(c.text)} <span style="font-size:10px;color:var(--text2);">${new Date(c.timestamp).toLocaleString()}</span></div>`;
   });
   document.getElementById('board-comments-list').innerHTML = html || '<div style="color:var(--text2);font-size:12px;">아직 댓글이 없습니다.</div>';
 }
@@ -247,14 +249,7 @@ function createBoardWriteUI() {
   }
 
 
-  const btnWrap = document.createElement('div');
-  btnWrap.id = 'board-write-btn-wrap';
-  btnWrap.style.cssText = 'display:none;margin-bottom:10px;height:0;overflow:hidden;';  // ★ 잔상 제거
-  btnWrap.innerHTML = '<button class="btn-primary" style="width:100%;padding:10px;" onclick="openBoardWrite()">✏️ 글쓰기</button>';
-  postList.parentNode.insertBefore(btnWrap, postList);
-
-
-  // 글쓰기 버튼
+    // 글쓰기 버튼
     const btnWrap = document.createElement('div');
   btnWrap.id = 'board-write-btn-wrap';
   btnWrap.style.cssText = 'display:none;margin-bottom:10px;';

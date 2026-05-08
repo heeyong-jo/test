@@ -22,14 +22,6 @@ window.addEventListener('load', () => {
   }, 300);
 
 
-// 탭 클릭 시
-updateBoardWriteBtn();
-
-
-// 상세 모달 열 때
-updateBoardCommentArea();
-
-
   // 2. 스플래시 제거 및 초기 렌더링, 자동 로그인 처리
   setTimeout(() => {
     const splash = document.getElementById('splash');

@@ -49,7 +49,7 @@ header {
 .user-badge {
   flex-shrink: 0;             /* 배지 크기 유지 */
 }
-logo{display:flex;align-items:center;gap:12px;}
+.logo{display:flex;align-items:center;gap:12px;}
 .logo-icon{font-size:28px;animation:float 3s ease-in-out infinite;}
 .logo-text{font-weight:800;font-size:17px;color:white;letter-spacing:-0.3px;}
 .logo-sub{font-size:10px;color:rgba(255,255,255,0.7);margin-top:2px;}

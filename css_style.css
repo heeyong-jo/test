@@ -341,9 +341,9 @@ textarea.input-field{resize:vertical;min-height:80px;}
 .board-tab-col {
   display: flex;
   flex-direction: column;
-  gap: 20px;                    /* 위아래 탭 사이 간격 */
+  gap: 18px;                    /* 위아래 탭 사이 간격 */
   width: 100%;                  /* 좌우 영역 최대한 확보 */
-  max-width: 400px;             /* 기존의 약 2배 */
+  max-width: 450px;             /* 기존의 약 2배 */
   flex-shrink: 0;
   align-items: center;          /* 탭 버튼 가로 가운데 */
   margin: 0 auto;               /* 컬럼 자체를 가운데 정렬 */
@@ -357,9 +357,9 @@ textarea.input-field{resize:vertical;min-height:80px;}
   justify-content: center;
   text-align: center;
   width: 100%;                  /* 컬럼 너비에 맞춤 */
-  padding: 12px 4px;            /* 상하 더 넉넉하게 */
+  padding: 8px 4px;            /* 상하 더 넉넉하게 */
   border-radius: 14px;
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 700;
   border: 1.5px solid var(--border);
   background: white;

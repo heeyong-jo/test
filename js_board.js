@@ -7,8 +7,14 @@ let currentPostId = null;
 
 // ── 초기화 ──
 function initBoard() {
+  // ★ 동적 UI 생성 (최초 1회만 실행됨)
+  createBoardWriteUI();      
+  createBoardDetailModal();   
+
+
+  // 기존 버튼 복제 및 이벤트 재등록
   document.querySelectorAll('.board-cat-btn').forEach(b => {
-    b.replaceWith(b.cloneNode(true)); // 기존 이벤트 제거 후 재등록
+    b.replaceWith(b.cloneNode(true));
   });
   const btns = document.querySelectorAll('.board-cat-btn');
   btns.forEach(b => {
@@ -18,7 +24,9 @@ function initBoard() {
       currentBoardCategory = this.dataset.cat;
       loadBoardManager();
       loadPosts();
-      // 카테고리 클릭 시 권한 체크하여 글쓰기 버튼 표시
+
+
+      // 카테고리 클릭 시 글쓰기 버튼 권한 체크
       const writeBtnWrap = document.getElementById('board-write-btn-wrap');
       if (writeBtnWrap) {
         if (currentUser && (currentUser.role === 'manager' || currentUser.role === 'admin')) {
@@ -29,15 +37,15 @@ function initBoard() {
       }
     });
   });
-  
+
+
   loadBoardManager();
   loadPosts();
-  
-  // 초기 로드 시에는 무조건 글쓰기 버튼 숨김
+
+
+  // 초기에는 글쓰기 버튼 숨김
   const writeBtnWrap = document.getElementById('board-write-btn-wrap');
-  if (writeBtnWrap) {
-    writeBtnWrap.style.display = 'none';
-  }
+  if (writeBtnWrap) writeBtnWrap.style.display = 'none';
 }
 
 
@@ -185,6 +193,7 @@ function openBoardDetail(postId) {
     document.getElementById('board-detail-content').innerHTML = html;
     renderComments(post.comments || {});
     document.getElementById('board-detail-overlay').style.display = 'flex';
+  createCommentInput();
   });
 }
 
@@ -220,4 +229,115 @@ function submitBoardComment() {
     document.getElementById('board-comment-input').value = '';
     openBoardDetail(currentPostId);
   });
+}
+// ── ① 글쓰기 버튼 & 모달 동적 생성 ──
+function createBoardWriteUI() {
+  if (document.getElementById('board-write-btn-wrap')) return; // 중복 생성 방지
+
+
+  // 글쓰기 버튼
+  const btnWrap = document.createElement('div');
+  btnWrap.id = 'board-write-btn-wrap';
+  btnWrap.style.cssText = 'display:none;margin-bottom:10px;';
+  btnWrap.innerHTML = '<button class="btn-primary" style="width:100%;padding:10px;" onclick="openBoardWrite()">✏️ 글쓰기</button>';
+
+
+  const postList = document.getElementById('board-post-list');
+  postList.parentNode.insertBefore(btnWrap, postList);
+
+
+  // 글쓰기 모달
+  const overlay = document.createElement('div');
+  overlay.id = 'board-write-overlay';
+  overlay.className = 'modal-overlay';
+  overlay.style.cssText = 'align-items:center;';
+  overlay.innerHTML = `
+    <div class="modal-box" style="border-radius:24px;max-width:600px;">
+      <div class="modal-header">
+        <div class="modal-title">✏️ 글쓰기</div>
+        <button class="modal-close" onclick="closeBoardWrite()">✕</button>
+      </div>
+      <div class="input-group">
+        <div class="input-label">제목</div>
+        <input class="input-field" id="board-write-title" placeholder="제목">
+      </div>
+      <div class="input-group">
+        <div class="input-label">내용</div>
+        <textarea class="input-field" id="board-write-content" rows="6" placeholder="내용을 입력하세요..."></textarea>
+      </div>
+      <div class="input-group">
+        <div class="input-label">사진 첨부</div>
+        <input type="file" id="board-write-photo" accept="image/*" onchange="boardPhotoPreview(this)">
+        <div id="board-photo-preview" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;"></div>
+      </div>
+      <button class="btn-primary" onclick="submitBoardPost()">등록</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+
+// ── ② 글 상세보기 모달 동적 생성 ──
+function createBoardDetailModal() {
+  if (document.getElementById('board-detail-overlay')) return;
+
+
+  const overlay = document.createElement('div');
+  overlay.id = 'board-detail-overlay';
+  overlay.className = 'modal-overlay';
+  overlay.style.cssText = 'align-items:center;';
+  overlay.innerHTML = `
+    <div class="modal-box" style="border-radius:24px;max-width:600px;max-height:90vh;overflow-y:auto;">
+      <div class="modal-header">
+        <div class="modal-title" id="board-detail-title"></div>
+        <button class="modal-close" onclick="closeBoardDetail()">✕</button>
+      </div>
+      <div id="board-detail-content" style="margin-bottom:16px;"></div>
+      <div class="board-comments-section">
+        <div class="board-comments-title">💬 댓글</div>
+        <div id="board-comments-list"></div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+
+// ── ③ 댓글 입력 UI 동적 생성 ──
+function createCommentInput() {
+  if (document.getElementById('board-comment-input-wrap')) return;
+
+
+  const commentSection = document.querySelector('.board-comments-section');
+  if (!commentSection) return;
+
+
+  const inputWrap = document.createElement('div');
+  inputWrap.id = 'board-comment-input-wrap';
+  inputWrap.className = 'input-group';
+  inputWrap.style.marginTop = '12px';
+  inputWrap.innerHTML = `
+    <textarea id="board-comment-input" class="input-field" rows="2" placeholder="댓글을 입력하세요..."></textarea>
+    <button class="btn-primary" onclick="submitBoardComment()" style="margin-top:8px;">등록</button>
+  `;
+
+
+  const loginMsg = document.createElement('div');
+  loginMsg.id = 'board-comment-login-msg';
+  loginMsg.style.cssText = 'display:none;text-align:center;padding:12px;font-size:12px;color:var(--text2);';
+  loginMsg.textContent = '댓글을 작성하려면 로그인이 필요합니다.';
+
+
+  commentSection.appendChild(inputWrap);
+  commentSection.appendChild(loginMsg);
+
+
+  // 로그인 상태에 따라 표시 전환
+  if (currentUser) {
+    inputWrap.style.display = 'block';
+    loginMsg.style.display = 'none';
+  } else {
+    inputWrap.style.display = 'none';
+    loginMsg.style.display = 'block';
+  }
 }

@@ -7,7 +7,7 @@ let currentPostId = null;
 
 // ── 초기화 ──
 function initBoard() {
-document.querySelectorAll('.board-cat-btn').forEach(b => {
+  document.querySelectorAll('.board-cat-btn').forEach(b => {
     b.replaceWith(b.cloneNode(true)); // 기존 이벤트 제거 후 재등록
   });
   const btns = document.querySelectorAll('.board-cat-btn');
@@ -18,20 +18,25 @@ document.querySelectorAll('.board-cat-btn').forEach(b => {
       currentBoardCategory = this.dataset.cat;
       loadBoardManager();
       loadPosts();
+      // 카테고리 클릭 시 권한 체크하여 글쓰기 버튼 표시
+      const writeBtnWrap = document.getElementById('board-write-btn-wrap');
+      if (writeBtnWrap) {
+        if (currentUser && (currentUser.role === 'manager' || currentUser.role === 'admin')) {
+          writeBtnWrap.style.display = 'block';
+        } else {
+          writeBtnWrap.style.display = 'none';
+        }
+      }
     });
   });
+  
   loadBoardManager();
   loadPosts();
-
-
-  // 글쓰기 버튼 권한 처리
+  
+  // 초기 로드 시에는 무조건 글쓰기 버튼 숨김
   const writeBtnWrap = document.getElementById('board-write-btn-wrap');
   if (writeBtnWrap) {
-    if (currentUser && (currentUser.role === 'manager' || currentUser.role === 'admin')) {
-      writeBtnWrap.style.display = 'block';
-    } else {
-      writeBtnWrap.style.display = 'none';
-    }
+    writeBtnWrap.style.display = 'none';
   }
 }
 

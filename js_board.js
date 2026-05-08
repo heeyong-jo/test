@@ -216,12 +216,3 @@ function submitBoardComment() {
     openBoardDetail(currentPostId);
   });
 }
-
-
-let boardInitialized = false;
-document.addEventListener('DOMContentLoaded', () => {
-  if (!boardInitialized) { boardInitialized = false; } // 초기엔 false 유지
-});
-
-
-function initBoard() {

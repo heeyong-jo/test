@@ -7,6 +7,9 @@ let currentPostId = null;
 
 // ── 초기화 ──
 function initBoard() {
+document.querySelectorAll('.board-cat-btn').forEach(b => {
+    b.replaceWith(b.cloneNode(true)); // 기존 이벤트 제거 후 재등록
+  });
   const btns = document.querySelectorAll('.board-cat-btn');
   btns.forEach(b => {
     b.addEventListener('click', function() {
@@ -215,5 +218,10 @@ function submitBoardComment() {
 }
 
 
-// 페이지 진입 시 초기화
-document.addEventListener('DOMContentLoaded', initBoard);
+let boardInitialized = false;
+document.addEventListener('DOMContentLoaded', () => {
+  if (!boardInitialized) { boardInitialized = false; } // 초기엔 false 유지
+});
+
+
+function initBoard() {

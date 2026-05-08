@@ -58,12 +58,11 @@ function afterTab(n) {
     if (typeof renderMeditations === 'function') renderMeditations();
     if (typeof renderTodayVerse === 'function') renderTodayVerse();
   }
-  if (n === 2 && typeof renderPrayers === 'function') renderPrayers();
-if (n === 2) {
-document.getElementById('swipe-container').style.touchAction = 'none';
-} else {
-document.getElementById('swipe-container').style.touchAction = 'pan-x pan-y pinch-zoom';
+  if (n === 2) {
+  if (typeof renderPrayers === 'function') renderPrayers();
+  if (typeof initBoard === 'function') initBoard();
 }
+document.getElementById('swipe-container').style.touchAction = 'pan-x pan-y pinch-zoom';
   if (n === 3 && typeof renderPosts === 'function') renderPosts();
   if (n === 4) {
     if (typeof renderServiceView === 'function') renderServiceView();

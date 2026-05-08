@@ -184,9 +184,11 @@ async function submitBoardPost() {
 // ── 게시물 상세 모달 ──
 function openBoardDetail(postId) {
   currentPostId = postId;
+  createCommentInput();   // ← 모달/입력 UI 먼저 보장
   const ref = firebase.database().ref(`boards/${currentBoardCategory}/posts/${postId}`);
   ref.once('value', snap => {
     const post = snap.val();
+    if (!post) return;    // ← 삭제된 글 방어
     document.getElementById('board-detail-title').textContent = post.title;
     let html = `<div style="font-size:13px;color:var(--text2);margin-bottom:10px;">${post.author} · ${new Date(post.timestamp).toLocaleString()}</div>`;
     html += `<div style="white-space:pre-wrap;margin-bottom:12px;">${post.content}</div>`;
@@ -198,7 +200,6 @@ function openBoardDetail(postId) {
     document.getElementById('board-detail-content').innerHTML = html;
     renderComments(post.comments || {});
     document.getElementById('board-detail-overlay').style.display = 'flex';
-  createCommentInput();
   });
 }
 
@@ -254,7 +255,7 @@ function createBoardWriteUI() {
 
 
   // 글쓰기 버튼
-  const btnWrap = document.createElement('div');
+    const btnWrap = document.createElement('div');
   btnWrap.id = 'board-write-btn-wrap';
   btnWrap.style.cssText = 'display:none;margin-bottom:10px;';
   btnWrap.innerHTML = '<button class="btn-primary" style="width:100%;padding:10px;" onclick="openBoardWrite()">✏️ 글쓰기</button>';

@@ -21,14 +21,13 @@ function initBoard() {
   loadPosts();
 
 
-
-
-  const writeBtn = document.getElementById('board-write-btn');
-  if (writeBtn) {
+  // 글쓰기 버튼 권한 처리
+  const writeBtnWrap = document.getElementById('board-write-btn-wrap');
+  if (writeBtnWrap) {
     if (currentUser && (currentUser.role === 'manager' || currentUser.role === 'admin')) {
-      writeBtn.style.display = 'block';
+      writeBtnWrap.style.display = 'block';
     } else {
-      writeBtn.style.display = 'none';
+      writeBtnWrap.style.display = 'none';
     }
   }
 }
@@ -82,14 +81,13 @@ function loadPosts() {
           </div>
         </div>`;
     });
-    }
+    document.getElementById('board-post-list').innerHTML = html;
+  });
+}
 
 
 // ── 글쓰기 열기 ──
 function openBoardWrite() {
-
-
-  // 매니저 또는 관리자만 글쓰기 가능
   if (!currentUser || (currentUser.role !== 'manager' && currentUser.role !== 'admin')) {
     alert('게시물 작성은 매니저 이상만 가능합니다.');
     return;
@@ -212,7 +210,7 @@ function submitBoardComment() {
     timestamp: Date.now()
   }).then(() => {
     document.getElementById('board-comment-input').value = '';
-    openBoardDetail(currentPostId); // 새로고침
+    openBoardDetail(currentPostId);
   });
 }
 

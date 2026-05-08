@@ -394,7 +394,7 @@ textarea.input-field{resize:vertical;min-height:80px;}
 #board-post-list {
   display: flex;
   flex-direction: column;
-  gap: 30px;                   /* 게시물 사이 간격 */
+  gap: 20px;                   /* 게시물 사이 간격 */
   align-items: center;
 }
 

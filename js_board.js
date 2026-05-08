@@ -7,11 +7,13 @@ let currentPostId = null;
 
 // ── 초기화 ──
 function initBoard() {
-  // ★ 동적 UI 생성 (최초 1회만 실행됨)
-  createBoardWriteUI();      
-  createBoardDetailModal();   
-
-
+  const postList = document.getElementById('board-post-list');
+  if (!postList || postList.offsetParent === null) {
+    setTimeout(initBoard, 100);
+    return;
+  }
+  createBoardWriteUI();
+  createBoardDetailModal();  
   // 기존 버튼 복제 및 이벤트 재등록
   document.querySelectorAll('.board-cat-btn').forEach(b => {
     b.replaceWith(b.cloneNode(true));
@@ -81,6 +83,9 @@ function loadBoardManager() {
 
 // ── 게시물 목록 로드 ──
 function loadPosts() {
+  if (typeof firebase === 'undefined' || !firebase.apps.length) return;
+
+
   const postsRef = firebase.database().ref(`boards/${currentBoardCategory}/posts`);
   postsRef.once('value', snap => {
     const posts = snap.val() || {};
@@ -236,10 +241,16 @@ function createBoardWriteUI() {
 
   const postList = document.getElementById('board-post-list');
   if (!postList) {
-    // board-post-list가 아직 준비되지 않았으면 100ms 후 재시도
     setTimeout(createBoardWriteUI, 100);
     return;
   }
+
+
+  const btnWrap = document.createElement('div');
+  btnWrap.id = 'board-write-btn-wrap';
+  btnWrap.style.cssText = 'display:none;margin-bottom:10px;height:0;overflow:hidden;';  // ★ 잔상 제거
+  btnWrap.innerHTML = '<button class="btn-primary" style="width:100%;padding:10px;" onclick="openBoardWrite()">✏️ 글쓰기</button>';
+  postList.parentNode.insertBefore(btnWrap, postList);
 
 
   // 글쓰기 버튼

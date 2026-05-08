@@ -420,8 +420,6 @@ textarea.input-field{resize:vertical;min-height:80px;}
 
 
 .board-post-item {
-    max-width: 420px;  
-    width: 100%;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -432,8 +430,8 @@ textarea.input-field{resize:vertical;min-height:80px;}
   cursor: pointer;
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   transition: transform 0.15s;
-max-width: 420px;
-width: 100%;
+  max-width: 420px;        /* ★ 추가 */
+  width: 100%;             /* ★ 추가 */
 }
 .board-post-item:hover { transform: translateY(-1px); }
 

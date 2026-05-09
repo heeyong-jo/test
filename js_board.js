@@ -3,54 +3,72 @@ let currentBoardCategory = '일반성도';
 let boardManagerCache = {};    // 카테고리별 관리자 정보
 let boardPostCache = {};       // 게시물 목록 캐시
 let currentPostId = null;
+let isBoardInitialized = false; // ✨ 이벤트 중복 등록을 막기 위한 플래그 추가
 
 
 // ── 초기화 ──
 function initBoard() {
   const postList = document.getElementById('board-post-list');
+  
+  // 화면에 보이지 않을 때는 렌더링을 대기 (스와이프 애니메이션 타이밍 고려)
   if (!postList || postList.offsetParent === null) {
     setTimeout(initBoard, 100);
     return;
   }
+  
   createBoardWriteUI();
   createBoardDetailModal();  
-  // 기존 버튼 복제 및 이벤트 재등록
-  document.querySelectorAll('.board-cat-btn').forEach(b => {
-    b.replaceWith(b.cloneNode(true));
-  });
-  const btns = document.querySelectorAll('.board-cat-btn');
-  btns.forEach(b => {
-    b.addEventListener('click', function() {
-      btns.forEach(x => x.classList.remove('active'));
-      this.classList.add('active');
-      currentBoardCategory = this.dataset.cat;
-      loadBoardManager();
-      loadPosts();
 
 
-      // 카테고리 클릭 시 글쓰기 버튼 권한 체크
-      const writeBtnWrap = document.getElementById('board-write-btn-wrap');
-      if (writeBtnWrap) {
-        if (currentUser && (currentUser.role === 'manager' || currentUser.role === 'admin')) {
-          writeBtnWrap.style.display = 'block';
-        } else {
-          writeBtnWrap.style.display = 'none';
+  // ✨ 최초 1회만 이벤트 리스너를 등록하도록 변경 (요소 복제 방식 제거)
+  if (!isBoardInitialized) {
+    const btns = document.querySelectorAll('.board-cat-btn');
+    btns.forEach(b => {
+      b.addEventListener('click', function() {
+        // 1. 활성화 UI 변경
+        btns.forEach(x => x.classList.remove('active'));
+        this.classList.add('active');
+        
+        // 2. 카테고리 변경 및 데이터 새로고침
+        currentBoardCategory = this.dataset.cat;
+        loadBoardManager();
+        loadPosts();
+
+
+        // 3. 카테고리 이동 시 글쓰기 버튼 권한 체크
+        const writeBtnWrap = document.getElementById('board-write-btn-wrap');
+        if (writeBtnWrap) {
+          if (typeof currentUser !== 'undefined' && currentUser && (currentUser.role === 'manager' || currentUser.role === 'admin')) {
+            writeBtnWrap.style.display = 'block';
+          } else {
+            writeBtnWrap.style.display = 'none';
+          }
         }
-      }
+      });
     });
-  });
+    isBoardInitialized = true; // 초기화 완료 마킹
+  }
 
 
+  // 탭에 진입할 때마다 현재 선택된 카테고리 데이터 로드
   loadBoardManager();
   loadPosts();
 
 
-  // 초기에는 글쓰기 버튼 숨김
+  // 초기 로드 시 글쓰기 버튼 권한 체크
   const writeBtnWrap = document.getElementById('board-write-btn-wrap');
-  if (writeBtnWrap) writeBtnWrap.style.display = 'none';
-updateBoardWriteBtn();
-updateBoardCommentArea();
+  if (writeBtnWrap) {
+    if (typeof currentUser !== 'undefined' && currentUser && (currentUser.role === 'manager' || currentUser.role === 'admin')) {
+      writeBtnWrap.style.display = 'block';
+    } else {
+      writeBtnWrap.style.display = 'none';
+    }
+  }
+  // updateBoardWriteBtn();
+  // updateBoardCommentArea();
 }
+
+
 
 
 // ── 관리자 정보 표시 (일반성도 제외) ──

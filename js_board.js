@@ -1,4 +1,32 @@
 ﻿// ==================== 게시판 기능 ====================
+function resizeStaffImage(file, maxW = 400, maxH = 480, quality = 0.85) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = e => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxW || height > maxH) {
+          const ratio = Math.min(maxW / width, maxH / height);
+          width  = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width  = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+
 let currentBoardCategory = '일반성도';
 let currentPostId = null;
 let currentBoardPage = 1;
@@ -190,13 +218,32 @@ function boardPhotoPreview(input) {
 
 
 async function submitBoardPost() {
-  if (typeof firebase === 'undefined') return;
+  if (typeof firebase === 'undefined') {
+    console.error('Firebase가 로드되지 않았습니다.');
+    return;
+  }
   const title = document.getElementById('board-write-title').value.trim();
   const content = document.getElementById('board-write-content').value.trim();
   if (!title) { alert('제목을 입력하세요.'); return; }
-  if (!currentUser) { alert('로그인이 필요합니다.'); return; }
+  
+  if (!currentUser) {
+    alert('로그인이 필요합니다.');
+    console.error('currentUser가 없습니다.');
+    return;
+  }
+  
+  if (currentUser.role !== 'manager' && currentUser.role !== 'admin') {
+    alert('게시물 작성은 매니저 이상만 가능합니다.');
+    return;
+  }
+
+
   let photos = [];
-  if (window._boardResizedPhotos) photos = await window._boardResizedPhotos;
+  if (window._boardResizedPhotos) {
+    photos = await window._boardResizedPhotos;
+  }
+
+
   const postRef = firebase.database().ref(`boards/${currentBoardCategory}/posts`).push();
   await postRef.set({
     title, content, photos,
@@ -204,10 +251,14 @@ async function submitBoardPost() {
     authorId: currentUser.uid,
     timestamp: Date.now(),
     comments: {}
+  }).then(() => {
+    closeBoardWrite();
+    currentBoardPage = 1;
+    loadPosts();
+  }).catch(err => {
+    console.error('게시물 등록 실패:', err);
+    alert('등록 중 오류가 발생했습니다.');
   });
-  closeBoardWrite();
-  currentBoardPage = 1;
-  loadPosts();
 }
 
 

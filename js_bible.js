@@ -367,7 +367,6 @@ function applyAppendixFont() {
   ['app-dokun', 'app-apostle', 'app-lords', 'app-ten'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    const inner = el.querySelector('div');
-    if (inner) inner.style.fontSize = appendixFontSize + 'px';
+    el.style.fontSize = appendixFontSize + 'px';   // ★ div 전체에 직접 적용
   });
 }

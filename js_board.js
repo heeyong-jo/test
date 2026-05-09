@@ -13,16 +13,13 @@ function initBoard() {
       currentBoardCategory = this.dataset.cat;
       loadBoardManager();
       loadPosts();
-      updateBoardWriteBtn();   // 카테고리 변경 시 버튼 갱신
+      updateBoardWriteBtn();
     });
   });
 
 
   loadBoardManager();
   loadPosts();
-
-
-  // 초기 글쓰기 버튼 상태
   updateBoardWriteBtn();
   updateBoardCommentArea();
 }
@@ -93,7 +90,6 @@ function openBoardWrite() {
 function closeBoardWrite() { document.getElementById('board-write-overlay').style.display = 'none'; }
 
 
-// 사진 미리보기 + 리사이즈 (기존과 동일)
 function boardPhotoPreview(input) {
   const files = input.files;
   const previewDiv = document.getElementById('board-photo-preview');
@@ -115,7 +111,6 @@ function boardPhotoPreview(input) {
 }
 
 
-// ── 글쓰기 제출 ──
 async function submitBoardPost() {
   const title = document.getElementById('board-write-title').value.trim();
   const content = document.getElementById('board-write-content').value.trim();
@@ -136,7 +131,6 @@ async function submitBoardPost() {
 }
 
 
-// ── 게시물 상세 ──
 function openBoardDetail(postId) {
   currentPostId = postId;
   const ref = firebase.database().ref(`boards/${currentBoardCategory}/posts/${postId}`);
@@ -145,28 +139,20 @@ function openBoardDetail(postId) {
     document.getElementById('board-detail-title').textContent = post.title;
     let html = `<div style="font-size:13px;color:var(--text2);margin-bottom:10px;">${escapeHtml(post.author)} · ${new Date(post.timestamp).toLocaleString()}</div>`;
     html += `<div style="white-space:pre-wrap;margin-bottom:12px;">${escapeHtml(post.content)}</div>`;
-    if (post.photos) {
-      post.photos.forEach(src => html += `<img src="${src}" style="width:100%;border-radius:12px;margin-bottom:6px;">`);
-    }
+    if (post.photos) post.photos.forEach(src => html += `<img src="${src}" style="width:100%;border-radius:12px;margin-bottom:6px;">`);
     document.getElementById('board-detail-content').innerHTML = html;
     renderComments(post.comments || {});
     document.getElementById('board-detail-overlay').style.display = 'flex';
     updateBoardCommentArea();
   });
 }
-function closeBoardDetail() {
-  document.getElementById('board-detail-overlay').style.display = 'none';
-  currentPostId = null;
-}
+function closeBoardDetail() { document.getElementById('board-detail-overlay').style.display = 'none'; currentPostId = null; }
 
 
-// ── 댓글 ──
 function renderComments(comments) {
   const list = Object.entries(comments).sort((a,b) => a[1].timestamp - b[1].timestamp);
   let html = '';
-  list.forEach(([cid, c]) => {
-    html += `<div style="margin-bottom:8px;"><b>${escapeHtml(c.author)}</b> ${escapeHtml(c.text)} <span style="font-size:10px;color:var(--text2);">${new Date(c.timestamp).toLocaleString()}</span></div>`;
-  });
+  list.forEach(([cid, c]) => html += `<div style="margin-bottom:8px;"><b>${escapeHtml(c.author)}</b> ${escapeHtml(c.text)} <span style="font-size:10px;color:var(--text2);">${new Date(c.timestamp).toLocaleString()}</span></div>`);
   document.getElementById('board-comments-list').innerHTML = html || '<div style="color:var(--text2);font-size:12px;">아직 댓글이 없습니다.</div>';
 }
 function submitBoardComment() {

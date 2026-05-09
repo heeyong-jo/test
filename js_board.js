@@ -26,7 +26,9 @@ function initBoard() {
 function openBoardCategory() {
   document.getElementById('board-category-list').style.display = 'none';
   const content = document.getElementById('board-content');
-  content.style.display = 'flex';
+  content.style.display = 'block';
+  content.scrollTop = 0;          // ★ 게시판 스크롤 초기화
+  window.scrollTo(0, 0);         // ★ 페이지 스크롤 초기화
   loadBoardManager();
   currentBoardPage = 1;
   loadPosts();

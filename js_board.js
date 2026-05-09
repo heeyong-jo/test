@@ -1,16 +1,25 @@
 ﻿// ==================== 게시판 기능 ====================
 let currentBoardCategory = '일반성도';
 let currentPostId = null;
+let currentBoardPage = 1;               // 현재 페이지
+const POSTS_PER_PAGE = 3;              // 페이지당 게시물 수
 
 
 // ── 초기화 ──
 function initBoard() {
   const btns = document.querySelectorAll('.board-cat-btn');
+  // 초기 활성화 버튼 설정
+  btns.forEach(b => b.classList.remove('active'));
+  const firstBtn = document.querySelector('.board-cat-btn[data-cat="일반성도"]');
+  if (firstBtn) firstBtn.classList.add('active');
+
+
   btns.forEach(b => {
     b.addEventListener('click', function() {
       btns.forEach(x => x.classList.remove('active'));
       this.classList.add('active');
       currentBoardCategory = this.dataset.cat;
+      currentBoardPage = 1;             // 카테고리 변경 시 첫 페이지로
       loadBoardManager();
       loadPosts();
       updateBoardWriteBtn();
@@ -27,10 +36,27 @@ function initBoard() {
 
 // ── 담당자 정보 ──
 function loadBoardManager() {
+  if (typeof firebase === 'undefined' || !firebase.apps.length) return;
+  const titleEl = document.getElementById('board-category-title');
+  
   if (currentBoardCategory === '일반성도') {
     document.getElementById('board-manager-area').style.display = 'none';
+    // 일반성도일 때는 카테고리 이름만 표시
+    if (titleEl) {
+      titleEl.style.display = 'block';
+      titleEl.textContent = '📌 일반성도';
+    }
     return;
   }
+
+
+  // 나머지 카테고리: 담당자 정보 표시 + 카테고리 제목
+  if (titleEl) {
+    titleEl.style.display = 'block';
+    titleEl.textContent = getCategoryLabel(currentBoardCategory);
+  }
+
+
   const catRef = firebase.database().ref(`boards/${currentBoardCategory}/manager`);
   catRef.once('value', snap => {
     const data = snap.val();
@@ -53,26 +79,85 @@ function loadBoardManager() {
 }
 
 
-// ── 게시물 목록 ──
+// 카테고리 한글 라벨
+function getCategoryLabel(cat) {
+  const map = {
+    '일반성도': '📌 일반성도',
+    '꿈지락': '🐣 꿈지락 (0~4세)',
+    '꿈트리': '🌱 꿈트리 (5~7세)',
+    '꿈마루': '📚 꿈마루 (초등)',
+    '꿈하나': '🔥 꿈하나 (청소년)',
+    '새이플러스': '✝️ 새이플러스 (청년부)'
+  };
+  return map[cat] || cat;
+}
+
+
+// ── 게시물 목록 로드 ──
 function loadPosts() {
+  if (typeof firebase === 'undefined' || !firebase.apps.length) {
+    document.getElementById('board-post-list').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">Firebase 연결 실패</div>';
+    return;
+  }
   const postsRef = firebase.database().ref(`boards/${currentBoardCategory}/posts`);
   postsRef.once('value', snap => {
     const posts = snap.val() || {};
     const list = Object.entries(posts).sort((a,b) => b[1].timestamp - a[1].timestamp);
-    let html = '';
-    list.forEach(([id, post]) => {
-      const firstPhoto = (post.photos && post.photos.length) ? post.photos[0] : null;
-      html += `
-        <div class="board-post-item" onclick="openBoardDetail('${id}')">
-          ${firstPhoto ? `<img class="board-post-thumb" src="${firstPhoto}" alt="">` : '<div class="board-post-thumb" style="display:flex;align-items:center;justify-content:center;">📷</div>'}
-          <div class="board-post-info">
-            <div class="board-post-title">${escapeHtml(post.title)}</div>
-            <div class="board-post-meta">${escapeHtml(post.author)} · ${new Date(post.timestamp).toLocaleString()}</div>
-          </div>
-        </div>`;
-    });
-    document.getElementById('board-post-list').innerHTML = html;
+    boardPostCache[currentBoardCategory] = list;   // 캐시에 저장
+    renderPostsPage();   // 페이지 렌더링
   });
+}
+
+
+// ── 현재 페이지 렌더링 ──
+function renderPostsPage() {
+  const cache = boardPostCache[currentBoardCategory] || [];
+  const totalPages = Math.ceil(cache.length / POSTS_PER_PAGE);
+  const start = (currentBoardPage - 1) * POSTS_PER_PAGE;
+  const end = start + POSTS_PER_PAGE;
+  const pageItems = cache.slice(start, end);
+
+
+  let html = '';
+  pageItems.forEach(([id, post]) => {
+    const firstPhoto = (post.photos && post.photos.length) ? post.photos[0] : null;
+    html += `
+      <div class="board-post-item" onclick="openBoardDetail('${id}')">
+        ${firstPhoto ? `<img class="board-post-thumb" src="${firstPhoto}" alt="">` : '<div class="board-post-thumb" style="display:flex;align-items:center;justify-content:center;">📷</div>'}
+        <div class="board-post-info">
+          <div class="board-post-title">${escapeHtml(post.title)}</div>
+          <div class="board-post-meta">${escapeHtml(post.author)} · ${new Date(post.timestamp).toLocaleString()}</div>
+        </div>
+      </div>`;
+  });
+  document.getElementById('board-post-list').innerHTML = html || '<div style="text-align:center;padding:20px;color:var(--text2);">등록된 게시물이 없습니다.</div>';
+
+
+  // 페이지네이션 렌더링
+  renderPagination(totalPages);
+}
+
+
+// ── 페이지네이션 버튼 생성 ──
+function renderPagination(totalPages) {
+  const pagDiv = document.getElementById('board-pagination');
+  if (!pagDiv) return;
+  if (totalPages <= 1) {
+    pagDiv.innerHTML = '';
+    return;
+  }
+  let pagHTML = '';
+  for (let i = 1; i <= totalPages; i++) {
+    pagHTML += `<button class="board-page-btn${i === currentBoardPage ? ' active' : ''}" onclick="changeBoardPage(${i})">${i}</button>`;
+  }
+  pagDiv.innerHTML = pagHTML;
+}
+
+
+// ── 페이지 이동 ──
+function changeBoardPage(page) {
+  currentBoardPage = page;
+  renderPostsPage();
 }
 
 
@@ -112,6 +197,7 @@ function boardPhotoPreview(input) {
 
 
 async function submitBoardPost() {
+  if (typeof firebase === 'undefined') return;
   const title = document.getElementById('board-write-title').value.trim();
   const content = document.getElementById('board-write-content').value.trim();
   if (!title) { alert('제목을 입력하세요.'); return; }
@@ -127,11 +213,13 @@ async function submitBoardPost() {
     comments: {}
   });
   closeBoardWrite();
+  currentBoardPage = 1;          // 새 글 작성 후 첫 페이지로 이동
   loadPosts();
 }
 
 
 function openBoardDetail(postId) {
+  if (typeof firebase === 'undefined') return;
   currentPostId = postId;
   const ref = firebase.database().ref(`boards/${currentBoardCategory}/posts/${postId}`);
   ref.once('value', snap => {
@@ -156,6 +244,7 @@ function renderComments(comments) {
   document.getElementById('board-comments-list').innerHTML = html || '<div style="color:var(--text2);font-size:12px;">아직 댓글이 없습니다.</div>';
 }
 function submitBoardComment() {
+  if (typeof firebase === 'undefined') return;
   if (!currentUser) { alert('로그인이 필요합니다.'); return; }
   const text = document.getElementById('board-comment-input').value.trim();
   if (!text) return;

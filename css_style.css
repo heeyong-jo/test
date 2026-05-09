@@ -747,3 +747,23 @@ textarea.input-field{resize:vertical;min-height:80px;}
   position: relative;
   z-index: 1;
 }
+/* ── 게시판 페이지네이션 ── */
+.board-page-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text2);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.board-page-btn.active {
+  background: var(--purple);
+  color: white;
+  border-color: var(--purple);
+}
+.board-page-btn:hover:not(.active) {
+  background: var(--bg2);
+}

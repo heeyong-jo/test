@@ -230,25 +230,28 @@
     </div>
 
 
-    <!-- 오른쪽: 게시물 영역 -->
+<!-- 오른쪽: 게시물 영역 -->
     <div style="flex:1;min-width:0;">
-      <!-- 담당자 안내 -->
-      <div id="board-manager-area" style="display:none;margin-bottom:10px;">
-        <div class="card" style="padding:12px;">
-          <div class="card-title" style="margin-bottom:8px;">👑 담당</div>
-          <div id="board-manager-content"></div>
-        </div>
-      </div>
 
 
-      <!-- 글쓰기 버튼 (매니저 이상만 표시) -->
-      <div id="board-write-btn-wrap" style="display:none;margin-bottom:10px;">
-        <button class="btn-primary" style="width:100%;padding:10px;" onclick="openBoardWrite()">✏️ 글쓰기</button>
-      </div>
+<!-- 담당자 안내 -->
+<div id="board-manager-area" style="display:none;margin-bottom:10px;"> ... </div>
 
 
-      <!-- 게시물 목록 -->
-      <div id="board-post-list"></div>
+<!-- 글쓰기 버튼 -->
+<div id="board-write-btn-wrap" style="display:none; margin-bottom:10px;"> ... </div>
+
+
+<!-- 카테고리 제목 -->
+<div id="board-category-title" style="font-size:16px; font-weight:800; color:var(--text); margin-bottom:10px; display:none;"></div>
+
+
+<!-- 게시물 목록 -->
+<div id="board-post-list"></div>
+
+
+<!-- 페이지네이션 -->
+<div id="board-pagination" style="display:flex; justify-content:center; align-items:center; gap:6px; margin-top:16px; flex-wrap:wrap;"></div>
     </div>
   </div>
 

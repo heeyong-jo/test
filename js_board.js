@@ -9,18 +9,16 @@ let isBoardInitialized = false; // ✨ 이벤트 중복 등록을 막기 위한 
 // ── 초기화 ──
 function initBoard() {
   const postList = document.getElementById('board-post-list');
-  
-  // 화면에 보이지 않을 때는 렌더링을 대기 (스와이프 애니메이션 타이밍 고려)
   if (!postList || postList.offsetParent === null) {
     setTimeout(initBoard, 100);
     return;
   }
-  
+
+
   createBoardWriteUI();
-  createBoardDetailModal();  
+  createBoardDetailModal();
 
 
-  // ✨ 최초 1회만 이벤트 리스너를 등록하도록 변경 (요소 복제 방식 제거)
   if (!isBoardInitialized) {
     const btns = document.querySelectorAll('.board-cat-btn');
     btns.forEach(b => {
@@ -64,8 +62,8 @@ function initBoard() {
       writeBtnWrap.style.display = 'none';
     }
   }
-  // updateBoardWriteBtn();
-  // updateBoardCommentArea();
+  updateBoardWriteBtn();
+  updateBoardCommentArea();
 }
 
 
@@ -270,7 +268,7 @@ function createBoardWriteUI() {
     // 글쓰기 버튼
     const btnWrap = document.createElement('div');
   btnWrap.id = 'board-write-btn-wrap';
-  btnWrap.style.cssText = 'display:none;margin-bottom:10px;';
+  btnWrap.style.cssText = 'display:none;margin-bottom:0;height:0;overflow:hidden;';
   btnWrap.innerHTML = '<button class="btn-primary" style="width:100%;padding:10px;" onclick="openBoardWrite()">✏️ 글쓰기</button>';
   postList.parentNode.insertBefore(btnWrap, postList);
 

@@ -792,3 +792,6 @@ textarea.input-field{resize:vertical;min-height:80px;}
 .board-page-btn:hover:not(.active) {
   background: var(--bg2);
 }
+.modal-overlay {
+  z-index: 2000 !important; /* 광고(1000)보다 위로 */
+}

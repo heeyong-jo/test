@@ -1,46 +1,15 @@
 ﻿// ==================== 게시판 기능 ====================
-function resizeStaffImage(file, maxW = 400, maxH = 480, quality = 0.85) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = reject;
-    reader.onload = e => {
-      const img = new Image();
-      img.onerror = reject;
-      img.onload = () => {
-        let { width, height } = img;
-        if (width > maxW || height > maxH) {
-          const ratio = Math.min(maxW / width, maxH / height);
-          width  = Math.round(width * ratio);
-          height = Math.round(height * ratio);
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width  = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', quality));
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-
 let currentBoardCategory = '일반성도';
 let currentPostId = null;
 let currentBoardPage = 1;
 const POSTS_PER_PAGE = 3;
-let boardPostCache = {};       // 카테고리별 게시물 목록 캐시
+let boardPostCache = {};
 
 
-// ── 초기화 ──
 function initBoard() {
-  // 카테고리 버튼에 이벤트 연결 (한 번만 실행)
   const btns = document.querySelectorAll('#board-category-list .board-cat-btn');
   btns.forEach(b => {
     b.addEventListener('click', function() {
-      // 활성 표시
       btns.forEach(x => x.classList.remove('active'));
       this.classList.add('active');
       currentBoardCategory = this.dataset.cat;
@@ -50,13 +19,12 @@ function initBoard() {
 }
 
 
-// ── 카테고리 선택 → 게시판 화면으로 전환 ──
 function openBoardCategory() {
   document.getElementById('board-category-list').style.display = 'none';
   const content = document.getElementById('board-content');
   content.style.display = 'block';
-  content.scrollTop = 0;          // ★ 게시판 스크롤 초기화
-  window.scrollTo(0, 0);         // ★ 페이지 스크롤 초기화
+  content.scrollTop = 0;
+  window.scrollTo(0, 0);
   loadBoardManager();
   currentBoardPage = 1;
   loadPosts();
@@ -64,29 +32,21 @@ function openBoardCategory() {
 }
 
 
-// ── 목록으로 돌아가기 ──
 function showBoardCategoryList() {
   document.getElementById('board-content').style.display = 'none';
   document.getElementById('board-category-list').style.display = 'flex';
 }
 
 
-// ── 담당자 정보 ──
 function loadBoardManager() {
   if (typeof firebase === 'undefined' || !firebase.apps.length) return;
   const titleEl = document.getElementById('board-category-title');
   if (currentBoardCategory === '일반성도') {
     document.getElementById('board-manager-area').style.display = 'none';
-    if (titleEl) {
-      titleEl.style.display = 'block';
-      titleEl.textContent = '📌 일반성도';
-    }
+    if (titleEl) { titleEl.style.display = 'block'; titleEl.textContent = '📌 일반성도'; }
     return;
   }
-  if (titleEl) {
-    titleEl.style.display = 'block';
-    titleEl.textContent = getCategoryLabel(currentBoardCategory);
-  }
+  if (titleEl) { titleEl.style.display = 'block'; titleEl.textContent = getCategoryLabel(currentBoardCategory); }
   const catRef = firebase.database().ref(`boards/${currentBoardCategory}/manager`);
   catRef.once('value', snap => {
     const data = snap.val();
@@ -122,7 +82,6 @@ function getCategoryLabel(cat) {
 }
 
 
-// ── 게시물 목록 ──
 function loadPosts() {
   if (typeof firebase === 'undefined' || !firebase.apps.length) {
     document.getElementById('board-post-list').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">Firebase 연결 실패</div>';
@@ -164,10 +123,7 @@ function renderPostsPage() {
 function renderPagination(totalPages) {
   const pagDiv = document.getElementById('board-pagination');
   if (!pagDiv) return;
-  if (totalPages <= 1) {
-    pagDiv.innerHTML = '';
-    return;
-  }
+  if (totalPages <= 1) { pagDiv.innerHTML = ''; return; }
   let pagHTML = '';
   for (let i = 1; i <= totalPages; i++) {
     pagHTML += `<button class="board-page-btn${i === currentBoardPage ? ' active' : ''}" onclick="changeBoardPage(${i})">${i}</button>`;
@@ -176,13 +132,9 @@ function renderPagination(totalPages) {
 }
 
 
-function changeBoardPage(page) {
-  currentBoardPage = page;
-  renderPostsPage();
-}
+function changeBoardPage(page) { currentBoardPage = page; renderPostsPage(); }
 
 
-// ── 글쓰기 ──
 function openBoardWrite() {
   if (!currentUser || (currentUser.role !== 'manager' && currentUser.role !== 'admin')) {
     alert('게시물 작성은 매니저 이상만 가능합니다.');
@@ -218,32 +170,14 @@ function boardPhotoPreview(input) {
 
 
 async function submitBoardPost() {
-  if (typeof firebase === 'undefined') {
-    console.error('Firebase가 로드되지 않았습니다.');
-    return;
-  }
+  if (typeof firebase === 'undefined') { console.error('Firebase X'); return; }
   const title = document.getElementById('board-write-title').value.trim();
   const content = document.getElementById('board-write-content').value.trim();
   if (!title) { alert('제목을 입력하세요.'); return; }
-  
-  if (!currentUser) {
-    alert('로그인이 필요합니다.');
-    console.error('currentUser가 없습니다.');
-    return;
-  }
-  
-  if (currentUser.role !== 'manager' && currentUser.role !== 'admin') {
-    alert('게시물 작성은 매니저 이상만 가능합니다.');
-    return;
-  }
-
-
+  if (!currentUser) { alert('로그인이 필요합니다.'); return; }
+  if (currentUser.role !== 'manager' && currentUser.role !== 'admin') { alert('게시물 작성은 매니저 이상만 가능합니다.'); return; }
   let photos = [];
-  if (window._boardResizedPhotos) {
-    photos = await window._boardResizedPhotos;
-  }
-
-
+  if (window._boardResizedPhotos) photos = await window._boardResizedPhotos;
   const postRef = firebase.database().ref(`boards/${currentBoardCategory}/posts`).push();
   await postRef.set({
     title, content, photos,
@@ -256,13 +190,12 @@ async function submitBoardPost() {
     currentBoardPage = 1;
     loadPosts();
   }).catch(err => {
-    console.error('게시물 등록 실패:', err);
+    console.error('등록 실패:', err);
     alert('등록 중 오류가 발생했습니다.');
   });
 }
 
 
-// ── 게시물 상세 ──
 function openBoardDetail(postId) {
   if (typeof firebase === 'undefined') return;
   currentPostId = postId;
@@ -297,5 +230,34 @@ function submitBoardComment() {
   ref.set({ text, author: currentUser.name, timestamp: Date.now() }).then(() => {
     document.getElementById('board-comment-input').value = '';
     openBoardDetail(currentPostId);
+  });
+}
+
+
+// resizeStaffImage 함수 (만약 js_staff.js에 없을 경우 대비)
+function resizeStaffImage(file, maxW = 400, maxH = 480, quality = 0.85) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = e => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxW || height > maxH) {
+          const ratio = Math.min(maxW / width, maxH / height);
+          width  = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width  = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
   });
 }

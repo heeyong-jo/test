@@ -1,36 +1,43 @@
 ﻿// ==================== 게시판 기능 ====================
 let currentBoardCategory = '일반성도';
 let currentPostId = null;
-let currentBoardPage = 1;               // 현재 페이지
-const POSTS_PER_PAGE = 3;              // 페이지당 게시물 수
+let currentBoardPage = 1;
+const POSTS_PER_PAGE = 3;
+let boardPostCache = {};       // 카테고리별 게시물 목록 캐시
 
 
 // ── 초기화 ──
 function initBoard() {
-  const btns = document.querySelectorAll('.board-cat-btn');
-  // 초기 활성화 버튼 설정
-  btns.forEach(b => b.classList.remove('active'));
-  const firstBtn = document.querySelector('.board-cat-btn[data-cat="일반성도"]');
-  if (firstBtn) firstBtn.classList.add('active');
-
-
+  // 카테고리 버튼에 이벤트 연결 (한 번만 실행)
+  const btns = document.querySelectorAll('#board-category-list .board-cat-btn');
   btns.forEach(b => {
     b.addEventListener('click', function() {
+      // 활성 표시
       btns.forEach(x => x.classList.remove('active'));
       this.classList.add('active');
       currentBoardCategory = this.dataset.cat;
-      currentBoardPage = 1;             // 카테고리 변경 시 첫 페이지로
-      loadBoardManager();
-      loadPosts();
-      updateBoardWriteBtn();
+      openBoardCategory();
     });
   });
+}
 
 
+// ── 카테고리 선택 → 게시판 화면으로 전환 ──
+function openBoardCategory() {
+  document.getElementById('board-category-list').style.display = 'none';
+  const content = document.getElementById('board-content');
+  content.style.display = 'flex';
   loadBoardManager();
+  currentBoardPage = 1;
   loadPosts();
   updateBoardWriteBtn();
-  updateBoardCommentArea();
+}
+
+
+// ── 목록으로 돌아가기 ──
+function showBoardCategoryList() {
+  document.getElementById('board-content').style.display = 'none';
+  document.getElementById('board-category-list').style.display = 'flex';
 }
 
 
@@ -38,25 +45,18 @@ function initBoard() {
 function loadBoardManager() {
   if (typeof firebase === 'undefined' || !firebase.apps.length) return;
   const titleEl = document.getElementById('board-category-title');
-  
   if (currentBoardCategory === '일반성도') {
     document.getElementById('board-manager-area').style.display = 'none';
-    // 일반성도일 때는 카테고리 이름만 표시
     if (titleEl) {
       titleEl.style.display = 'block';
       titleEl.textContent = '📌 일반성도';
     }
     return;
   }
-
-
-  // 나머지 카테고리: 담당자 정보 표시 + 카테고리 제목
   if (titleEl) {
     titleEl.style.display = 'block';
     titleEl.textContent = getCategoryLabel(currentBoardCategory);
   }
-
-
   const catRef = firebase.database().ref(`boards/${currentBoardCategory}/manager`);
   catRef.once('value', snap => {
     const data = snap.val();
@@ -79,7 +79,6 @@ function loadBoardManager() {
 }
 
 
-// 카테고리 한글 라벨
 function getCategoryLabel(cat) {
   const map = {
     '일반성도': '📌 일반성도',
@@ -93,7 +92,7 @@ function getCategoryLabel(cat) {
 }
 
 
-// ── 게시물 목록 로드 ──
+// ── 게시물 목록 ──
 function loadPosts() {
   if (typeof firebase === 'undefined' || !firebase.apps.length) {
     document.getElementById('board-post-list').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">Firebase 연결 실패</div>';
@@ -103,21 +102,18 @@ function loadPosts() {
   postsRef.once('value', snap => {
     const posts = snap.val() || {};
     const list = Object.entries(posts).sort((a,b) => b[1].timestamp - a[1].timestamp);
-    boardPostCache[currentBoardCategory] = list;   // 캐시에 저장
-    renderPostsPage();   // 페이지 렌더링
+    boardPostCache[currentBoardCategory] = list;
+    renderPostsPage();
   });
 }
 
 
-// ── 현재 페이지 렌더링 ──
 function renderPostsPage() {
   const cache = boardPostCache[currentBoardCategory] || [];
   const totalPages = Math.ceil(cache.length / POSTS_PER_PAGE);
   const start = (currentBoardPage - 1) * POSTS_PER_PAGE;
   const end = start + POSTS_PER_PAGE;
   const pageItems = cache.slice(start, end);
-
-
   let html = '';
   pageItems.forEach(([id, post]) => {
     const firstPhoto = (post.photos && post.photos.length) ? post.photos[0] : null;
@@ -131,14 +127,10 @@ function renderPostsPage() {
       </div>`;
   });
   document.getElementById('board-post-list').innerHTML = html || '<div style="text-align:center;padding:20px;color:var(--text2);">등록된 게시물이 없습니다.</div>';
-
-
-  // 페이지네이션 렌더링
   renderPagination(totalPages);
 }
 
 
-// ── 페이지네이션 버튼 생성 ──
 function renderPagination(totalPages) {
   const pagDiv = document.getElementById('board-pagination');
   if (!pagDiv) return;
@@ -154,14 +146,13 @@ function renderPagination(totalPages) {
 }
 
 
-// ── 페이지 이동 ──
 function changeBoardPage(page) {
   currentBoardPage = page;
   renderPostsPage();
 }
 
 
-// ── 글쓰기 열기/닫기 ──
+// ── 글쓰기 ──
 function openBoardWrite() {
   if (!currentUser || (currentUser.role !== 'manager' && currentUser.role !== 'admin')) {
     alert('게시물 작성은 매니저 이상만 가능합니다.');
@@ -213,11 +204,12 @@ async function submitBoardPost() {
     comments: {}
   });
   closeBoardWrite();
-  currentBoardPage = 1;          // 새 글 작성 후 첫 페이지로 이동
+  currentBoardPage = 1;
   loadPosts();
 }
 
 
+// ── 게시물 상세 ──
 function openBoardDetail(postId) {
   if (typeof firebase === 'undefined') return;
   currentPostId = postId;

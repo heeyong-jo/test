@@ -216,47 +216,40 @@
 
 <!-- ══════════════════════ p2: 게시물 ══════════════════════ -->
 <div id="p2" class="page">
-  <div style="display:flex;gap:10px;align-items:flex-start;">
 
 
-    <!-- 왼쪽: 카테고리 탭 -->
-    <div id="board-category-tabs" class="board-tab-col">
-      <button class="board-cat-btn" data-cat="일반성도">📌 일반성도<span class="board-tab-sub">&nbsp;</span></button>
-      <button class="board-cat-btn" data-cat="꿈지락">🐣 꿈지락<span class="board-tab-sub">0~4세</span></button>
-      <button class="board-cat-btn" data-cat="꿈트리">🌱 꿈트리<span class="board-tab-sub">5~7세</span></button>
-      <button class="board-cat-btn" data-cat="꿈마루">📚 꿈마루<span class="board-tab-sub">초등</span></button>
-      <button class="board-cat-btn" data-cat="꿈하나">🔥 꿈하나<span class="board-tab-sub">청소년</span></button>
-      <button class="board-cat-btn" data-cat="새이플러스">✝️ 새이플러스<span class="board-tab-sub">청년부</span></button>
-    </div>
-
-
-<!-- 오른쪽: 게시물 영역 -->
-    <div style="flex:1;min-width:0;">
-
-
-<!-- 담당자 안내 -->
-<div id="board-manager-area" style="display:none;margin-bottom:10px;"> ... </div>
-
-
-<!-- 글쓰기 버튼 -->
-<div id="board-write-btn-wrap" style="display:none; margin-bottom:10px;"> ... </div>
-
-
-<!-- 카테고리 제목 -->
-<div id="board-category-title" style="font-size:16px; font-weight:800; color:var(--text); margin-bottom:10px; display:none;"></div>
-
-
-<!-- 게시물 목록 -->
-<div id="board-post-list"></div>
-
-
-<!-- 페이지네이션 -->
-<div id="board-pagination" style="display:flex; justify-content:center; align-items:center; gap:6px; margin-top:16px; flex-wrap:wrap;"></div>
-    </div>
+  <!-- 카테고리 목록 (세로) -->
+  <div id="board-category-list" class="board-tab-col">
+    <button class="board-cat-btn active" data-cat="일반성도">📌 일반성도<span class="board-tab-sub">&nbsp;</span></button>
+    <button class="board-cat-btn" data-cat="꿈지락">🐣 꿈지락<span class="board-tab-sub">0~4세</span></button>
+    <button class="board-cat-btn" data-cat="꿈트리">🌱 꿈트리<span class="board-tab-sub">5~7세</span></button>
+    <button class="board-cat-btn" data-cat="꿈마루">📚 꿈마루<span class="board-tab-sub">초등</span></button>
+    <button class="board-cat-btn" data-cat="꿈하나">🔥 꿈하나<span class="board-tab-sub">청소년</span></button>
+    <button class="board-cat-btn" data-cat="새이플러스">✝️ 새이플러스<span class="board-tab-sub">청년부</span></button>
   </div>
 
 
-  <!-- 글 상세 보기 모달 -->
+  <!-- 게시판 본문 (처음에는 숨김) -->
+  <div id="board-content" style="display:none; flex-direction:column;">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+      <button id="board-back-btn" style="background:var(--bg2); border:1.5px solid var(--border); border-radius:8px; padding:5px 12px; cursor:pointer; color:var(--text); font-weight:600;" onclick="showBoardCategoryList()">← 목록</button>
+      <div id="board-category-title" style="font-size:16px; font-weight:800; color:var(--text);"></div>
+    </div>
+    <div id="board-manager-area" style="display:none; margin-bottom:10px;">
+      <div class="card" style="padding:12px;">
+        <div class="card-title" style="margin-bottom:8px;">👑 담당</div>
+        <div id="board-manager-content"></div>
+      </div>
+    </div>
+    <div id="board-write-btn-wrap" style="display:none; margin-bottom:10px;">
+      <button class="btn-primary" style="width:100%; padding:10px;" onclick="openBoardWrite()">✏️ 글쓰기</button>
+    </div>
+    <div id="board-post-list"></div>
+    <div id="board-pagination" style="display:flex; justify-content:center; gap:6px; margin-top:16px; flex-wrap:wrap;"></div>
+  </div>
+
+
+  <!-- 글 상세 모달 -->
   <div id="board-detail-overlay" class="modal-overlay" style="align-items:center;">
     <div class="modal-box" style="border-radius:24px;max-width:600px;max-height:90vh;overflow-y:auto;">
       <div class="modal-header">
@@ -267,14 +260,11 @@
       <div class="board-comments-section">
         <div class="board-comments-title">💬 댓글</div>
         <div id="board-comments-list"></div>
-        <!-- 댓글 입력 -->
         <div id="board-comment-input-wrap" class="input-group" style="margin-top:12px;">
           <textarea id="board-comment-input" class="input-field" rows="2" placeholder="댓글을 입력하세요..."></textarea>
           <button class="btn-primary" onclick="submitBoardComment()" style="margin-top:8px;">등록</button>
         </div>
-        <div id="board-comment-login-msg" style="display:none;text-align:center;padding:12px;font-size:12px;color:var(--text2);">
-          댓글을 작성하려면 로그인이 필요합니다.
-        </div>
+        <div id="board-comment-login-msg" style="display:none;text-align:center;padding:12px;font-size:12px;color:var(--text2);">댓글을 작성하려면 로그인이 필요합니다.</div>
       </div>
     </div>
   </div>
@@ -304,6 +294,8 @@
     </div>
   </div>
 </div>
+
+
 <!-- ═══════════════════ p3: 교회생활 ══════════════════════ -->
 <div id="p3" class="page">
   <div class="sec-hd">

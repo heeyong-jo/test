@@ -261,3 +261,54 @@ function resizeStaffImage(file, maxW = 400, maxH = 480, quality = 0.85) {
     reader.readAsDataURL(file);
   });
 }
+// 디버깅용 submitBoardPost (기존 함수 이름을 boardSubmitPost로 변경 후 사용)
+async function boardSubmitPost() {
+  alert('등록 버튼 클릭됨 - 함수 진입');
+
+
+  if (typeof firebase === 'undefined') {
+    alert('Firebase 없음');
+    return;
+  }
+  const title = document.getElementById('board-write-title').value.trim();
+  const content = document.getElementById('board-write-content').value.trim();
+  if (!title) { alert('제목 없음'); return; }
+  
+  if (!currentUser) {
+    alert('currentUser가 없습니다. 로그인 해제됨?');
+    return;
+  }
+  alert('currentUser: ' + JSON.stringify(currentUser));
+
+
+  let photos = [];
+  if (window._boardResizedPhotos) {
+    photos = await window._boardResizedPhotos;
+  }
+
+
+  const postRef = firebase.database().ref(`boards/${currentBoardCategory}/posts`).push();
+  await postRef.set({
+    title, content, photos,
+    author: currentUser.name,
+    authorId: currentUser.uid,
+    timestamp: Date.now(),
+    comments: {}
+  }).then(() => {
+    alert('등록 성공');
+    closeBoardWrite();
+    currentBoardPage = 1;
+    loadPosts();
+  }).catch(err => {
+    alert('Firebase 오류: ' + err.message);
+  });
+}
+
+
+// 등록 버튼에 디버깅 함수 연결 (기존 submitBoardPost 대체)
+document.addEventListener('DOMContentLoaded', function() {
+  const btn = document.querySelector('#board-write-overlay .btn-primary');
+  if (btn) {
+    btn.setAttribute('onclick', 'boardSubmitPost()');
+  }
+});

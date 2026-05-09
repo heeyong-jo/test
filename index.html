@@ -215,13 +215,11 @@
 
 
 <!-- ══════════════════════ p2: 게시물 ══════════════════════ -->
-
-
 <div id="p2" class="page">
   <div style="display:flex;gap:10px;align-items:flex-start;">
 
 
-    <!-- ── 왼쪽: 세로 탭 6줄 ── -->
+    <!-- 왼쪽: 카테고리 탭 -->
     <div id="board-category-tabs" class="board-tab-col">
       <button class="board-cat-btn" data-cat="일반성도">📌 일반성도<span class="board-tab-sub">&nbsp;</span></button>
       <button class="board-cat-btn" data-cat="꿈지락">🐣 꿈지락<span class="board-tab-sub">0~4세</span></button>
@@ -232,21 +230,76 @@
     </div>
 
 
-    <!-- ── 오른쪽: 게시물 영역 ── -->
+    <!-- 오른쪽: 게시물 영역 -->
     <div style="flex:1;min-width:0;">
-
-
       <!-- 담당자 안내 -->
       <div id="board-manager-area" style="display:none;margin-bottom:10px;">
         <div class="card" style="padding:12px;">
           <div class="card-title" style="margin-bottom:8px;">👑 담당</div>
           <div id="board-manager-content"></div>
         </div>
-      </div>    
+      </div>
+
+
+      <!-- 글쓰기 버튼 (매니저 이상만 표시) -->
+      <div id="board-write-btn-wrap" style="display:none;margin-bottom:10px;">
+        <button class="btn-primary" style="width:100%;padding:10px;" onclick="openBoardWrite()">✏️ 글쓰기</button>
+      </div>
+
+
       <!-- 게시물 목록 -->
       <div id="board-post-list"></div>
     </div>
-  </div>  
+  </div>
+
+
+  <!-- 글 상세 보기 모달 -->
+  <div id="board-detail-overlay" class="modal-overlay" style="align-items:center;">
+    <div class="modal-box" style="border-radius:24px;max-width:600px;max-height:90vh;overflow-y:auto;">
+      <div class="modal-header">
+        <div class="modal-title" id="board-detail-title"></div>
+        <button class="modal-close" onclick="closeBoardDetail()">✕</button>
+      </div>
+      <div id="board-detail-content" style="margin-bottom:16px;"></div>
+      <div class="board-comments-section">
+        <div class="board-comments-title">💬 댓글</div>
+        <div id="board-comments-list"></div>
+        <!-- 댓글 입력 -->
+        <div id="board-comment-input-wrap" class="input-group" style="margin-top:12px;">
+          <textarea id="board-comment-input" class="input-field" rows="2" placeholder="댓글을 입력하세요..."></textarea>
+          <button class="btn-primary" onclick="submitBoardComment()" style="margin-top:8px;">등록</button>
+        </div>
+        <div id="board-comment-login-msg" style="display:none;text-align:center;padding:12px;font-size:12px;color:var(--text2);">
+          댓글을 작성하려면 로그인이 필요합니다.
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 글쓰기 모달 -->
+  <div id="board-write-overlay" class="modal-overlay" style="align-items:center;">
+    <div class="modal-box" style="border-radius:24px;max-width:600px;">
+      <div class="modal-header">
+        <div class="modal-title">✏️ 글쓰기</div>
+        <button class="modal-close" onclick="closeBoardWrite()">✕</button>
+      </div>
+      <div class="input-group">
+        <div class="input-label">제목</div>
+        <input class="input-field" id="board-write-title" placeholder="제목">
+      </div>
+      <div class="input-group">
+        <div class="input-label">내용</div>
+        <textarea class="input-field" id="board-write-content" rows="6" placeholder="내용을 입력하세요..."></textarea>
+      </div>
+      <div class="input-group">
+        <div class="input-label">사진 첨부</div>
+        <input type="file" id="board-write-photo" accept="image/*" onchange="boardPhotoPreview(this)">
+        <div id="board-photo-preview" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;"></div>
+      </div>
+      <button class="btn-primary" onclick="submitBoardPost()">등록</button>
+    </div>
+  </div>
 </div>
 <!-- ═══════════════════ p3: 교회생활 ══════════════════════ -->
 <div id="p3" class="page">
@@ -441,7 +494,7 @@
 
 <!-- ══════════════════════ p5: 성경책 ══════════════════════ -->
 <div id="p5" class="page" style="padding:0;padding-bottom:0;">
-  <div id="bibleMain" style="height:calc(100dvh - 184px);background:radial-gradient(ellipse at 30% 20%, #2a1f3d 0%, #1a1008 40%, #0e0804 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 24px;position:relative;overflow:hidden;">
+  <div id="bibleMain" style="height:calc(100dvh - 184px);background:#fdf8f0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 24px;position:relative;overflow:hidden;">
     <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 2px,rgba(255,255,255,0.012) 2px,rgba(255,255,255,0.012) 4px);pointer-events:none;"></div>
     <div style="position:absolute;left:0;top:0;bottom:0;width:18px;background:linear-gradient(90deg,#0a0604,#1a1008,#0e0804);border-right:1px solid rgba(180,130,40,0.3);"></div>
     <div style="position:absolute;top:12px;left:22px;width:28px;height:28px;border-top:3px solid #b8942a;border-left:3px solid #b8942a;border-radius:3px 0 0 0;"></div>

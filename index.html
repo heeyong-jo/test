@@ -249,53 +249,6 @@
   </div>
 
 
-  <!-- 글 상세 모달 -->
-  <div id="board-detail-overlay" class="modal-overlay" style="align-items:center;">
-    <div class="modal-box" style="border-radius:24px;max-width:600px;max-height:90vh;overflow-y:auto;">
-      <div class="modal-header">
-        <div class="modal-title" id="board-detail-title"></div>
-        <button class="modal-close" onclick="closeBoardDetail()">✕</button>
-      </div>
-      <div id="board-detail-content" style="margin-bottom:16px;"></div>
-      <div class="board-comments-section">
-        <div class="board-comments-title">💬 댓글</div>
-        <div id="board-comments-list"></div>
-        <div id="board-comment-input-wrap" class="input-group" style="margin-top:12px;">
-          <textarea id="board-comment-input" class="input-field" rows="2" placeholder="댓글을 입력하세요..."></textarea>
-          <button class="btn-primary" onclick="submitBoardComment()" style="margin-top:8px;">등록</button>
-        </div>
-        <div id="board-comment-login-msg" style="display:none;text-align:center;padding:12px;font-size:12px;color:var(--text2);">댓글을 작성하려면 로그인이 필요합니다.</div>
-      </div>
-    </div>
-  </div>
-
-
-  <!-- 글쓰기 모달 -->
-  <div id="board-write-overlay" class="modal-overlay" style="align-items:center;">
-    <div class="modal-box" style="border-radius:24px;max-width:600px;">
-      <div class="modal-header">
-        <div class="modal-title">✏️ 글쓰기</div>
-        <button class="modal-close" onclick="closeBoardWrite()">✕</button>
-      </div>
-      <div class="input-group">
-        <div class="input-label">제목</div>
-        <input class="input-field" id="board-write-title" placeholder="제목">
-      </div>
-      <div class="input-group">
-        <div class="input-label">내용</div>
-        <textarea class="input-field" id="board-write-content" rows="6" placeholder="내용을 입력하세요..."></textarea>
-      </div>
-      <div class="input-group">
-        <div class="input-label">사진 첨부</div>
-        <input type="file" id="board-write-photo" accept="image/*" onchange="boardPhotoPreview(this)">
-        <div id="board-photo-preview" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;"></div>
-      </div>
-      <button class="btn-primary" onclick="submitBoardPost()">등록</button>
-    </div>
-  </div>
-</div>
-
-
 <!-- ═══════════════════ p3: 교회생활 ══════════════════════ -->
 <div id="p3" class="page">
   <div class="sec-hd">
@@ -618,7 +571,50 @@
   </div>
 
 
-  
+  <!-- 글 상세 모달 -->
+  <div id="board-detail-overlay" class="modal-overlay" style="align-items:center;">
+    <div class="modal-box" style="border-radius:24px;max-width:600px;max-height:90vh;overflow-y:auto;">
+      <div class="modal-header">
+        <div class="modal-title" id="board-detail-title"></div>
+        <button class="modal-close" onclick="closeBoardDetail()">✕</button>
+      </div>
+      <div id="board-detail-content" style="margin-bottom:16px;"></div>
+      <div class="board-comments-section">
+        <div class="board-comments-title">💬 댓글</div>
+        <div id="board-comments-list"></div>
+        <div id="board-comment-input-wrap" class="input-group" style="margin-top:12px;">
+          <textarea id="board-comment-input" class="input-field" rows="2" placeholder="댓글을 입력하세요..."></textarea>
+          <button class="btn-primary" onclick="submitBoardComment()" style="margin-top:8px;">등록</button>
+        </div>
+        <div id="board-comment-login-msg" style="display:none;text-align:center;padding:12px;font-size:12px;color:var(--text2);">댓글을 작성하려면 로그인이 필요합니다.</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 글쓰기 모달 -->
+  <div id="board-write-overlay" class="modal-overlay" style="align-items:center;">
+    <div class="modal-box" style="border-radius:24px;max-width:600px;">
+      <div class="modal-header">
+        <div class="modal-title">✏️ 글쓰기</div>
+        <button class="modal-close" onclick="closeBoardWrite()">✕</button>
+      </div>
+      <div class="input-group">
+        <div class="input-label">제목</div>
+        <input class="input-field" id="board-write-title" placeholder="제목">
+      </div>
+      <div class="input-group">
+        <div class="input-label">내용</div>
+        <textarea class="input-field" id="board-write-content" rows="6" placeholder="내용을 입력하세요..."></textarea>
+      </div>
+      <div class="input-group">
+        <div class="input-label">사진 첨부</div>
+        <input type="file" id="board-write-photo" accept="image/*" onchange="boardPhotoPreview(this)">
+        <div id="board-photo-preview" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;"></div>
+      </div>
+      <button class="btn-primary" onclick="submitBoardPost()">등록</button>
+    </div>
+  </div>
   <!-- 가입 승인 -->
   <div class="accord-card admin-manager-only">
     <div class="accord-header" onclick="toggleAccord('approval')">

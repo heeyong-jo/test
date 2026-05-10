@@ -3,19 +3,19 @@
 
 // Firebase 설정
 const firebaseConfig = {
-  apiKey: "AIzaSyDvCJT5UlKt4cxAfxH22QYUM34upH2J31k",
-  authDomain: "church-room-c3b26.firebaseapp.com",
-  databaseURL: "https://church-room-c3b26-default-rtdb.firebaseio.com",
-  projectId: "church-room-c3b26",
-  storageBucket: "church-room-c3b26.firebasestorage.app",
-  messagingSenderId: "59336766877",
-  appId: "1:59336766877:web:a50b074a0aa4ce7db36b74"
+  apiKey: "AIzaSyDLn693_LIAnQWyWDzpLjPukJ2joYpndPw",
+  authDomain: "gajwajeil-add45.firebaseapp.com",
+  databaseURL: "https://gajwajeil-add45-default-rtdb.firebaseio.com",
+  projectId: "gajwajeil-add45",
+  storageBucket: "gajwajeil-add45.firebasestorage.app",
+  messagingSenderId: "725343965690",
+  appId: "1:725343965690:web:553d8916ad406c4daed443"
 };
 
 
 // 관리자 계정
 const ADMIN_ACCOUNTS = [
-  { id: 'hamkke', pw: 'hamkke123', name: '김소녕 목사', role: 'admin', email: 'pastor@hamkke.church', phone: '010-9012-9947', birth: '1955-03-29' },
+  { id: 'gajwajeil', pw: 'gajwajeil123', name: '김명서 목사', role: 'admin', email: 'pastor@hamkke.church', phone: '032-581-4048', birth: '1955-03-29' },
   { id: 'reodrino', pw: '232735a', name: '조희용 관리자', role: 'admin', email: 'reodrino@gmail.com', phone: '010-9797-1408', birth: '1981-08-27' }
 ];
 

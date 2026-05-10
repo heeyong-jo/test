@@ -9,8 +9,17 @@ let boardPostCache = {};
 function initBoard() {
   const btns = document.querySelectorAll('#board-category-list .board-cat-btn');
   btns.forEach(b => {
+    // 중복 이벤트 방지: 기존 버튼을 복제로 교체
+    const clone = b.cloneNode(true);
+    b.parentNode.replaceChild(clone, b);
+  });
+
+
+  // 복제 후 다시 선택
+  document.querySelectorAll('#board-category-list .board-cat-btn').forEach(b => {
     b.addEventListener('click', function() {
-      btns.forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('#board-category-list .board-cat-btn')
+        .forEach(x => x.classList.remove('active'));
       this.classList.add('active');
       currentBoardCategory = this.dataset.cat;
       openBoardCategory();
@@ -20,9 +29,18 @@ function initBoard() {
 
 
 function openBoardCategory() {
-  document.getElementById('board-category-list').style.display = 'none';
+  const list = document.getElementById('board-category-list');
   const content = document.getElementById('board-content');
-  content.style.display = 'block';
+  // visibility:hidden 대신 완전히 DOM에서 숨김 처리
+  list.style.display    = 'none';
+  list.style.visibility = 'hidden';
+  list.style.pointerEvents = 'none';
+
+
+  content.style.display    = 'flex';
+  content.style.flexDirection = 'column';
+  content.style.visibility = 'visible';
+  content.style.pointerEvents = 'auto';
   content.scrollTop = 0;
   window.scrollTo(0, 0);
   loadBoardManager();
@@ -33,8 +51,16 @@ function openBoardCategory() {
 
 
 function showBoardCategoryList() {
-  document.getElementById('board-content').style.display = 'none';
-  document.getElementById('board-category-list').style.display = 'flex';
+  const list = document.getElementById('board-category-list');
+  const content = document.getElementById('board-content');
+  content.style.display    = 'none';
+  content.style.visibility = 'hidden';
+  content.style.pointerEvents = 'none';
+
+
+  list.style.display    = 'flex';
+  list.style.visibility = 'visible';
+  list.style.pointerEvents = 'auto';
 }
 
 

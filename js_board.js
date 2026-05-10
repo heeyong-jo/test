@@ -9,13 +9,11 @@ let boardPostCache = {};
 function initBoard() {
   const btns = document.querySelectorAll('#board-category-list .board-cat-btn');
   btns.forEach(b => {
-    // 중복 이벤트 방지: 기존 버튼을 복제로 교체
     const clone = b.cloneNode(true);
     b.parentNode.replaceChild(clone, b);
   });
 
 
-  // 복제 후 다시 선택
   document.querySelectorAll('#board-category-list .board-cat-btn').forEach(b => {
     b.addEventListener('click', function() {
       document.querySelectorAll('#board-category-list .board-cat-btn')
@@ -31,7 +29,6 @@ function initBoard() {
 function openBoardCategory() {
   const list = document.getElementById('board-category-list');
   const content = document.getElementById('board-content');
-  // visibility:hidden 대신 완전히 DOM에서 숨김 처리
   list.style.display    = 'none';
   list.style.visibility = 'hidden';
   list.style.pointerEvents = 'none';
@@ -196,7 +193,7 @@ function boardPhotoPreview(input) {
 
 
 async function submitBoardPost() {
-const user = window.currentUser || currentUser;
+  const user = window.currentUser || currentUser;
   if (!user) { alert('로그인이 필요합니다.'); return; }
   if (user.role !== 'manager' && user.role !== 'admin') {
     alert('게시물 작성은 매니저 이상만 가능합니다.');
@@ -222,30 +219,6 @@ const user = window.currentUser || currentUser;
   }).catch(err => {
     console.error('등록 실패:', err);
     alert('등록 중 오류: ' + err.message);
-  });
-}
-  if (typeof firebase === 'undefined') { console.error('Firebase X'); return; }
-  const title = document.getElementById('board-write-title').value.trim();
-  const content = document.getElementById('board-write-content').value.trim();
-  if (!title) { alert('제목을 입력하세요.'); return; }
-  if (!currentUser) { alert('로그인이 필요합니다.'); return; }
-  if (currentUser.role !== 'manager' && currentUser.role !== 'admin') { alert('게시물 작성은 매니저 이상만 가능합니다.'); return; }
-  let photos = [];
-  if (window._boardResizedPhotos) photos = await window._boardResizedPhotos;
-  const postRef = firebase.database().ref(`boards/${currentBoardCategory}/posts`).push();
-  await postRef.set({
-    title, content, photos,
-    author: currentUser.name,
-    authorId: currentUser.uid,
-    timestamp: Date.now(),
-    comments: {}
-  }).then(() => {
-    closeBoardWrite();
-    currentBoardPage = 1;
-    loadPosts();
-  }).catch(err => {
-    console.error('등록 실패:', err);
-    alert('등록 중 오류가 발생했습니다.');
   });
 }
 
@@ -315,6 +288,8 @@ function resizeStaffImage(file, maxW = 400, maxH = 480, quality = 0.85) {
     reader.readAsDataURL(file);
   });
 }
+
+
 // ── 글쓰기 버튼 표시 (매니저 이상만) ──────────────────────────────
 function updateBoardWriteBtn() {
   const wrap = document.getElementById('board-write-btn-wrap');

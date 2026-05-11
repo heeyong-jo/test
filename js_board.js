@@ -193,24 +193,16 @@ function boardPhotoPreview(input) {
 
 
 async function submitBoardPost() {
-  //⭐ firebase 존재 여부 먼저 확인
   if (typeof firebase === 'undefined' || !firebase.apps.length) {
-    alert('서버 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+    alert('서버 연결에 실패했습니다.');
     return;
   }
-
-
   const user = window.currentUser || currentUser;
-  if (!user) {
-    alert('로그인이 필요합니다.');
-    return;
-  }
+  if (!user) { alert('로그인이 필요합니다.'); return; }
   if (user.role !== 'manager' && user.role !== 'admin') {
     alert('게시물 작성은 매니저 이상만 가능합니다.');
     return;
   }
-
-
   const title = document.getElementById('board-write-title').value.trim();
   const content = document.getElementById('board-write-content').value.trim();
   if (!title) { alert('제목을 입력하세요.'); return; }
@@ -223,9 +215,11 @@ async function submitBoardPost() {
   try {
     const postRef = firebase.database().ref(`boards/${currentBoardCategory}/posts`).push();
     await postRef.set({
-      title, content, photos,
+      title,
+      content,
+      photos,
       author: user.name,
-      authorId: user.uid,
+      authorId: user.uid || user.id || '',   // ← 수정된 부분
       timestamp: Date.now(),
       comments: {}
     });
@@ -235,7 +229,7 @@ async function submitBoardPost() {
     loadPosts();
   } catch (err) {
     console.error('등록 실패:', err);
-    alert('등록 중 오류가 발생했습니다: ' + err.message);
+    alert('등록 중 오류: ' + err.message);
   }
 }
 

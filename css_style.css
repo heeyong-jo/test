@@ -446,13 +446,17 @@ textarea.input-field{resize:vertical;min-height:80px;}
   font-size: 10px;
   color: var(--text2);
 }
-/* ── 게시판 전환 화면을 위한 추가 스타일 ── */
+/* 게시판 본문(전체 화면)을 헤더와 탭 아래로 */
 #board-content {
-  padding: 0 4px;
-  width: 100%;
+  z-index: 10 !important;    /* 기존 1500 → 10 (헤더 100, 모달 2000보다 낮게) */
+  padding-top: 70px !important;  /* 헤더+탭 높이 확보 */
 }
 
 
+/* 모달은 항상 최상위로 */
+.modal-overlay {
+  z-index: 2000 !important;
+}
 /* 게시물 목록 아이템의 최대 너비 제한 해제 */
 .board-post-item {
   max-width: 100% !important;
@@ -791,7 +795,4 @@ textarea.input-field{resize:vertical;min-height:80px;}
 }
 .board-page-btn:hover:not(.active) {
   background: var(--bg2);
-}
-.modal-overlay {
-  z-index: 2000 !important; /* 광고(1000)보다 위로 */
 }

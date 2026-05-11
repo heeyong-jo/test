@@ -1,10 +1,15 @@
 ﻿// ==================== 예배 안내 및 시간표 ====================
 
 
-// 예배 안내 목록 렌더링 (홈)
 function renderServiceView() {
-  const el = document.getElementById('service-list-view');
-  if (!el) return;
+  const list = document.getElementById('service-list-view');
+  if (!list) return;
+  firebase.database().ref('serviceList').once('value', snap => {
+    const data = snap.val() || [];  // 없으면 빈 배열
+    if (data.length === 0) {
+      list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">등록된 예배가 없습니다.</div>';
+      return;
+    }
   el.innerHTML = serviceList.map(s => `
     <div class="service-row">
       <div>

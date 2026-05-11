@@ -203,6 +203,8 @@ async function submitBoardPost() {
     alert('게시물 작성은 매니저 이상만 가능합니다.');
     return;
   }
+
+
   const title = document.getElementById('board-write-title').value.trim();
   const content = document.getElementById('board-write-content').value.trim();
   if (!title) { alert('제목을 입력하세요.'); return; }
@@ -219,7 +221,7 @@ async function submitBoardPost() {
       content,
       photos,
       author: user.name,
-      authorId: user.uid || user.id || '',   // ← 수정된 부분
+      authorId: user.uid || user.id || '',   // ★ uid가 없으면 id를 사용
       timestamp: Date.now(),
       comments: {}
     });
@@ -229,7 +231,7 @@ async function submitBoardPost() {
     loadPosts();
   } catch (err) {
     console.error('등록 실패:', err);
-    alert('등록 중 오류: ' + err.message);
+    alert('등록 중 오류가 발생했습니다: ' + err.message);
   }
 }
 

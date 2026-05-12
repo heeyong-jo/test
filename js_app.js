@@ -220,3 +220,216 @@ function saveChurchInfo() {
 function showPrivacyPolicy() {
   document.getElementById('modal-privacy').style.display = 'flex';
 }
+// ── 성경 읽기 기능 ──
+const ALL_BOOKS = [...OT_BOOKS, ...NT_BOOKS];
+const TOTAL_BIBLE_CHAPTERS = 1189;
+
+
+let bibleReadingState = {
+  bookIndex: 0,    // ALL_BOOKS 인덱스
+  chapter: 1,
+  todayPagesRead: 0,
+  lastReadDate: ''
+};
+
+
+// ── 읽기 화면 열기 ──
+async function openBibleReading() {
+  if (!currentUser) { alert('로그인이 필요합니다.'); return; }
+
+
+  // Firestore에서 사용자 데이터 불러오기
+  const userRef = firebase.database().ref(`bibleReading/${currentUser.id}`);
+  const snap = await userRef.once('value');
+  const data = snap.val() || {};
+
+
+  const today = new Date().toISOString().slice(0, 10);
+  
+  // 오늘 읽은 장 수
+  bibleReadingState.todayPagesRead = data.history && data.history[today] ? data.history[today] : 0;
+  bibleReadingState.lastReadDate = today;
+
+
+  // 마지막 읽은 위치가 있으면 이어서, 없으면 창세기 1장부터
+  if (data.currentBookIndex !== undefined && data.currentChapter !== undefined) {
+    bibleReadingState.bookIndex = data.currentBookIndex;
+    bibleReadingState.chapter = data.currentChapter;
+  } else {
+    bibleReadingState.bookIndex = 0;
+    bibleReadingState.chapter = 1;
+  }
+
+
+  if (bibleReadingState.todayPagesRead >= 10) {
+    alert('오늘은 이미 10장을 모두 읽으셨습니다!');
+    return;
+  }
+
+
+  document.getElementById('bible-reading-overlay').style.display = 'block';
+  document.getElementById('bible-reading-today-count').textContent = 
+    `오늘 ${bibleReadingState.todayPagesRead} / 10 장`;
+
+
+  loadBibleChapterContent();
+}
+
+
+// ── 현재 장 내용 로드 ──
+async function loadBibleChapterContent() {
+  const book = ALL_BOOKS[bibleReadingState.bookIndex];
+  document.getElementById('bible-reading-title').textContent = 
+    `📖 ${book.name} ${bibleReadingState.chapter}장`;
+
+
+  const contentDiv = document.getElementById('bible-reading-content');
+  contentDiv.innerHTML = '<div style="text-align:center; padding:40px;">불러오는 중...</div>';
+
+
+  try {
+    const res = await fetch(`${BIBLE_CDN}/${book.file}`);
+    const data = await res.json();
+    
+    // 책 데이터 찾기 (name 또는 abbr로)
+    const bookData = data[book.name] || data[book.abbr] || Object.values(data)[0];
+    const verses = bookData[bibleReadingState.chapter];
+    
+    if (!verses) {
+      contentDiv.innerHTML = '<div style="text-align:center; padding:40px; color:var(--red);">데이터를 불러올 수 없습니다</div>';
+      return;
+    }
+
+
+    let html = '';
+    Object.entries(verses).forEach(([num, text]) => {
+      html += `<div style="display:flex; gap:10px; padding:6px 0; border-bottom:1px solid var(--border);">
+        <span style="font-weight:700; color:var(--purple); min-width:28px;">${num}</span>
+        <span>${text}</span>
+      </div>`;
+    });
+    contentDiv.innerHTML = html;
+  } catch (e) {
+    contentDiv.innerHTML = '<div style="text-align:center; padding:40px; color:var(--red);">오류가 발생했습니다</div>';
+  }
+}
+
+
+// ── 현재 장 읽기 완료 ──
+async function completeCurrentChapter() {
+  if (bibleReadingState.todayPagesRead >= 10) {
+    alert('오늘은 이미 10장을 모두 읽으셨습니다!');
+    return;
+  }
+
+
+  if (!currentUser) return;
+
+
+  bibleReadingState.todayPagesRead++;
+  const today = new Date().toISOString().slice(0, 10);
+
+
+  const userRef = firebase.database().ref(`bibleReading/${currentUser.id}`);
+  
+  await userRef.transaction((data) => {
+    if (!data) data = { 
+      name: currentUser.name, 
+      totalPages: 0, 
+      completions: 0, 
+      history: {},
+      currentBookIndex: 0,
+      currentChapter: 1
+    };
+
+
+    if (!data.history) data.history = {};
+    data.history[today] = bibleReadingState.todayPagesRead;
+    
+    let total = 0;
+    Object.values(data.history).forEach(p => total += p);
+    data.totalPages = total;
+    data.completions = Math.floor(total / TOTAL_BIBLE_CHAPTERS);
+    
+    return data;
+  });
+
+
+  document.getElementById('bible-reading-today-count').textContent = 
+    `오늘 ${bibleReadingState.todayPagesRead} / 10 장`;
+
+
+  if (bibleReadingState.todayPagesRead >= 10) {
+    alert('🎉 오늘 10장을 모두 읽으셨습니다! 내일 또 도전하세요.');
+    closeBibleReading();
+    return;
+  }
+
+
+  // 다음 장으로 이동
+  const book = ALL_BOOKS[bibleReadingState.bookIndex];
+  if (bibleReadingState.chapter < book.chapters) {
+    bibleReadingState.chapter++;
+  } else {
+    // 다음 책으로
+    if (bibleReadingState.bookIndex < ALL_BOOKS.length - 1) {
+      bibleReadingState.bookIndex++;
+      bibleReadingState.chapter = 1;
+    } else {
+      // 완독! 다시 창세기 1장으로
+      alert('🎉 성경 1독을 완료하셨습니다! 축하드립니다!');
+      bibleReadingState.bookIndex = 0;
+      bibleReadingState.chapter = 1;
+    }
+  }
+
+
+  // 마지막 읽은 위치 저장
+  await userRef.update({
+    currentBookIndex: bibleReadingState.bookIndex,
+    currentChapter: bibleReadingState.chapter
+  });
+
+
+  loadBibleChapterContent();
+}
+
+
+// ── 읽기 화면 닫기 ──
+function closeBibleReading() {
+  document.getElementById('bible-reading-overlay').style.display = 'none';
+}
+
+
+// ── 오늘 읽기 상태 로드 (p3 화면용) ──
+function loadBibleStatus() {
+  if (!currentUser) return;
+  const today = new Date().toISOString().slice(0, 10);
+  firebase.database().ref(`bibleReading/${currentUser.id}/history/${today}`).once('value', snap => {
+    const pages = snap.val() || 0;
+    document.getElementById('bible-reading-today-status').textContent = 
+      `📌 오늘 읽은 장: ${pages} / 10`;
+  });
+}
+
+
+// ── 완독자 명예의 전당 ──
+function loadBibleHallOfFame() {
+  firebase.database().ref('bibleReading').orderByChild('completions').limitToLast(10).once('value', snap => {
+    const users = [];
+    snap.forEach(child => users.push(child.val()));
+    users.reverse();
+    
+    let html = '';
+    users.forEach((u, i) => {
+      if (u.completions > 0) {
+        html += `
+          <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">
+            <span>🏅 ${i+1}. ${escapeHtml(u.name)}</span>
+            <span style="font-weight:bold; color:var(--purple);">${u.completions}회 완독</span>
+          </div>`;
+      }
+    });
+    document.getElementById('bible-hall-of-fame').innerHTML = html || '<div style="text-align:center; padding:20px;">아직 완독자가 없습니다.</div>';
+  });
+}

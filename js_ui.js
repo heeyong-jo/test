@@ -63,7 +63,10 @@ function afterTab(n) {
   if (typeof initBoard === 'function') initBoard();
 }
 document.getElementById('swipe-container').style.touchAction = 'pan-x pan-y pinch-zoom';
-  if (n === 3 && typeof renderPosts === 'function') renderPosts();
+  if (n === 3) {
+  if (typeof loadBibleStatus === 'function') loadBibleStatus();
+  if (typeof loadBibleHallOfFame === 'function') loadBibleHallOfFame();
+}
   if (n === 4) {
     if (typeof renderServiceView === 'function') renderServiceView();
     if (typeof renderScheduleView === 'function') renderScheduleView();

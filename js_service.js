@@ -6,7 +6,8 @@ function renderServiceView() {
   if (!list) return;
   firebase.database().ref('serviceList').once('value', snap => {
     const data = snap.val() || [];  // 없으면 빈 배열
-    if (data.length === 0) {
+   serviceList = datas
+ if (data.length === 0) {
       list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">등록된 예배가 없습니다.</div>';
       return;
     }
@@ -83,12 +84,20 @@ function confirmAddService() {
 
 function saveServiceEdit() {
   serviceList = JSON.parse(JSON.stringify(serviceEditData));
-  LS.save('serviceList', serviceList);
-  document.getElementById('service-view').style.display = 'block';
-  document.getElementById('service-edit').style.display = 'none';
-  document.getElementById('service-edit-btn').textContent = '✏️ 수정';
-  renderServiceView();
-  showToast('✅ 예배 안내가 저장되었습니다');
+  
+  // ★ Firebase에 저장 (기존 LS.save 대신)
+  firebase.database().ref('serviceList').set(serviceList)
+    .then(() => {
+      document.getElementById('service-view').style.display = 'block';
+      document.getElementById('service-edit').style.display = 'none';
+      document.getElementById('service-edit-btn').textContent = '✏️ 수정';
+      renderServiceView();
+      showToast('✅ 예배 안내가 저장되었습니다');
+    })
+    .catch(err => {
+      console.error('예배 저장 실패:', err);
+      alert('저장 중 오류가 발생했습니다.');
+    });
 }
 
 

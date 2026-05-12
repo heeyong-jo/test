@@ -22,15 +22,20 @@ const DEFAULT_SERVICE_LIST = [
 
 let serviceList = [];
 let serviceEditData = [];
+let scheduleList     = [];   // ← 추가
+let scheduleEditData = [];   // ← 추가
 
 
 function renderServiceView() {
   const list = document.getElementById('service-list-view');
   if (!list) return;
   firebase.database().ref('serviceList').once('value', snap => {
-    // Firebase에 데이터 있으면 사용, 없으면 기본값 적용
-    const data = snap.val();
-    serviceList = (data && data.length > 0) ? data : DEFAULT_SERVICE_LIST;
+  const raw = snap.val();
+  // Firebase는 배열을 객체로 반환하므로 Object.values로 변환
+  const data = raw
+    ? (Array.isArray(raw) ? raw : Object.values(raw))
+    : [];
+  serviceList = data.length > 0 ? data : DEFAULT_SERVICE_LIST;
 
 
     if (serviceList.length === 0) {
@@ -152,7 +157,29 @@ function cancelServiceEdit() {
 function renderScheduleView() {
   const el = document.getElementById('schedule-list-view');
   if (!el) return;
-  el.innerHTML = scheduleList.map(s => `
+  firebase.database().ref('scheduleList').once('value', snap => {
+    const raw = snap.val();
+    const data = raw
+      ? (Array.isArray(raw) ? raw : Object.values(raw))
+      : [];
+    scheduleList = data.length > 0 ? data : [];
+    if (scheduleList.length === 0) {
+      el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">등록된 시간표가 없습니다.</div>';
+      return;
+    }
+    el.innerHTML = scheduleList.map(s => `
+      <div class="service-row">
+        <div>
+          <div class="service-name">${escapeHtml(s.emoji)} ${escapeHtml(s.name)}</div>
+          <div class="service-time">${escapeHtml(s.sub)}</div>
+        </div>
+        <span style="font-weight:700;color:var(--purple);">${escapeHtml(s.time)}</span>
+      </div>
+    `).join('');
+  }).catch(() => {
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">시간표를 불러올 수 없습니다.</div>';
+  });
+} `
     <div class="service-row">
       <div>
         <div class="service-name">${escapeHtml(s.emoji)} ${escapeHtml(s.name)}</div>

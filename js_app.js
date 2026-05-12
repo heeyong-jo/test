@@ -10,6 +10,8 @@ window.addEventListener('load', () => {
     if (window.FB_READY && window.FB) {
       await fbLoadAll();
       fbSync();
+if (typeof renderServiceView === 'function') renderServiceView();
+if (typeof renderScheduleView === 'function') renderScheduleView();
     } else {
       console.log('로컬 모드: localStorage 데이터만 사용합니다');
       FB_KEYS.forEach(key => {
@@ -34,8 +36,6 @@ window.addEventListener('load', () => {
 
 
     // 기본 UI 렌더링
-    if (typeof renderServiceView === 'function') renderServiceView();
-    if (typeof renderScheduleView === 'function') renderScheduleView();
     if (typeof renderTodayVerse === 'function') renderTodayVerse();
     if (typeof renderPosts === 'function') renderPosts();
     if (typeof loadStaff === 'function') loadStaff();

@@ -448,18 +448,9 @@ textarea.input-field{resize:vertical;min-height:80px;}
 }
 /* 게시판 본문(전체 화면)을 헤더와 탭 아래로 */
 #board-content {
-  z-index: 10 !important;    /* 기존 1500 → 10 (헤더 100, 모달 2000보다 낮게) */
-  padding-top: 70px !important;  /* 헤더+탭 높이 확보 */
-}
-
-
-/* 모달은 항상 최상위로 */
-.modal-overlay {
-  z-index: 2000 !important;
-}
-/* 게시물 목록 아이템의 최대 너비 제한 해제 */
-.board-post-item {
-  max-width: 100% !important;
+  z-index: 10 !important;        /* 헤더 100보다 낮게 유지 */
+  padding-top: 120px !important; /* 헤더(약 60) + 탭(약 44) + 여유 */
+  padding-bottom: 100px !important;
 }
 
 

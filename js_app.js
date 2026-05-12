@@ -265,9 +265,10 @@ async function openBibleReading() {
     alert('오늘은 이미 10장을 모두 읽으셨습니다!');
     return;
   }
+  document.getElementById('bible-reader-home').style.display = 'none';
+  document.getElementById('bible-reader-screen').style.display = 'block';
 
 
-  document.getElementById('bible-reading-overlay').style.display = 'block';
   document.getElementById('bible-reading-today-count').textContent = 
     `오늘 ${bibleReadingState.todayPagesRead} / 10 장`;
 
@@ -397,7 +398,8 @@ async function completeCurrentChapter() {
 
 // ── 읽기 화면 닫기 ──
 function closeBibleReading() {
-  document.getElementById('bible-reading-overlay').style.display = 'none';
+  document.getElementById('bible-reader-screen').style.display = 'none';
+  document.getElementById('bible-reader-home').style.display = 'block';
 }
 
 

@@ -1,25 +1,65 @@
 ﻿// ==================== 예배 안내 및 시간표 ====================
 
 
+// 기본값 데이터
+const DEFAULT_SERVICE_LIST = [
+  { emoji:'⛪', name:'주일 낮예배 1부',       sub:'매주 일요일',  time:'오전 8:00   3층 예루살렘성전' },
+  { emoji:'⛪', name:'주일 낮예배 2부',       sub:'매주 일요일',  time:'오전 9:30   3층 예루살렘성전' },
+  { emoji:'⛪', name:'주일 낮예배 3부',       sub:'매주 일요일',  time:'오전 11:30  3층 예루살렘성전' },
+  { emoji:'🙌', name:'오후찬양예배',          sub:'매주 일요일',  time:'오후 2:30   3층 예루살렘성전' },
+  { emoji:'🌅', name:'새벽기도회',            sub:'월-금',        time:'새벽 5:00' },
+  { emoji:'🙏', name:'수요기도회 1부',        sub:'매주 수요일',  time:'오전 10:30  3층 예루살렘성전' },
+  { emoji:'🙏', name:'수요기도회 2부',        sub:'매주 수요일',  time:'저녁 7:00   3층 예루살렘성전' },
+  { emoji:'🔥', name:'금요성령집회',          sub:'매주 금요일',  time:'저녁 8:30' },
+  { emoji:'🐣', name:'꿈지락 (0-4세)',        sub:'매주 일요일',  time:'오전 11:30  2층 203호' },
+  { emoji:'🌱', name:'꿈트리 (5-7세)',        sub:'매주 일요일',  time:'오전 11:30  2층 210호' },
+  { emoji:'📚', name:'꿈마루 (8-13세)',       sub:'매주 일요일',  time:'오전 11:30  5층 드림홀' },
+  { emoji:'🔥', name:'꿈하나 (14-19세)',      sub:'매주 일요일',  time:'오전 9:30   5층 드림홀' },
+  { emoji:'✝️', name:'청년예배 (20세 이상)',  sub:'매주 일요일',  time:'오후 2:00   5층 드림홀' },
+  { emoji:'👨‍👩‍👧', name:'아가새\n(온가족 아침기도회)', sub:'30·40 부모와 자녀 / 매분기 셋째 주 토요일', time:'오전 9:00   3층 예루살렘성전' },
+];
+
+
+let serviceList = [];
+let serviceEditData = [];
+
+
 function renderServiceView() {
   const list = document.getElementById('service-list-view');
   if (!list) return;
   firebase.database().ref('serviceList').once('value', snap => {
-    const data = snap.val() || [];  // 없으면 빈 배열
-   serviceList = datas
- if (data.length === 0) {
+    // Firebase에 데이터 있으면 사용, 없으면 기본값 적용
+    const data = snap.val();
+    serviceList = (data && data.length > 0) ? data : DEFAULT_SERVICE_LIST;
+
+
+    if (serviceList.length === 0) {
       list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">등록된 예배가 없습니다.</div>';
       return;
     }
-  el.innerHTML = serviceList.map(s => `
-    <div class="service-row">
-      <div>
-        <div class="service-name">${escapeHtml(s.emoji)} ${escapeHtml(s.name)}</div>
-        <div class="service-time">${escapeHtml(s.sub)}</div>
+    list.innerHTML = serviceList.map(s => `
+      <div class="service-row">
+        <div>
+          <div class="service-name">${escapeHtml(s.emoji)} ${escapeHtml(s.name)}</div>
+          <div class="service-time">${escapeHtml(s.sub)}</div>
+        </div>
+        <span style="font-weight:700;color:var(--purple);">${escapeHtml(s.time)}</span>
       </div>
-      <span style="font-weight:700;color:var(--purple);">${escapeHtml(s.time)}</span>
-    </div>
-  `).join('');
+    `).join('');
+  }).catch(err => {
+    console.error('예배 로드 실패:', err);
+    // Firebase 오류 시에도 기본값 표시
+    serviceList = DEFAULT_SERVICE_LIST;
+    list.innerHTML = serviceList.map(s => `
+      <div class="service-row">
+        <div>
+          <div class="service-name">${escapeHtml(s.emoji)} ${escapeHtml(s.name)}</div>
+          <div class="service-time">${escapeHtml(s.sub)}</div>
+        </div>
+        <span style="font-weight:700;color:var(--purple);">${escapeHtml(s.time)}</span>
+      </div>
+    `).join('');
+  });
 }
 
 
@@ -183,7 +223,9 @@ function confirmAddSchedule() {
 
 function saveScheduleEdit() {
   scheduleList = JSON.parse(JSON.stringify(scheduleEditData));
-  LS.save('scheduleList', scheduleList);
+  firebase.database().ref('scheduleList').set(scheduleList)
+  .then(() => showToast('✅ 예배 시간표가 저장되었습니다'))
+  .catch(err => { console.error('시간표 저장 실패:', err); alert('저장 오류'); });
   document.getElementById('schedule-view').style.display = 'block';
   document.getElementById('schedule-edit').style.display = 'none';
   document.getElementById('schedule-edit-btn').textContent = '✏️ 수정';

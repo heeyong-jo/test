@@ -52,7 +52,8 @@ function renderServiceView() {
       </div>
     `).join('');
 });
-}
+
+
 
 
 // 예배 안내 수정 모드 토글

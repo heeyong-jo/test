@@ -221,7 +221,7 @@ async function submitBoardPost() {
       content,
       photos,
       author: user.name,
-      authorId: user.uid || user.id || '',   // ★ uid가 없으면 id를 사용
+      authorId: user.id || user.uid || '',   // ★ uid가 없으면 id를 사용
       timestamp: Date.now(),
       comments: {}
     });
@@ -333,3 +333,7 @@ if (document.readyState === 'loading') {
 } else {
   initBoard();
 }
+document.addEventListener('DOMContentLoaded', function() {
+  const btn = document.querySelector('#board-write-overlay .btn-primary');
+  if (btn) btn.setAttribute('onclick', 'submitBoardPost()');
+});

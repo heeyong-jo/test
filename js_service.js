@@ -2,7 +2,8 @@
 
 
 // 기본값 데이터
-const DEFAULT_SERVICE_LIST = [
+let prayers = LS.load('prayers', []);
+let serviceList=LS.load('serviceList',[
   { emoji:'⛪', name:'주일 낮예배 1부',       sub:'매주 일요일',  time:'오전 8:00   3층 예루살렘성전' },
   { emoji:'⛪', name:'주일 낮예배 2부',       sub:'매주 일요일',  time:'오전 9:30   3층 예루살렘성전' },
   { emoji:'⛪', name:'주일 낮예배 3부',       sub:'매주 일요일',  time:'오전 11:30  3층 예루살렘성전' },

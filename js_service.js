@@ -51,21 +51,7 @@ function renderServiceView() {
         <span style="font-weight:700;color:var(--purple);">${escapeHtml(s.time)}</span>
       </div>
     `).join('');
-  }).catch(err => {
-    console.error('예배 로드 실패:', err);
-    // Firebase 오류 시에도 기본값 표시
-    serviceList = DEFAULT_SERVICE_LIST;
-    list.innerHTML = serviceList.map(s => `
-      <div class="service-row">
-        <div>
-          <div class="service-name">${escapeHtml(s.emoji)} ${escapeHtml(s.name)}</div>
-          <div class="service-time">${escapeHtml(s.sub)}</div>
-        </div>
-        <span style="font-weight:700;color:var(--purple);">${escapeHtml(s.time)}</span>
-      </div>
-    `).join('');
-  });
-}
+}`);
 
 
 // 예배 안내 수정 모드 토글
@@ -176,18 +162,9 @@ function renderScheduleView() {
         <span style="font-weight:700;color:var(--purple);">${escapeHtml(s.time)}</span>
       </div>
     `).join('');
-  }).catch(() => {
+    }).catch(() => {
     el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">시간표를 불러올 수 없습니다.</div>';
   });
-} `
-    <div class="service-row">
-      <div>
-        <div class="service-name">${escapeHtml(s.emoji)} ${escapeHtml(s.name)}</div>
-        <div class="service-time">${escapeHtml(s.sub)}</div>
-      </div>
-      <span style="font-weight:700;color:var(--purple);">${escapeHtml(s.time)}</span>
-    </div>
-  `).join('');
 }
 
 

@@ -51,7 +51,8 @@ function renderServiceView() {
         <span style="font-weight:700;color:var(--purple);">${escapeHtml(s.time)}</span>
       </div>
     `).join('');
-}`);
+});
+}
 
 
 // 예배 안내 수정 모드 토글

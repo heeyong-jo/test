@@ -178,7 +178,7 @@
 
 
   <!-- 글쓰기 모달 -->
-  <div id="board-write-overlay" class="modal-overlay" style="align-items:center;">
+  <div id="board-write-overlay" class="modal-overlay">
     <div class="modal-box" style="border-radius:24px;max-width:600px;">
       <div class="modal-header">
         <div class="modal-title">✏️ 글쓰기</div>
@@ -982,8 +982,16 @@
 <script src="js_service.js"></script>
 <script src="js_staff.js"></script>
 <script src="js_app.js"></script>
-
-
+<script>
+  // 페이지 로드 후 예배 안내 강제 로드 (안전장치)
+  window.addEventListener('load', function() {
+    setTimeout(function() {
+      if (typeof renderServiceView === 'function') {
+        renderServiceView();
+      }
+    }, 800);
+  });
+</script>
 <!-- 카카오 광고 스크립트 (필요시) -->
 <script type="text/javascript" src="//t1.kakaocdn.net/kas/static/ba.min.js" async></script>
 

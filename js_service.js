@@ -1,4 +1,7 @@
 ﻿// ==================== 예배 안내 및 시간표 ====================
+// 주일예배 & 기타예배 편집용 임시 데이터
+let sundayEditData = [];
+let otherEditData = [];
 
 
 // 1. 기본값 상수 정의
@@ -30,31 +33,51 @@ prayers = LS.load('prayers', []);
 
 
 function renderServiceView() {
-  const list = document.getElementById('service-list-view');
+  renderSundayService();
+  renderOtherService();
+}
+
+
+  function renderSundayService() {
+  const list = document.getElementById('sunday-service-list-view');
   if (!list) return;
 
 
-  const render = (data) => {
-    serviceList = (data && data.length > 0) ? data : DEFAULT_SERVICE_LIST;
-    if (serviceList.length === 0) {
-      list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">등록된 예배가 없습니다.</div>';
-      return;
-    }
+  const sunday = serviceList.filter(s => s.sub && s.sub.includes('일요일'));
+  if (sunday.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text2);">등록된 주일 예배가 없습니다.</div>';
+    return;
+  }
+  list.innerHTML = sunday.map(s => `
+    <div class="service-row">
+      <div>
+        <div class="service-name">${escapeHtml(s.emoji)} ${escapeHtml(s.name)}</div>
+        <div class="service-time">${escapeHtml(s.sub)}</div>
+      </div>
+      <span style="font-weight:700;color:var(--purple);">${escapeHtml(s.time)}</span>
+    </div>
+  `).join('');
+}
+function renderOtherService() {
+  const list = document.getElementById('other-service-list-view');
+  if (!list) return;
 
 
-    // 그룹 나누기: sub 필드에 '일요일'이 포함되면 주일예배, 아니면 기타
-    const sunday = serviceList.filter(s => s.sub && s.sub.includes('일요일'));
-    const other = serviceList.filter(s => !s.sub || !s.sub.includes('일요일'));
+  const other = serviceList.filter(s => !s.sub || !s.sub.includes('일요일'));
+  
+  if (other.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text2);">등록된 기타 예배가 없습니다.</div>';
+    return;
+  }
 
 
-    let html = '';
-
-
-    if (sunday.length > 0) {
-      html += `<div style="font-weight:800; font-size:14px; color:var(--text); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-        <span>⛪</span> 주일 예배
-      </div>`;
-      html += sunday.map(s => `
+  list.innerHTML = `
+    <div id="other-service-toggle" onclick="toggleOtherServiceBody()" style="cursor:pointer; display:flex; align-items:center; gap:6px; padding:8px 0; user-select:none;">
+      <span id="other-service-arrow" style="font-size:16px; transition:transform 0.2s;">▶</span>
+      <span style="font-weight:700; font-size:14px; color:var(--text);">그 외 예배 안내</span>
+    </div>
+    <div id="other-service-body" style="display:none;">
+      ${other.map(s => `
         <div class="service-row">
           <div>
             <div class="service-name">${escapeHtml(s.emoji)} ${escapeHtml(s.name)}</div>
@@ -62,8 +85,23 @@ function renderServiceView() {
           </div>
           <span style="font-weight:700;color:var(--purple);">${escapeHtml(s.time)}</span>
         </div>
-      `).join('');
-    }
+      `).join('')}
+    </div>
+  `;
+}
+
+
+function toggleOtherServiceBody() {
+  const body = document.getElementById('other-service-body');
+  const arrow = document.getElementById('other-service-arrow');
+  if (!body || !arrow) return;
+
+
+  const isOpen = body.style.display === 'block';
+  body.style.display = isOpen ? 'none' : 'block';
+  arrow.textContent = isOpen ? '▶' : '▼';
+  arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';
+}
 
 
     if (other.length > 0) {
@@ -108,34 +146,117 @@ function renderServiceView() {
 
  
 // 예배 안내 수정 모드 토글
-function toggleServiceEdit() {
-  const isEdit = document.getElementById('service-edit').style.display !== 'none';
-  if (isEdit) {
-    cancelServiceEdit();
+function toggleSundayEdit() {
+  if (document.getElementById('sunday-service-edit').style.display === 'block') {
+    cancelSundayEdit();
     return;
   }
-  serviceEditData = JSON.parse(JSON.stringify(serviceList));
-  document.getElementById('service-view').style.display = 'none';
-  document.getElementById('service-edit').style.display = 'block';
-  document.getElementById('service-edit-btn').textContent = '✕ 취소';
-  renderServiceEditList();
+  sundayEditData = JSON.parse(JSON.stringify(serviceList.filter(s => s.sub && s.sub.includes('일요일'))));
+  document.getElementById('sunday-service-view').style.display = 'none';
+  document.getElementById('sunday-service-edit').style.display = 'block';
+  renderSundayEditList();
 }
 
 
-// 예배 안내 수정 목록 렌더링
-function renderServiceEditList() {
-  const el = document.getElementById('service-list-edit');
-  if (!el) return;
-  el.innerHTML = serviceEditData.map((s, i) => `
+function renderSundayEditList() {
+  const el = document.getElementById('sunday-service-list-edit');
+  el.innerHTML = sundayEditData.map((s, i) => `
     <div class="service-edit-row">
       <div class="service-edit-name">
         <div>${escapeHtml(s.emoji)} ${escapeHtml(s.name)}</div>
         <div class="service-edit-sub">${escapeHtml(s.sub)}</div>
       </div>
-      <input class="service-time-input" value="${s.time}" onchange="serviceEditData[${i}].time=this.value" placeholder="00:00">
-      <button class="service-del-btn" onclick="deleteServiceRow(${i})">삭제</button>
+      <input class="service-time-input" value="${s.time}" onchange="sundayEditData[${i}].time=this.value">
+      <button class="service-del-btn" onclick="deleteSundayEditRow(${i})">삭제</button>
     </div>
   `).join('');
+}
+
+
+function deleteSundayEditRow(i) {
+  sundayEditData.splice(i, 1);
+  renderSundayEditList();
+}
+
+
+function addSundayServiceRow() {
+  // 그룹='주일예배'를 자동으로 설정하는 약식 추가 (필요시 모달 대체)
+  const name = prompt('예배 이름', '');
+  if (!name) return;
+  sundayEditData.push({ emoji: '✨', name, sub: '매주 일요일', time: '오전 11:00' });
+  renderSundayEditList();
+}
+
+
+function saveSundayEdit() {
+  // 기존 기타예배 + 편집된 주일예배 합치기
+  const other = serviceList.filter(s => !s.sub || !s.sub.includes('일요일'));
+  serviceList = [...sundayEditData, ...other];
+  LS.save('serviceList', serviceList);
+  cancelSundayEdit();
+  renderServiceView();
+  showToast('✅ 주일 예배가 저장되었습니다');
+}
+
+
+function cancelSundayEdit() {
+  document.getElementById('sunday-service-view').style.display = 'block';
+  document.getElementById('sunday-service-edit').style.display = 'none';
+}
+function toggleOtherEdit() {
+  if (document.getElementById('other-service-edit').style.display === 'block') {
+    cancelOtherEdit();
+    return;
+  }
+  otherEditData = JSON.parse(JSON.stringify(serviceList.filter(s => !s.sub || !s.sub.includes('일요일'))));
+  document.getElementById('other-service-view').style.display = 'none';
+  document.getElementById('other-service-edit').style.display = 'block';
+  renderOtherEditList();
+}
+
+
+function renderOtherEditList() {
+  const el = document.getElementById('other-service-list-edit');
+  el.innerHTML = otherEditData.map((s, i) => `
+    <div class="service-edit-row">
+      <div class="service-edit-name">
+        <div>${escapeHtml(s.emoji)} ${escapeHtml(s.name)}</div>
+        <div class="service-edit-sub">${escapeHtml(s.sub)}</div>
+      </div>
+      <input class="service-time-input" value="${s.time}" onchange="otherEditData[${i}].time=this.value">
+      <button class="service-del-btn" onclick="deleteOtherEditRow(${i})">삭제</button>
+    </div>
+  `).join('');
+}
+
+
+function deleteOtherEditRow(i) {
+  otherEditData.splice(i, 1);
+  renderOtherEditList();
+}
+
+
+function addOtherServiceRow() {
+  const name = prompt('예배 이름', '');
+  if (!name) return;
+  otherEditData.push({ emoji: '🔥', name, sub: '매주 금요일', time: '저녁 8:00' });
+  renderOtherEditList();
+}
+
+
+function saveOtherEdit() {
+  const sunday = serviceList.filter(s => s.sub && s.sub.includes('일요일'));
+  serviceList = [...sunday, ...otherEditData];
+  LS.save('serviceList', serviceList);
+  cancelOtherEdit();
+  renderServiceView();
+  showToast('✅ 기타 예배가 저장되었습니다');
+}
+
+
+function cancelOtherEdit() {
+  document.getElementById('other-service-view').style.display = 'block';
+  document.getElementById('other-service-edit').style.display = 'none';
 }
 
 

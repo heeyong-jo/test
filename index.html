@@ -212,22 +212,49 @@
 
 <!-- ══════════════════════ p0: 홈 ══════════════════════ -->
 <div id="p0" class="page show">
+
+
+  <!-- ⛪ 주일 예배 카드 -->
   <div class="card">
     <div class="card-title" style="justify-content:space-between;">
-      <span>⛪ 예배 안내</span>
-      <button class="edit-mode-btn admin-only" onclick="toggleServiceEdit()" id="service-edit-btn">✏️ 수정</button>
+      <span>⛪ 주일 예배</span>
+      <button class="edit-mode-btn admin-only" onclick="toggleSundayEdit()" id="sunday-edit-btn">✏️ 수정</button>
     </div>
-    <div id="service-view"><div id="service-list-view"></div></div>
-    <div id="service-edit" style="display:none;">
-      <div id="service-list-edit"></div>
-      <button class="service-add-btn" onclick="addServiceRow()">+ 예배 추가</button>
+    <div id="sunday-service-view">
+      <div id="sunday-service-list-view"></div>
+    </div>
+    <div id="sunday-service-edit" style="display:none;">
+      <div id="sunday-service-list-edit"></div>
+      <button class="service-add-btn" onclick="addSundayServiceRow()">+ 예배 추가</button>
       <div style="display:flex;gap:8px;margin-top:10px;">
-        <button onclick="saveServiceEdit()" style="flex:1;padding:11px;background:linear-gradient(135deg,#7a5230,#9e6b3e);border:none;border-radius:12px;color:white;font-size:13px;font-weight:700;cursor:pointer;">✅ 저장</button>
-        <button onclick="cancelServiceEdit()" style="flex:1;padding:11px;background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;color:var(--purple);font-size:13px;font-weight:600;cursor:pointer;">취소</button>
+        <button onclick="saveSundayEdit()" style="flex:1;padding:11px;background:linear-gradient(135deg,#7a5230,#9e6b3e);border:none;border-radius:12px;color:white;font-size:13px;font-weight:700;cursor:pointer;">✅ 저장</button>
+        <button onclick="cancelSundayEdit()" style="flex:1;padding:11px;background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;color:var(--purple);font-size:13px;font-weight:600;cursor:pointer;">취소</button>
       </div>
     </div>
   </div>
-<div class="card">
+
+
+  <!-- 📅 그 외 예배 카드 -->
+  <div class="card">
+    <div class="card-title" style="justify-content:space-between;">
+      <span>📅 그 외 예배 안내</span>
+      <button class="edit-mode-btn admin-only" onclick="toggleOtherEdit()" id="other-edit-btn">✏️ 수정</button>
+    </div>
+    <div id="other-service-view">
+      <div id="other-service-list-view"></div>
+    </div>
+    <div id="other-service-edit" style="display:none;">
+      <div id="other-service-list-edit"></div>
+      <button class="service-add-btn" onclick="addOtherServiceRow()">+ 예배 추가</button>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button onclick="saveOtherEdit()" style="flex:1;padding:11px;background:linear-gradient(135deg,#7a5230,#9e6b3e);border:none;border-radius:12px;color:white;font-size:13px;font-weight:700;cursor:pointer;">✅ 저장</button>
+        <button onclick="cancelOtherEdit()" style="flex:1;padding:11px;background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;color:var(--purple);font-size:13px;font-weight:600;cursor:pointer;">취소</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="card">
   <div class="sec-hd">
     <div class="card-title">📢 최근 공지</div>
     <button class="edit-mode-btn admin-only" onclick="openAddNotice()" style="padding:5px 10px; font-size:11px;">➕ 공지 작성</button>

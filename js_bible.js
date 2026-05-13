@@ -1,14 +1,21 @@
 ﻿// ==================== 성경 초기화 ====================
-function initBible() {
-  const bibleMain = document.getElementById('bibleMain');
-  if (bibleMain) bibleMain.style.display = 'flex';
-  ['bibleScriptureView', 'bibleHymnView', 'bibleAppendixView'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = 'none';
-  });
+let appendixFontSize = 14;
+
+
+function changeAppendixFont(delta) {
+  appendixFontSize = Math.min(22, Math.max(11, appendixFontSize + delta));
+  applyAppendixFont();
 }
 
 
+function applyAppendixFont() {
+  ['app-dokun','app-apostle','app-lords','app-ten'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const inner = el.querySelector('div');
+    if (inner) inner.style.fontSize = appendixFontSize + 'px';
+  });
+}
 
 
 // 성경/찬송가/부록 선택
@@ -348,8 +355,10 @@ function toggleAppendix(key) {
     const e = document.getElementById('app-' + k);
     if (e) e.style.display = 'none';
   });
-  if (!isOpen) el.style.display = 'block';
-  applyAppendixFont();
+  if (!isOpen) {
+    el.style.display = 'block';
+    applyAppendixFont(); // ← 추가
+  }
 }
 
 

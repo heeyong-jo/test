@@ -229,12 +229,6 @@ function cancelOtherEdit() {
 }
 
 
-function deleteServiceRow(i) {
-  serviceEditData.splice(i, 1);
-  renderServiceEditList();
-}
-
-
 function addServiceRow() {
   document.getElementById('new-svc-emoji').value = '✨';
   document.getElementById('new-svc-name').value = '';

@@ -1,6 +1,8 @@
 ﻿// ==================== 로컬 스토리지 및 Firebase 저장 ====================
 
 
+
+
 let pendingUsers = [];
 let approvedUsers = [];
 let currentUser = null;

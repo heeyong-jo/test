@@ -362,3 +362,13 @@ function changeAppendixFont(delta) {
   appendixFontSize = Math.min(22, Math.max(11, appendixFontSize + delta));
   applyAppendixFont();
 }
+// ==================== 성경읽기(통독) 폰트 조절 ====================
+function changeBibleReadingFontSize(delta) {
+  bibleReadingFontSize = Math.min(24, Math.max(12, bibleReadingFontSize + delta));
+  
+  // 현재 렌더링된 통독 화면에 폰트 크기 적용
+  const content = document.getElementById('bible-reading-content');
+  if (content) {
+    content.style.fontSize = bibleReadingFontSize + 'px';
+  }
+}

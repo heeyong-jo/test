@@ -1,7 +1,7 @@
 ﻿// ==================== 예배 안내 및 시간표 ====================
 
 
-// 기본값 데이터
+// 1. 기본값 상수 정의
 const DEFAULT_SERVICE_LIST = [
   { emoji:'⛪', name:'주일 낮예배 1부',       sub:'매주 일요일',  time:'오전 8:00   3층 예루살렘성전' },
   { emoji:'⛪', name:'주일 낮예배 2부',       sub:'매주 일요일',  time:'오전 9:30   3층 예루살렘성전' },
@@ -21,13 +21,10 @@ const DEFAULT_SERVICE_LIST = [
 
 
 let prayers = LS.load('prayers', []);
-let serviceList=LS.load('serviceList', DEFAULT_SERVICE_LIST);
 
 
-let serviceList = [];
-let serviceEditData = [];
-let scheduleList     = [];   // ← 추가
-let scheduleEditData = [];   // ← 추가
+// 2. 기본값 상수를 LS.load에 사용
+let serviceList = LS.load('serviceList', DEFAULT_SERVICE_LIST);
 
 
 

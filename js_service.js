@@ -20,11 +20,11 @@ const DEFAULT_SERVICE_LIST = [
 ];
 
 
-let prayers = LS.load('prayers', []);
+// js_service.js 상단 (수정 전 → 수정 후)
 
 
-// 2. 기본값 상수를 LS.load에 사용
-let serviceList = LS.load('serviceList', DEFAULT_SERVICE_LIST);
+serviceList = LS.load('serviceList', DEFAULT_SERVICE_LIST);
+prayers = LS.load('prayers', []);
 
 
 

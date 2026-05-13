@@ -52,8 +52,8 @@ const FB_KEYS = ['notices', 'members', 'meditations', 'pendingUsers', 'approvedU
 
 
 // 성경 CDN
-const BIBLE_CDN = 'https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data';
-const HYMN_CDN = 'https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@latest';
+const BIBLE_CDN = 'https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@main';
+const HYMN_CDN = 'https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@main';
 
 
 // 권한 라벨

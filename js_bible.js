@@ -1,3 +1,23 @@
+﻿// 파일 맨 위에 추가
+const chapterCache = {};
+
+
+async function loadChapter(chapter) {
+  if (!currentBookInfo) {
+    showToast('책 정보가 없습니다.');
+    showBibleList();
+    return;
+  }
+  
+  currentChapter = chapter;
+  const cacheKey = `${currentBookInfo.file}_${chapter}`;
+  
+  // 캐시된 데이터가 있으면 즉시 사용
+  if (chapterCache[cacheKey]) {
+    renderVerses(chapterCache[cacheKey]);
+    return;
+  }
+  
 ﻿// ==================== 성경 초기화 ====================
 let appendixFontSize = 14;
 
@@ -9,6 +29,14 @@ function applyAppendixFont() {
     // 컨테이너 자체에 폰트 적용 (두 번째 정의의 방식)
     el.style.fontSize = appendixFontSize + 'px';
   });
+}
+
+
+  // 성공 후 캐시에 저장
+  if (bookData && bookData[currentChapter]) {
+    chapterCache[cacheKey] = bookData[currentChapter];
+    renderVerses(bookData[currentChapter]);
+  }
 }
 
 
@@ -351,7 +379,15 @@ function toggleAppendix(key) {
   });
   if (!isOpen) {
     el.style.display = 'block';
-    applyAppendixFont(); // ← 추가
+    applyAppendixFont();
+    
+    // 🔥 부록 내용을 화면 상단으로 스크롤
+    setTimeout(() => {
+      const header = document.getElementById('bibleAppendixView');
+      if (header) {
+        header.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   }
 }
 

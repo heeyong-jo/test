@@ -40,19 +40,53 @@ function renderServiceView() {
       list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">등록된 예배가 없습니다.</div>';
       return;
     }
-    list.innerHTML = serviceList.map(s => `
-      <div class="service-row">
-        <div>
-          <div class="service-name">${escapeHtml(s.emoji)} ${escapeHtml(s.name)}</div>
-          <div class="service-time">${escapeHtml(s.sub)}</div>
+
+
+    // 그룹 나누기: sub 필드에 '일요일'이 포함되면 주일예배, 아니면 기타
+    const sunday = serviceList.filter(s => s.sub && s.sub.includes('일요일'));
+    const other = serviceList.filter(s => !s.sub || !s.sub.includes('일요일'));
+
+
+    let html = '';
+
+
+    if (sunday.length > 0) {
+      html += `<div style="font-weight:800; font-size:14px; color:var(--text); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+        <span>⛪</span> 주일 예배
+      </div>`;
+      html += sunday.map(s => `
+        <div class="service-row">
+          <div>
+            <div class="service-name">${escapeHtml(s.emoji)} ${escapeHtml(s.name)}</div>
+            <div class="service-time">${escapeHtml(s.sub)}</div>
+          </div>
+          <span style="font-weight:700;color:var(--purple);">${escapeHtml(s.time)}</span>
         </div>
-        <span style="font-weight:700;color:var(--purple);">${escapeHtml(s.time)}</span>
-      </div>
-    `).join('');
+      `).join('');
+    }
+
+
+    if (other.length > 0) {
+      html += `<div style="font-weight:800; font-size:14px; color:var(--text); margin: 16px 0 8px; display:flex; align-items:center; gap:6px;">
+        <span>📅</span> 기타 예배 안내
+      </div>`;
+      html += other.map(s => `
+        <div class="service-row">
+          <div>
+            <div class="service-name">${escapeHtml(s.emoji)} ${escapeHtml(s.name)}</div>
+            <div class="service-time">${escapeHtml(s.sub)}</div>
+          </div>
+          <span style="font-weight:700;color:var(--purple);">${escapeHtml(s.time)}</span>
+        </div>
+      `).join('');
+    }
+
+
+    list.innerHTML = html;
   };
 
 
-  // Firebase 준비 안 된 경우 기본값으로 즉시 렌더
+  // Firebase 연동 (기존 코드 유지)
   if (!window.FB_READY || typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) {
     render(DEFAULT_SERVICE_LIST);
     return;
@@ -69,9 +103,10 @@ function renderServiceView() {
     console.error('serviceList load error', e);
     render(DEFAULT_SERVICE_LIST);
   }
-} // ← 이 닫는 중괄호가 원본에 누락되어 있음 (가장 핵심)
+}
 
 
+ 
 // 예배 안내 수정 모드 토글
 function toggleServiceEdit() {
   const isEdit = document.getElementById('service-edit').style.display !== 'none';

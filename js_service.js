@@ -104,43 +104,12 @@ function toggleOtherServiceBody() {
 }
 
 
-    if (other.length > 0) {
-      html += `<div style="font-weight:800; font-size:14px; color:var(--text); margin: 16px 0 8px; display:flex; align-items:center; gap:6px;">
-        <span>📅</span> 기타 예배 안내
-      </div>`;
-      html += other.map(s => `
-        <div class="service-row">
-          <div>
-            <div class="service-name">${escapeHtml(s.emoji)} ${escapeHtml(s.name)}</div>
-            <div class="service-time">${escapeHtml(s.sub)}</div>
-          </div>
-          <span style="font-weight:700;color:var(--purple);">${escapeHtml(s.time)}</span>
-        </div>
-      `).join('');
-    }
+// (문제 코드가 모두 제거됨)
 
 
-    list.innerHTML = html;
-  };
-
-
-  // Firebase 연동 (기존 코드 유지)
-  if (!window.FB_READY || typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) {
-    render(DEFAULT_SERVICE_LIST);
-    return;
-  }
-
-
-  try {
-    firebase.database().ref('serviceList').once('value', snap => {
-      const raw = snap.val();
-      const data = raw ? (Array.isArray(raw) ? raw : Object.values(raw)) : [];
-      render(data);
-    }, () => render(DEFAULT_SERVICE_LIST));
-  } catch (e) {
-    console.error('serviceList load error', e);
-    render(DEFAULT_SERVICE_LIST);
-  }
+function deleteServiceRow(i) {
+  serviceEditData.splice(i, 1);
+  renderServiceEditList();
 }
 
 

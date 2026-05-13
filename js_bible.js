@@ -2,18 +2,12 @@
 let appendixFontSize = 14;
 
 
-function changeAppendixFont(delta) {
-  appendixFontSize = Math.min(22, Math.max(11, appendixFontSize + delta));
-  applyAppendixFont();
-}
-
-
 function applyAppendixFont() {
-  ['app-dokun','app-apostle','app-lords','app-ten'].forEach(id => {
+  ['app-dokun', 'app-apostle', 'app-lords', 'app-ten'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    const inner = el.querySelector('div');
-    if (inner) inner.style.fontSize = appendixFontSize + 'px';
+    // 컨테이너 자체에 폰트 적용 (두 번째 정의의 방식)
+    el.style.fontSize = appendixFontSize + 'px';
   });
 }
 
@@ -359,23 +353,4 @@ function toggleAppendix(key) {
     el.style.display = 'block';
     applyAppendixFont(); // ← 추가
   }
-}
-
-
-
-
-function changeAppendixFont(d) {
-  appendixFontSize = Math.min(22, Math.max(11, appendixFontSize + d));
-  applyAppendixFont();
-}
-
-
-
-
-function applyAppendixFont() {
-  ['app-dokun', 'app-apostle', 'app-lords', 'app-ten'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.style.fontSize = appendixFontSize + 'px';   // ★ div 전체에 직접 적용
-  });
 }

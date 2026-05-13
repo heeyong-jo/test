@@ -102,17 +102,6 @@ function toggleOtherServiceBody() {
   arrow.textContent = isOpen ? '▶' : '▼';
   arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';
 }
-
-
-// (문제 코드가 모두 제거됨)
-
-
-function deleteServiceRow(i) {
-  serviceEditData.splice(i, 1);
-  renderServiceEditList();
-}
-
-
  
 // 예배 안내 수정 모드 토글
 function toggleSundayEdit() {
@@ -229,53 +218,6 @@ function cancelOtherEdit() {
 }
 
 
-function addServiceRow() {
-  document.getElementById('new-svc-emoji').value = '✨';
-  document.getElementById('new-svc-name').value = '';
-  document.getElementById('new-svc-sub').value = '';
-  document.getElementById('new-svc-time').value = '';
-  document.getElementById('modal-add-service').style.display = 'flex';
-}
-
-
-function confirmAddService() {
-  const emoji = document.getElementById('new-svc-emoji').value.trim() || '✨';
-  const name = document.getElementById('new-svc-name').value.trim();
-  const sub = document.getElementById('new-svc-sub').value.trim();
-  const time = document.getElementById('new-svc-time').value.trim();
-  if (!name || !time) { showToast('이름과 시간을 입력하세요'); return; }
-  serviceEditData.push({ emoji, name, sub, time });
-  closeModal('modal-add-service');
-  renderServiceEditList();
-}
-
-
-function saveServiceEdit() {
-  serviceList = JSON.parse(JSON.stringify(serviceEditData));
-  
-  // ★ Firebase에 저장 (기존 LS.save 대신)
-  firebase.database().ref('serviceList').set(serviceList)
-    .then(() => {
-      document.getElementById('service-view').style.display = 'block';
-      document.getElementById('service-edit').style.display = 'none';
-      document.getElementById('service-edit-btn').textContent = '✏️ 수정';
-      renderServiceView();
-      showToast('✅ 예배 안내가 저장되었습니다');
-    })
-    .catch(err => {
-      console.error('예배 저장 실패:', err);
-      alert('저장 중 오류가 발생했습니다.');
-    });
-}
-
-
-function cancelServiceEdit() {
-  document.getElementById('service-view').style.display = 'block';
-  document.getElementById('service-edit').style.display = 'none';
-  document.getElementById('service-edit-btn').textContent = '✏️ 수정';
-}
-
-
 // 예배 시간표 (안내 탭)
 function renderScheduleView() {
   const el = document.getElementById('schedule-list-view');
@@ -332,12 +274,6 @@ function renderScheduleEditList() {
       <button class="service-del-btn" onclick="deleteScheduleRow(${i})">삭제</button>
     </div>
   `).join('');
-}
-
-
-function deleteScheduleRow(i) {
-  scheduleEditData.splice(i, 1);
-  renderScheduleEditList();
 }
 
 

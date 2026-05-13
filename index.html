@@ -220,8 +220,12 @@
       <span>⛪ 주일 예배</span>
       <button class="edit-mode-btn admin-only" onclick="toggleSundayEdit()" id="sunday-edit-btn">✏️ 수정</button>
     </div>
-    <div id="sunday-service-list-view"></div>   
-    <div id="other-service-list-view"></div>        <div id="sunday-service-edit" style="display:none;">
+    <!-- 주일 예배 목록 (렌더링 전용) -->
+    <div id="sunday-service-view">
+      <div id="sunday-service-list-view"></div>
+    </div>
+    <!-- 주일 예배 편집 영역 -->
+    <div id="sunday-service-edit" style="display:none;">
       <div id="sunday-service-list-edit"></div>
       <button class="service-add-btn" onclick="addSundayServiceRow()">+ 예배 추가</button>
       <div style="display:flex;gap:8px;margin-top:10px;">
@@ -238,9 +242,11 @@
       <span>📅 그 외 예배 안내</span>
       <button class="edit-mode-btn admin-only" onclick="toggleOtherEdit()" id="other-edit-btn">✏️ 수정</button>
     </div>
+    <!-- 기타 예배 목록 (아코디언 포함) -->
     <div id="other-service-view">
       <div id="other-service-list-view"></div>
     </div>
+    <!-- 기타 예배 편집 영역 -->
     <div id="other-service-edit" style="display:none;">
       <div id="other-service-list-edit"></div>
       <button class="service-add-btn" onclick="addOtherServiceRow()">+ 예배 추가</button>
@@ -252,13 +258,14 @@
   </div>
 
 
+  <!-- 📢 최근 공지 카드 -->
   <div class="card">
-  <div class="sec-hd">
-    <div class="card-title">📢 최근 공지</div>
-    <button class="edit-mode-btn admin-only" onclick="openAddNotice()" style="padding:5px 10px; font-size:11px;">➕ 공지 작성</button>
+    <div class="sec-hd">
+      <div class="card-title">📢 최근 공지</div>
+      <button class="edit-mode-btn admin-only" onclick="openAddNotice()" style="padding:5px 10px; font-size:11px;">➕ 공지 작성</button>
+    </div>
+    <div id="home-notices"></div>
   </div>
-  <div id="home-notices"></div>
- </div>
 </div>
 
 

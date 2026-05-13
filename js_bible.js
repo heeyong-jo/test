@@ -354,3 +354,11 @@ function toggleAppendix(key) {
     applyAppendixFont(); // ← 추가
   }
 }
+
+
+
+
+function changeAppendixFont(delta) {
+  appendixFontSize = Math.min(22, Math.max(11, appendixFontSize + delta));
+  applyAppendixFont();
+}

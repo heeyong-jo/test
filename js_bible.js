@@ -17,6 +17,15 @@ let hymnSearchQuery      = '';
 ﻿// ==================== 성경 초기화 ====================
 
 
+function initBible() {
+  // 이미 초기화된 상태면 bibleMain만 보이게
+  const main = document.getElementById('bibleMain');
+  if (main) main.style.display = 'flex';
+  ['bibleScriptureView', 'bibleHymnView', 'bibleAppendixView'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+}
 function applyAppendixFont() {
   ['app-dokun', 'app-apostle', 'app-lords', 'app-ten'].forEach(id => {
     const el = document.getElementById(id);

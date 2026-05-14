@@ -1,122 +1,265 @@
-﻿// ==================== 말씀 묵상 & 오늘의 말씀 ====================
+﻿// ==================== 오늘의 말씀 (말씀 등록) ====================
 
 
+let verseStep = 'book';
+let selectedBook = null;
+let selectedChapter = null;
+let selectedFromVerse = null;
+let selectedToVerse = null;
 
 
-// 오늘의 말씀 렌더링
-function renderTodayVerse() {
-  const tv = todayVerse || LS.load('todayVerse', {
-    text: '"하나님은 사랑이시라"',
-    ref: '요한일서 4:16',
-    body: '사랑 안에 거하는 자는 하나님 안에 거하고 하나님이 그 안에 거하시느니라'
-  });
-  const el_text = document.getElementById('today-verse-text');
-  const el_ref = document.getElementById('today-verse-ref');
-  const el_body = document.getElementById('today-verse-body');
-  if (el_text) el_text.textContent = tv.text;
-  if (el_ref) el_ref.textContent = tv.ref;
-  if (el_body) el_body.textContent = tv.body;
+// 말씀 선택 모달 열기
+function openVerseSelector() {
+  verseStep = 'book';
+  selectedBook = null;
+  selectedChapter = null;
+  selectedFromVerse = null;
+  selectedToVerse = null;
+  
+  document.getElementById('vstep-book').style.display = 'block';
+  document.getElementById('vstep-chapter').style.display = 'none';
+  document.getElementById('vstep-verse').style.display = 'none';
+  
+  document.getElementById('vstep1').style.background = 'var(--purple)';
+  document.getElementById('vstep1').style.color = 'white';
+  document.getElementById('vstep2').style.background = 'var(--bg2)';
+  document.getElementById('vstep2').style.color = 'var(--text2)';
+  document.getElementById('vstep3').style.background = 'var(--bg2)';
+  document.getElementById('vstep3').style.color = 'var(--text2)';
+  
+  // 구약/신약 책 목록 렌더링
+  const otDiv = document.getElementById('vs-ot-books');
+  const ntDiv = document.getElementById('vs-nt-books');
+  
+  if (otDiv && !otDiv.innerHTML) {
+    otDiv.innerHTML = OT_BOOKS.map(book => 
+      `<button onclick="selectVerseBook('${book.name}')" style="padding:8px;background:#f4f1f8;border:1px solid #ddd0f0;border-radius:8px;font-size:12px;cursor:pointer;">${book.name}</button>`
+    ).join('');
+    ntDiv.innerHTML = NT_BOOKS.map(book => 
+      `<button onclick="selectVerseBook('${book.name}')" style="padding:8px;background:#f4f1f8;border:1px solid #ddd0f0;border-radius:8px;font-size:12px;cursor:pointer;">${book.name}</button>`
+    ).join('');
+  }
+  
+  document.getElementById('modal-verse-selector').style.display = 'flex';
 }
 
 
-// 오늘의 말씀 공유
-function shareToday() {
-  const tv = LS.load('todayVerse', {
-    text: '"하나님은 사랑이시라"',
-    ref: '요한일서 4:16',
-    body: '사랑 안에 거하는 자는 하나님 안에 거하고 하나님이 그 안에 거하시느니라'
-  });
-  const shareText = tv.text + ' - ' + tv.ref + '\n' + tv.body;
-  if (navigator.share) {
-    navigator.share({ title: '오늘의 말씀', text: shareText });
-  } else {
-    navigator.clipboard.writeText(shareText).then(() => showToast('📋 복사되었습니다'));
+function closeVerseSelector() {
+  document.getElementById('modal-verse-selector').style.display = 'none';
+}
+
+
+function selectVerseBook(bookName) {
+  selectedBook = OT_BOOKS.find(b => b.name === bookName) || NT_BOOKS.find(b => b.name === bookName);
+  if (!selectedBook) return;
+  
+  verseStep = 'chapter';
+  document.getElementById('vstep-book').style.display = 'none';
+  document.getElementById('vstep-chapter').style.display = 'block';
+  document.getElementById('vs-book-selected').innerHTML = `📖 ${selectedBook.name}`;
+  
+  document.getElementById('vstep1').style.background = 'var(--bg2)';
+  document.getElementById('vstep1').style.color = 'var(--text2)';
+  document.getElementById('vstep2').style.background = 'var(--purple)';
+  document.getElementById('vstep2').style.color = 'white';
+  
+  const chaptersDiv = document.getElementById('vs-chapters');
+  let html = '';
+  for (let i = 1; i <= selectedBook.chapters; i++) {
+    html += `<button onclick="selectVerseChapter(${i})" style="width:50px;height:50px;border-radius:10px;background:#f4f1f8;border:1px solid #ddd0f0;font-size:14px;font-weight:600;cursor:pointer;">${i}</button>`;
+  }
+  chaptersDiv.innerHTML = html;
+}
+
+
+function selectVerseChapter(chapter) {
+  selectedChapter = chapter;
+  verseStep = 'verse';
+  document.getElementById('vstep-chapter').style.display = 'none';
+  document.getElementById('vstep-verse').style.display = 'block';
+  document.getElementById('vs-chapter-selected').innerHTML = `📖 ${selectedBook.name} ${selectedChapter}장`;
+  
+  document.getElementById('vstep2').style.background = 'var(--bg2)';
+  document.getElementById('vstep2').style.color = 'var(--text2)';
+  document.getElementById('vstep3').style.background = 'var(--purple)';
+  document.getElementById('vstep3').style.color = 'white';
+  
+  // 절 범위 선택 드롭다운 생성
+  const fromSelect = document.getElementById('vs-from');
+  const toSelect = document.getElementById('vs-to');
+  
+  // 최대 절 수 가져오기 (임시로 150으로 설정, 실제로는 API 호출 필요)
+  let maxVerses = 150;
+  fromSelect.innerHTML = '';
+  toSelect.innerHTML = '';
+  for (let i = 1; i <= maxVerses; i++) {
+    fromSelect.innerHTML += `<option value="${i}">${i}절</option>`;
+    toSelect.innerHTML += `<option value="${i}">${i}절</option>`;
+  }
+  fromSelect.value = 1;
+  toSelect.value = Math.min(10, maxVerses);
+  
+  fromSelect.onchange = () => updateVersePreview();
+  toSelect.onchange = () => updateVersePreview();
+  updateVersePreview();
+}
+
+
+async function updateVersePreview() {
+  const from = parseInt(document.getElementById('vs-from').value);
+  const to = parseInt(document.getElementById('vs-to').value);
+  selectedFromVerse = from;
+  selectedToVerse = to;
+  
+  const previewDiv = document.getElementById('vs-preview');
+  previewDiv.innerHTML = '<div style="text-align:center;">말씀을 불러오는 중...</div>';
+  
+  try {
+    const res = await fetch(`${BIBLE_CDN}/${selectedBook.file}`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    let bookData = data;
+    for (const key of [selectedBook.name, selectedBook.abbr]) {
+      if (data[key] && data[key][selectedChapter]) { bookData = data[key]; break; }
+    }
+    
+    if (bookData && bookData[selectedChapter]) {
+      const verses = bookData[selectedChapter];
+      let html = '';
+      for (let i = from; i <= to; i++) {
+        if (verses[i]) {
+          html += `<div style="margin-bottom:8px;"><span style="color:var(--purple);font-weight:700;">${i}</span> ${verses[i]}</div>`;
+        }
+      }
+      previewDiv.innerHTML = html || '<div>해당 절의 데이터가 없습니다</div>';
+    } else {
+      previewDiv.innerHTML = '<div>데이터를 불러올 수 없습니다</div>';
+    }
+  } catch(e) {
+    previewDiv.innerHTML = '<div>미리보기를 불러올 수 없습니다</div>';
   }
 }
 
 
-// 묵상 좋아요 토글
-function toggleLike(id) {
-  const m = meditations.find(m => m.id === id);
-  if (!m) return;
-  m.liked = !m.liked;
-  m.likes += m.liked ? 1 : -1;
-  LS.save('meditations', meditations);
-  renderMeditations();
+function vsGoBack(step) {
+  if (step === 'book') {
+    verseStep = 'book';
+    document.getElementById('vstep-chapter').style.display = 'none';
+    document.getElementById('vstep-book').style.display = 'block';
+    document.getElementById('vstep1').style.background = 'var(--purple)';
+    document.getElementById('vstep1').style.color = 'white';
+    document.getElementById('vstep2').style.background = 'var(--bg2)';
+    document.getElementById('vstep2').style.color = 'var(--text2)';
+  } else if (step === 'chapter') {
+    verseStep = 'chapter';
+    document.getElementById('vstep-verse').style.display = 'none';
+    document.getElementById('vstep-chapter').style.display = 'block';
+    document.getElementById('vstep2').style.background = 'var(--purple)';
+    document.getElementById('vstep2').style.color = 'white';
+    document.getElementById('vstep3').style.background = 'var(--bg2)';
+    document.getElementById('vstep3').style.color = 'var(--text2)';
+  }
 }
 
 
-// 묵상 등록
-function submitMeditation() {
-  const text = document.getElementById('meditation-input').value.trim();
-  if (!text) { showToast('묵상 내용을 입력해주세요'); return; }
-  if (!currentUser) { showToast('로그인이 필요합니다'); return; }
-  meditations.unshift({
-    id: Date.now(),
-    author: currentUser.name,
-    text: text,
-    time: '방금 전',
-    likes: 0,
-    liked: false
-  });
-  LS.save('meditations', meditations);
-  document.getElementById('meditation-input').value = '';
-  renderMeditations();
-  showToast('✅ 묵상이 등록되었습니다');
-}
-
-
-// 묵상 목록 렌더링
-function renderMeditations() {
-  const el = document.getElementById('meditation-list');
-  if (!el) return;
-  const safeMed = Array.isArray(meditations) ? meditations : [];
-  if (!safeMed.length) {
-    el.innerHTML = '<div style="text-align:center;color:var(--text2);padding:20px;font-size:13px;">아직 묵상이 없습니다. 첫 번째로 나눠주세요!</div>';
+async function applyTodayVerse() {
+  const from = selectedFromVerse || parseInt(document.getElementById('vs-from').value);
+  const to = selectedToVerse || parseInt(document.getElementById('vs-to').value);
+  
+  if (!selectedBook || !selectedChapter) {
+    showToast('책과 장을 선택해주세요');
     return;
   }
-  const canDeleteAll = currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager');
-  el.innerHTML = safeMed.map(m => {
-    const isAuthor = currentUser && currentUser.name === m.author;
-    const canEdit = isAuthor;
-    const canDelete = isAuthor || canDeleteAll;
-    return `
-      <div class="meditation-card">
-        <div class="meditation-header">
-          <span class="meditation-author">${escapeHtml(m.author)}</span>
-          <span class="meditation-time">${m.time}</span>
-        </div>
-        <div class="meditation-body">${escapeHtml(m.text)}</div>
-        <div class="meditation-actions">
-          <button class="meditation-like-btn${m.liked ? ' liked' : ''}" onclick="toggleLike(${m.id})">${m.liked ? '❤️' : '🤍'} ${m.likes}</button>
-          ${canEdit ? `<button class="meditation-edit-btn" onclick="editMeditation(${m.id})">✏️ 수정</button>` : ''}
-          ${canDelete ? `<button class="meditation-del-btn" onclick="deleteMeditation(${m.id})">🗑 삭제</button>` : ''}
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-
-// 묵상 수정
-function editMeditation(id) {
-  const m = meditations.find(m => m.id === id);
-  if (!m) return;
-  const newText = prompt('수정할 내용', m.text);
-  if (newText && newText.trim()) {
-    m.text = newText.trim();
-    LS.save('meditations', meditations);
-    renderMeditations();
-    showToast('✅ 수정됨');
+  
+  showToast('말씀을 등록 중입니다...');
+  
+  try {
+    const res = await fetch(`${BIBLE_CDN}/${selectedBook.file}`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    let bookData = data;
+    for (const key of [selectedBook.name, selectedBook.abbr]) {
+      if (data[key] && data[key][selectedChapter]) { bookData = data[key]; break; }
+    }
+    
+    let verseText = '';
+    if (bookData && bookData[selectedChapter]) {
+      const verses = bookData[selectedChapter];
+      const verseParts = [];
+      for (let i = from; i <= to; i++) {
+        if (verses[i]) verseParts.push(verses[i]);
+      }
+      verseText = verseParts.join(' ');
+    }
+    
+    const verseRef = `${selectedBook.name} ${selectedChapter}:${from}${from !== to ? '-' + to : ''}`;
+    
+    // Firebase에 저장
+    const todayVerse = {
+      text: verseText,
+      ref: verseRef,
+      updatedAt: new Date().toISOString(),
+      updatedBy: currentUser?.name || '관리자'
+    };
+    
+    if (window.FB_READY) {
+      await firebase.database().ref('todayVerse').set(todayVerse);
+    }
+    
+    // 로컬 저장
+    LS.save('todayVerse', todayVerse);
+    
+    // 화면 업데이트
+    document.getElementById('today-verse-text').innerHTML = `"${verseText.substring(0, 100)}${verseText.length > 100 ? '...' : ''}"`;
+    document.getElementById('today-verse-ref').innerHTML = verseRef;
+    document.getElementById('today-verse-body').innerHTML = verseText;
+    
+    closeVerseSelector();
+    showToast('✅ 오늘의 말씀이 등록되었습니다');
+  } catch(e) {
+    console.error('말씀 등록 실패:', e);
+    showToast('말씀 등록에 실패했습니다');
   }
 }
 
 
-// 묵상 삭제
-function deleteMeditation(id) {
-  if (!confirm('삭제하시겠습니까?')) return;
-  meditations = meditations.filter(m => m.id !== id);
-  LS.save('meditations', meditations);
-  renderMeditations();
-  showToast('🗑 삭제됨');
+// 말씀 공유하기
+function shareToday() {
+  const text = document.getElementById('today-verse-text')?.innerText || '';
+  const ref = document.getElementById('today-verse-ref')?.innerText || '';
+  const body = document.getElementById('today-verse-body')?.innerText || '';
+  
+  if (navigator.share) {
+    navigator.share({
+      title: '가좌제일교회 오늘의 말씀',
+      text: `${ref}\n\n"${text}"\n\n${body}`,
+    }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(`${ref}\n\n"${text}"\n\n${body}`);
+    showToast('말씀이 클립보드에 복사되었습니다');
+  }
+}
+
+
+// 오늘의 말씀 불러오기
+async function renderTodayVerse() {
+  try {
+    let todayVerse = LS.load('todayVerse');
+    
+    if (window.FB_READY) {
+      const snapshot = await firebase.database().ref('todayVerse').once('value');
+      if (snapshot.exists()) {
+        todayVerse = snapshot.val();
+        LS.save('todayVerse', todayVerse);
+      }
+    }
+    
+    if (todayVerse && todayVerse.text) {
+      document.getElementById('today-verse-text').innerHTML = `"${todayVerse.text.substring(0, 100)}${todayVerse.text.length > 100 ? '...' : ''}"`;
+      document.getElementById('today-verse-ref').innerHTML = todayVerse.ref;
+      document.getElementById('today-verse-body').innerHTML = todayVerse.text;
+    }
+  } catch(e) {
+    console.error('말씀 로드 실패:', e);
+  }
 }

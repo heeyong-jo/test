@@ -1,17 +1,17 @@
 ﻿// ==================== 전역변수 선언 ====================
 const chapterCache       = {};
-let fontSize             = 16;   // 성경 본문 폰트
-let appendixFontSize     = 14;   // 부록 폰트
-let bibleReadingFontSize = 16;   // 성경읽기 폰트
-let currentBook          = null;
-let currentBookInfo      = null;
-let currentChapter       = 1;
-let currentBibleSection  = null;
-let hymnTitles           = {};
-let hymnTitlesLoaded     = false;
-let currentHymnNo        = 1;
-let currentHymnRange     = 0;
-let hymnSearchQuery      = '';
+ fontSize             = 16;   // 성경 본문 폰트
+ appendixFontSize     = 14;   // 부록 폰트
+ bibleReadingFontSize = 16;   // 성경읽기 폰트
+ currentBook          = null;
+ currentBookInfo      = null;
+ currentChapter       = 1;
+ currentBibleSection  = null;
+ hymnTitles           = {};
+ hymnTitlesLoaded     = false;
+ currentHymnNo        = 1;
+ currentHymnRange     = 0;
+ hymnSearchQuery      = '';
 
 
 ﻿// ==================== 성경 초기화 ====================

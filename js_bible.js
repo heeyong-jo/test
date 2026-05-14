@@ -1,41 +1,36 @@
-﻿// ==================== 전역변수 선언 ====================
-const chapterCache       = {};
- fontSize             = 16;   // 성경 본문 폰트
- appendixFontSize     = 14;   // 부록 폰트
- bibleReadingFontSize = 16;   // 성경읽기 폰트
- currentBook          = null;
- currentBookInfo      = null;
- currentChapter       = 1;
- currentBibleSection  = null;
- hymnTitles           = {};
- hymnTitlesLoaded     = false;
- currentHymnNo        = 1;
- currentHymnRange     = 0;
- hymnSearchQuery      = '';
-
-
 ﻿// ==================== 성경 초기화 ====================
+let appendixFontSize = 14;
+let fontSize = 16;  // 성경 본문 폰트 크기
 
 
-function initBible() {
-  // 이미 초기화된 상태면 bibleMain만 보이게
-  const main = document.getElementById('bibleMain');
-  if (main) main.style.display = 'flex';
-  ['bibleScriptureView', 'bibleHymnView', 'bibleAppendixView'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = 'none';
-  });
+// 성경 관련 전역 변수
+let currentBook = null;
+let currentBookInfo = null;
+let currentChapter = 1;
+let currentBibleSection = null;
+
+
+// 찬송가 관련 전역 변수
+let hymnTitles = {};
+let hymnTitlesLoaded = false;
+let currentHymnNo = 1;
+let currentHymnRange = 0;
+let hymnSearchQuery = '';
+
+
+function changeAppendixFont(delta) {
+  appendixFontSize = Math.min(22, Math.max(11, appendixFontSize + delta));
+  applyAppendixFont();
 }
+
+
 function applyAppendixFont() {
   ['app-dokun', 'app-apostle', 'app-lords', 'app-ten'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    // 컨테이너 자체에 폰트 적용 (두 번째 정의의 방식)
     el.style.fontSize = appendixFontSize + 'px';
   });
 }
-
-
   
 // 성경/찬송가/부록 선택
 function openBibleSection(section) {

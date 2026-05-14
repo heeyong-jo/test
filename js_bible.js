@@ -15,7 +15,6 @@ let hymnSearchQuery      = '';
 
 
 ﻿// ==================== 성경 초기화 ====================
-let appendixFontSize = 14;
 
 
 function applyAppendixFont() {

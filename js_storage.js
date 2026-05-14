@@ -215,3 +215,4 @@ async function forceRefreshData() {
   if (typeof renderMembersAccord === 'function') renderMembersAccord();
   if (typeof renderApprovalsAccord === 'function') renderApprovalsAccord();
 }
+let bibleReadingFontSize = 15;   // 통독 기본 폰트 크기

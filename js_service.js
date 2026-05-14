@@ -2,8 +2,7 @@
 
 
 // 기본값 데이터
-let prayers = LS.load('prayers', []);
-let serviceList=LS.load('serviceList',[
+const DEFAULT_SERVICE_LIST = [
   { emoji:'⛪', name:'주일 낮예배 1부',       sub:'매주 일요일',  time:'오전 8:00   3층 예루살렘성전' },
   { emoji:'⛪', name:'주일 낮예배 2부',       sub:'매주 일요일',  time:'오전 9:30   3층 예루살렘성전' },
   { emoji:'⛪', name:'주일 낮예배 3부',       sub:'매주 일요일',  time:'오전 11:30  3층 예루살렘성전' },
@@ -30,10 +29,15 @@ let scheduleEditData = [];   // ← 추가
 function renderServiceView() {
   const list = document.getElementById('service-list-view');
   if (!list) return;
+  firebase.database().ref('serviceList').once('value', snap => {
+  const raw = snap.val();
+  // Firebase는 배열을 객체로 반환하므로 Object.values로 변환
+  const data = raw
+    ? (Array.isArray(raw) ? raw : Object.values(raw))
+    : [];
+  serviceList = data.length > 0 ? data : DEFAULT_SERVICE_LIST;
 
 
-  const render = (data) => {
-    serviceList = (data && data.length > 0) ? data : DEFAULT_SERVICE_LIST;
     if (serviceList.length === 0) {
       list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">등록된 예배가 없습니다.</div>';
       return;
@@ -47,27 +51,8 @@ function renderServiceView() {
         <span style="font-weight:700;color:var(--purple);">${escapeHtml(s.time)}</span>
       </div>
     `).join('');
-  };
-
-
-  // Firebase 준비 안 된 경우 기본값으로 즉시 렌더
-  if (!window.FB_READY || typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) {
-    render(DEFAULT_SERVICE_LIST);
-    return;
-  }
-
-
-  try {
-    firebase.database().ref('serviceList').once('value', snap => {
-      const raw = snap.val();
-      const data = raw ? (Array.isArray(raw) ? raw : Object.values(raw)) : [];
-      render(data);
-    }, () => render(DEFAULT_SERVICE_LIST));
-  } catch (e) {
-    console.error('serviceList load error', e);
-    render(DEFAULT_SERVICE_LIST);
-  }
-} // ← 이 닫는 중괄호가 원본에 누락되어 있음 (가장 핵심)
+});
+}
 
 
 // 예배 안내 수정 모드 토글

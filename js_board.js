@@ -9,15 +9,8 @@ let boardPostCache = {};
 function initBoard() {
   const btns = document.querySelectorAll('#board-category-list .board-cat-btn');
   btns.forEach(b => {
-    const clone = b.cloneNode(true);
-    b.parentNode.replaceChild(clone, b);
-  });
-
-
-  document.querySelectorAll('#board-category-list .board-cat-btn').forEach(b => {
     b.addEventListener('click', function() {
-      document.querySelectorAll('#board-category-list .board-cat-btn')
-        .forEach(x => x.classList.remove('active'));
+      btns.forEach(x => x.classList.remove('active'));
       this.classList.add('active');
       currentBoardCategory = this.dataset.cat;
       openBoardCategory();
@@ -27,17 +20,9 @@ function initBoard() {
 
 
 function openBoardCategory() {
-  const list = document.getElementById('board-category-list');
+  document.getElementById('board-category-list').style.display = 'none';
   const content = document.getElementById('board-content');
-  list.style.display    = 'none';
-  list.style.visibility = 'hidden';
-  list.style.pointerEvents = 'none';
-
-
-  content.style.display    = 'flex';
-  content.style.flexDirection = 'column';
-  content.style.visibility = 'visible';
-  content.style.pointerEvents = 'auto';
+  content.style.display = 'block';
   content.scrollTop = 0;
   window.scrollTo(0, 0);
   loadBoardManager();
@@ -48,16 +33,8 @@ function openBoardCategory() {
 
 
 function showBoardCategoryList() {
-  const list = document.getElementById('board-category-list');
-  const content = document.getElementById('board-content');
-  content.style.display    = 'none';
-  content.style.visibility = 'hidden';
-  content.style.pointerEvents = 'none';
-
-
-  list.style.display    = 'flex';
-  list.style.visibility = 'visible';
-  list.style.pointerEvents = 'auto';
+  document.getElementById('board-content').style.display = 'none';
+  document.getElementById('board-category-list').style.display = 'flex';
 }
 
 
@@ -193,46 +170,29 @@ function boardPhotoPreview(input) {
 
 
 async function submitBoardPost() {
-  if (typeof firebase === 'undefined' || !firebase.apps.length) {
-    alert('서버 연결에 실패했습니다.');
-    return;
-  }
-  const user = window.currentUser || currentUser;
-  if (!user) { alert('로그인이 필요합니다.'); return; }
-  if (user.role !== 'manager' && user.role !== 'admin') {
-    alert('게시물 작성은 매니저 이상만 가능합니다.');
-    return;
-  }
-
-
+  if (typeof firebase === 'undefined') { console.error('Firebase X'); return; }
   const title = document.getElementById('board-write-title').value.trim();
   const content = document.getElementById('board-write-content').value.trim();
   if (!title) { alert('제목을 입력하세요.'); return; }
-
-
+  if (!currentUser) { alert('로그인이 필요합니다.'); return; }
+  if (currentUser.role !== 'manager' && currentUser.role !== 'admin') { alert('게시물 작성은 매니저 이상만 가능합니다.'); return; }
   let photos = [];
   if (window._boardResizedPhotos) photos = await window._boardResizedPhotos;
-
-
-  try {
-    const postRef = firebase.database().ref(`boards/${currentBoardCategory}/posts`).push();
-    await postRef.set({
-      title,
-      content,
-      photos,
-      author: user.name,
-      authorId: user.id || user.uid || '',   // ★ uid가 없으면 id를 사용
-      timestamp: Date.now(),
-      comments: {}
-    });
-    alert('게시물이 등록되었습니다.');
+  const postRef = firebase.database().ref(`boards/${currentBoardCategory}/posts`).push();
+  await postRef.set({
+    title, content, photos,
+    author: currentUser.name,
+    authorId: currentUser.uid,
+    timestamp: Date.now(),
+    comments: {}
+  }).then(() => {
     closeBoardWrite();
     currentBoardPage = 1;
     loadPosts();
-  } catch (err) {
+  }).catch(err => {
     console.error('등록 실패:', err);
-    alert('등록 중 오류가 발생했습니다: ' + err.message);
-  }
+    alert('등록 중 오류가 발생했습니다.');
+  });
 }
 
 
@@ -301,39 +261,54 @@ function resizeStaffImage(file, maxW = 400, maxH = 480, quality = 0.85) {
     reader.readAsDataURL(file);
   });
 }
+// 디버깅용 submitBoardPost (기존 함수 이름을 boardSubmitPost로 변경 후 사용)
+async function boardSubmitPost() {
+  alert('등록 버튼 클릭됨 - 함수 진입');
 
 
-// ── 글쓰기 버튼 표시 (매니저 이상만) ──────────────────────────────
-function updateBoardWriteBtn() {
-  const wrap = document.getElementById('board-write-btn-wrap');
-  if (!wrap) return;
-  const role = currentUser && currentUser.role;
-  wrap.style.display = (role === 'admin' || role === 'manager') ? 'block' : 'none';
-}
-
-
-// ── 댓글 입력창 표시 (로그인 유저 전체) ──────────────────────────
-function updateBoardCommentArea() {
-  const inputWrap = document.getElementById('board-comment-input-wrap');
-  const loginMsg  = document.getElementById('board-comment-login-msg');
-  if (!inputWrap || !loginMsg) return;
-  if (currentUser) {
-    inputWrap.style.display = 'block';
-    loginMsg.style.display  = 'none';
-  } else {
-    inputWrap.style.display = 'none';
-    loginMsg.style.display  = 'block';
+  if (typeof firebase === 'undefined') {
+    alert('Firebase 없음');
+    return;
   }
+  const title = document.getElementById('board-write-title').value.trim();
+  const content = document.getElementById('board-write-content').value.trim();
+  if (!title) { alert('제목 없음'); return; }
+  
+  if (!currentUser) {
+    alert('currentUser가 없습니다. 로그인 해제됨?');
+    return;
+  }
+  alert('currentUser: ' + JSON.stringify(currentUser));
+
+
+  let photos = [];
+  if (window._boardResizedPhotos) {
+    photos = await window._boardResizedPhotos;
+  }
+
+
+  const postRef = firebase.database().ref(`boards/${currentBoardCategory}/posts`).push();
+  await postRef.set({
+    title, content, photos,
+    author: currentUser.name,
+    authorId: currentUser.uid,
+    timestamp: Date.now(),
+    comments: {}
+  }).then(() => {
+    alert('등록 성공');
+    closeBoardWrite();
+    currentBoardPage = 1;
+    loadPosts();
+  }).catch(err => {
+    alert('Firebase 오류: ' + err.message);
+  });
 }
 
 
-// ── DOMContentLoaded: initBoard 등록 ─────────────────────────────
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initBoard);
-} else {
-  initBoard();
-}
+// 등록 버튼에 디버깅 함수 연결 (기존 submitBoardPost 대체)
 document.addEventListener('DOMContentLoaded', function() {
   const btn = document.querySelector('#board-write-overlay .btn-primary');
-  if (btn) btn.setAttribute('onclick', 'submitBoardPost()');
+  if (btn) {
+    btn.setAttribute('onclick', 'boardSubmitPost()');
+  }
 });

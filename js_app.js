@@ -231,7 +231,6 @@ let bibleReadingState = {
   todayPagesRead: 0,
   lastReadDate: ''
 };
-let bibleReadingFontSize = 15;   // 통독 기본 폰트 크기
 
 
 // ── 읽기 화면 열기 ──
@@ -270,19 +269,7 @@ async function openBibleReading() {
   document.getElementById('bible-reader-screen').style.display = 'block';
 
 
-
-
-// ↓ 여기에 추가
-function changeBibleReadingFontSize(delta) {
-  bibleReadingFontSize = Math.min(24, Math.max(12, bibleReadingFontSize + delta));
-  const content = document.getElementById('bible-reading-content');
-  if (content) {
-    content.style.fontSize = bibleReadingFontSize + 'px';
-  }
-}  
-
-
-document.getElementById('bible-reading-today-count').textContent = 
+  document.getElementById('bible-reading-today-count').textContent = 
     `오늘 ${bibleReadingState.todayPagesRead} / 10 장`;
 
 
@@ -299,8 +286,6 @@ async function loadBibleChapterContent() {
 
   const contentDiv = document.getElementById('bible-reading-content');
   contentDiv.innerHTML = '<div style="text-align:center; padding:40px;">불러오는 중...</div>';
-contentDiv.innerHTML = html;
-contentDiv.style.fontSize = bibleReadingFontSize + 'px';  // ← 추가
 
 
   try {

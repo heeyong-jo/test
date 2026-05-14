@@ -266,17 +266,30 @@ function toggleScheduleEdit() {
 }
 
 
-function renderScheduleEditList() {
-  const el = document.getElementById('schedule-list-edit');
+// ==================== 예배 수정 관련 추가 함수 ====================
+function deleteScheduleRow(i) {
+  scheduleEditData.splice(i, 1);
+  renderScheduleEditList();
+}
+
+
+function deleteServiceRow(i) {
+  serviceEditData.splice(i, 1);
+  renderServiceEditList();
+}
+
+
+function renderServiceEditList() {
+  const el = document.getElementById('service-list-edit');
   if (!el) return;
-  el.innerHTML = scheduleEditData.map((s, i) => `
+  el.innerHTML = serviceEditData.map((s, i) => `
     <div class="service-edit-row">
       <div class="service-edit-name">
         <div>${escapeHtml(s.emoji)} ${escapeHtml(s.name)}</div>
         <div class="service-edit-sub">${escapeHtml(s.sub)}</div>
       </div>
-      <input class="service-time-input" value="${s.time}" onchange="scheduleEditData[${i}].time=this.value" placeholder="00:00">
-      <button class="service-del-btn" onclick="deleteScheduleRow(${i})">삭제</button>
+      <input class="service-time-input" value="${s.time}" onchange="serviceEditData[${i}].time=this.value">
+      <button class="service-del-btn" onclick="deleteServiceRow(${i})">삭제</button>
     </div>
   `).join('');
 }

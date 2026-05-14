@@ -1,6 +1,5 @@
 ﻿// ==================== UI 관련 (탭, 스와이프, 시계, 토스트, 모달) ====================
-
-
+let toastTimer = null;
 // 전역 변수 (필요시 초기화)
 let currentTab = 0;
 const TOTAL_TABS = 7;

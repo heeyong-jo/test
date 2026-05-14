@@ -1,4 +1,10 @@
 ﻿// ==================== 성경 초기화 ====================
+function initBible() {
+  console.log('성경책 탭 초기화');
+}
+
+
+let bibleReadingFontSize = 15;  
 let appendixFontSize = 14;
 let fontSize = 16;  // 성경 본문 폰트 크기
 
@@ -18,10 +24,6 @@ let currentHymnRange = 0;
 let hymnSearchQuery = '';
 
 
-function changeAppendixFont(delta) {
-  appendixFontSize = Math.min(22, Math.max(11, appendixFontSize + delta));
-  applyAppendixFont();
-}
 
 
 function applyAppendixFont() {

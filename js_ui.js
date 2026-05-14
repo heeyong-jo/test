@@ -1,5 +1,6 @@
 ﻿// ==================== UI 관련 (탭, 스와이프, 시계, 토스트, 모달) ====================
-let toastTimer = null;
+
+
 // 전역 변수 (필요시 초기화)
 let currentTab = 0;
 const TOTAL_TABS = 7;
@@ -31,36 +32,21 @@ function closeModal(id) {
   const modal = document.getElementById(id);
   if (modal) modal.style.display = 'none';
 }
-function deleteScheduleRow(i) {
-  scheduleEditData.splice(i, 1);
-  renderScheduleEditList();
-}
+
+
 // 탭 전환
 function showTab(n) {
   n = Math.max(0, Math.min(TOTAL_TABS - 1, n));
-  if (n !== 0 && n !== 1 && n !== 2 && !currentUser) {
-    document.getElementById('screen-login').style.display = 'flex';
+  
+if (n !== 0 && n !== 2 && !currentUser) {    document.getElementById('screen-login').style.display = 'flex';
     return;
   }
   currentTab = n;
   document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
   for (let i = 0; i < TOTAL_TABS; i++) {
-    document.getElementById('p' + i).classList.toggle('show', i === n);
+    const page = document.getElementById('p' + i);
+    if (page) page.classList.toggle('show', i === n);
   }
-
-
-  // 🔥 성경책 탭(p5)을 떠날 때 모든 하위 뷰 강제 숨김
-  if (n !== 5) {
-    ['bibleScriptureView', 'bibleHymnView', 'bibleAppendixView'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = 'none';
-    });
-    // 성경 메인 화면은 보이도록 복구
-    const main = document.getElementById('bibleMain');
-    if (main) main.style.display = 'flex';
-  }
-
-
   afterTab(n);
 }
 

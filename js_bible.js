@@ -1,39 +1,17 @@
 ﻿// ==================== 성경 초기화 ====================
-function initBible() {
-  console.log('성경책 탭 초기화');
-}
-
-
-let bibleReadingFontSize = 15;  
 let appendixFontSize = 14;
-let fontSize = 16;  // 성경 본문 폰트 크기
-
-
-// 성경 관련 전역 변수
-let currentBook = null;
-let currentBookInfo = null;
-let currentChapter = 1;
-let currentBibleSection = null;
-
-
-// 찬송가 관련 전역 변수
-let hymnTitles = {};
-let hymnTitlesLoaded = false;
-let currentHymnNo = 1;
-let currentHymnRange = 0;
-let hymnSearchQuery = '';
-
-
-
-
-function applyAppendixFont() {
-  ['app-dokun', 'app-apostle', 'app-lords', 'app-ten'].forEach(id => {
+function initBible() {
+  const bibleMain = document.getElementById('bibleMain');
+  if (bibleMain) bibleMain.style.display = 'flex';
+  ['bibleScriptureView', 'bibleHymnView', 'bibleAppendixView'].forEach(id => {
     const el = document.getElementById(id);
-    if (!el) return;
-    el.style.fontSize = appendixFontSize + 'px';
+    if (el) el.style.display = 'none';
   });
 }
-  
+
+
+
+
 // 성경/찬송가/부록 선택
 function openBibleSection(section) {
   currentBibleSection = section;
@@ -371,34 +349,25 @@ function toggleAppendix(key) {
     const e = document.getElementById('app-' + k);
     if (e) e.style.display = 'none';
   });
-  if (!isOpen) {
-    el.style.display = 'block';
-    applyAppendixFont();
-    
-    // 🔥 부록 내용을 화면 상단으로 스크롤
-    setTimeout(() => {
-      const header = document.getElementById('bibleAppendixView');
-      if (header) {
-        header.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100);
-  }
-}
-
-
-
-
-function changeAppendixFont(delta) {
-  appendixFontSize = Math.min(22, Math.max(11, appendixFontSize + delta));
+  if (!isOpen) el.style.display = 'block';
   applyAppendixFont();
 }
-// ==================== 성경읽기(통독) 폰트 조절 ====================
-function changeBibleReadingFontSize(delta) {
-  bibleReadingFontSize = Math.min(24, Math.max(12, bibleReadingFontSize + delta));
-  
-  // 현재 렌더링된 통독 화면에 폰트 크기 적용
-  const content = document.getElementById('bible-reading-content');
-  if (content) {
-    content.style.fontSize = bibleReadingFontSize + 'px';
-  }
+
+
+
+
+function changeAppendixFont(d) {
+  appendixFontSize = Math.min(22, Math.max(11, appendixFontSize + d));
+  applyAppendixFont();
+}
+
+
+
+
+function applyAppendixFont() {
+  ['app-dokun', 'app-apostle', 'app-lords', 'app-ten'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.fontSize = appendixFontSize + 'px';   // ★ div 전체에 직접 적용
+  });
 }

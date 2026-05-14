@@ -1,23 +1,19 @@
-﻿// 파일 맨 위에 추가
-const chapterCache = {};
+﻿// ==================== 전역변수 선언 ====================
+const chapterCache       = {};
+let fontSize             = 16;   // 성경 본문 폰트
+let appendixFontSize     = 14;   // 부록 폰트
+let bibleReadingFontSize = 16;   // 성경읽기 폰트
+let currentBook          = null;
+let currentBookInfo      = null;
+let currentChapter       = 1;
+let currentBibleSection  = null;
+let hymnTitles           = {};
+let hymnTitlesLoaded     = false;
+let currentHymnNo        = 1;
+let currentHymnRange     = 0;
+let hymnSearchQuery      = '';
 
 
-async function loadChapter(chapter) {
-  if (!currentBookInfo) {
-    showToast('책 정보가 없습니다.');
-    showBibleList();
-    return;
-  }
-  
-  currentChapter = chapter;
-  const cacheKey = `${currentBookInfo.file}_${chapter}`;
-  
-  // 캐시된 데이터가 있으면 즉시 사용
-  if (chapterCache[cacheKey]) {
-    renderVerses(chapterCache[cacheKey]);
-    return;
-  }
-  
 ﻿// ==================== 성경 초기화 ====================
 let appendixFontSize = 14;
 
@@ -32,14 +28,7 @@ function applyAppendixFont() {
 }
 
 
-  // 성공 후 캐시에 저장
-  if (bookData && bookData[currentChapter]) {
-    chapterCache[cacheKey] = bookData[currentChapter];
-    renderVerses(bookData[currentChapter]);
-  }
-}
-
-
+  
 // 성경/찬송가/부록 선택
 function openBibleSection(section) {
   currentBibleSection = section;

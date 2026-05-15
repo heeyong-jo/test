@@ -1,12 +1,12 @@
 ﻿// ==================== 예배 안내 및 시간표 ====================
 // 주일예배 & 기타예배 편집용 임시 데이터
-let serviceList = [];
-let prayers = [];
-let scheduleList = [];
-let scheduleEditData = [];
-let serviceEditData = [];
-let sundayEditData = [];
-let otherEditData = [];
+serviceList = [];
+prayers = [];
+scheduleList = [];
+scheduleEditData = [];
+serviceEditData = [];
+sundayEditData = [];
+otherEditData = [];
 
 
 // 1. 기본값 상수 정의

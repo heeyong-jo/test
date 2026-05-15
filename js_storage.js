@@ -173,46 +173,24 @@ function fbUpdateUI(key, data) {
 }
 
 
-// Firebase 전체 로드 (초기)
+// js_storage.js 하단에 추가
 async function fbLoadAll() {
-  if (!window.FB_READY || !window.FB) {
-    console.log('로컬 모드: localStorage 데이터만 사용합니다');
-    FB_KEYS.forEach(key => {
-      try { const data = localStorage.getItem('ch2_' + key); if (data) fbUpdateUI(key, JSON.parse(data)); } catch(e) {}
-    });
-    return;
-  }
-  for (const key of FB_KEYS) {
-    try {
-      const snap = await window.FB.ref('church/' + key).get();
-      if (snap && snap.exists && snap.exists()) {
+  if (!window.FB_READY) return;
+  try {
+    const promises = FB_KEYS.map(key => 
+      firebase.database().ref(key).once('value').then(snap => {
         const data = snap.val();
-        if (data !== null && data !== undefined) {
-          try { localStorage.setItem('ch2_' + key, JSON.stringify(data)); } catch(e) {}
-          fbUpdateUI(key, data);
-        }
-      }
-    } catch(e) {
-      console.warn('FB load 오류 (' + key + '):', e.message || e);
-      try { const local = localStorage.getItem('ch2_' + key); if (local) fbUpdateUI(key, JSON.parse(local)); } catch(e2) {}
-    }
+        if (data) fbUpdateUI(key, data);
+      })
+    );
+    await Promise.all(promises);
+  } catch(e) {
+    console.error('fbLoadAll 오류:', e);
   }
-  console.log('✅ 데이터 로드 완료');
 }
 
 
-// 강제 새로고침 함수 (auth.js에서 사용)
-async function forceRefreshData() {
-  if (window.FB_READY && window.FB) {
-    await fbLoadAll();
-    console.log('✅ 데이터 강제 새로고침 완료');
-  } else {
-    FB_KEYS.forEach(key => {
-      const data = localStorage.getItem('ch2_' + key);
-      if (data) fbUpdateUI(key, JSON.parse(data));
-    });
-  }
-  if (typeof renderMembersAccord === 'function') renderMembersAccord();
-  if (typeof renderApprovalsAccord === 'function') renderApprovalsAccord();
+function fbSync() {
+  // 실시간 동기화 설정 (필요시 구현)
+  console.log('Firebase sync ready');
 }
-let bibleReadingFontSize = 15;   // 통독 기본 폰트 크기

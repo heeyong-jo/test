@@ -1,20 +1,35 @@
 ﻿// ==================== 앱 초기화 ====================
 
 
-
-
-// Firebase 초기화 (전역 FB 객체는 config.js에서 이미 정의됨)
 window.addEventListener('load', () => {
   // 1. Firebase 데이터 로드 (로컬 또는 실시간)
   setTimeout(async () => {
     if (window.FB_READY && window.FB) {
-      await fbLoadAll();
-      fbSync();
-if (typeof renderServiceView === 'function') renderServiceView();
-if (typeof renderScheduleView === 'function') renderScheduleView();
-if (typeof renderHomeService === 'function') {
-      renderHomeService();
-}
+      // fbLoadAll() 함수가 없으므로 직접 데이터 로드
+      try {
+        // 필요한 데이터만 로드
+        const scheduleSnap = await firebase.database().ref('scheduleList').once('value');
+        const scheduleData = scheduleSnap.val();
+        if (scheduleData) {
+          scheduleList = Array.isArray(scheduleData) ? scheduleData : Object.values(scheduleData);
+        }
+        
+        // churchInfo 로드
+        const churchSnap = await firebase.database().ref('churchInfo').once('value');
+        if (churchSnap.exists()) {
+          const churchData = churchSnap.val();
+          if (churchData.greeting) renderGreeting(churchData.greeting);
+          if (churchData.history) renderHistory(churchData.history);
+        }
+      } catch(e) {
+        console.error('Firebase 로드 오류:', e);
+      }
+      
+      if (typeof renderServiceView === 'function') renderServiceView();
+      if (typeof renderScheduleView === 'function') renderScheduleView();
+      if (typeof renderHomeService === 'function') {
+        renderHomeService();
+      }
     } else {
       console.log('로컬 모드: localStorage 데이터만 사용합니다');
       FB_KEYS.forEach(key => {
@@ -22,7 +37,8 @@ if (typeof renderHomeService === 'function') {
           const data = localStorage.getItem('ch2_' + key);
           if (data) fbUpdateUI(key, JSON.parse(data));
         } catch(e) {}
-          }
+      });
+    }
   }, 300);
 });
 

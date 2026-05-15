@@ -2,7 +2,6 @@
 // 주일예배 & 기타예배 편집용 임시 데이터
 let serviceList = [];
 let prayers = [];
-let scheduleList = [];
 let scheduleEditData = [];
 let serviceEditData = [];
 

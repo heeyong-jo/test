@@ -15,7 +15,7 @@ const firebaseConfig = {
 
 // 관리자 계정
 const ADMIN_ACCOUNTS = [
-  { id: 'gajwajeil', pw: 'gajwajeil123', name: '김명서 목사', role: 'admin', email: 'pastor@hamkke.church', phone: '032-581-4048', birth: '1955-03-29' },
+  { id: 'gajwajeil', pw: 'gajwajeil123', name: '김명서 담임목사', role: 'admin', email: 'pastor@hamkke.church', phone: '032-581-4048', birth: '1955-03-29' },
   { id: 'reodrino', pw: '232735a', name: '조희용 관리자', role: 'admin', email: 'reodrino@gmail.com', phone: '010-9797-1408', birth: '1981-08-27' }
 ];
 

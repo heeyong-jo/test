@@ -31,10 +31,6 @@ function closeModal(id) {
   const modal = document.getElementById(id);
   if (modal) modal.style.display = 'none';
 }
-function deleteScheduleRow(i) {
-  scheduleEditData.splice(i, 1);
-  renderScheduleEditList();
-}
 // 탭 전환
 function showTab(n) {
   n = Math.max(0, Math.min(TOTAL_TABS - 1, n));

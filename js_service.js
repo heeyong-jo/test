@@ -20,13 +20,11 @@ const DEFAULT_SERVICE_LIST = [
 ];
 
 
-// js_service.js 상단 (수정 전 → 수정 후)
-
-
-serviceList = LS.load('serviceList', DEFAULT_SERVICE_LIST);
-prayers = LS.load('prayers', []);
-
-
+function initServiceData() {
+  if (typeof LS === 'undefined') return;
+  serviceList = LS.load('serviceList', DEFAULT_SERVICE_LIST);
+  prayers = LS.load('prayers', []);
+}
 
 
 function renderServiceView() {
@@ -100,6 +98,12 @@ function toggleOtherServiceBody() {
   arrow.textContent = isOpen ? '▶' : '▼';
   arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';
 }
+
+
+let serviceEditData = [];
+let scheduleEditData = [];
+let sundayEditData = [];
+let otherEditData = [];
  
 // 예배 안내 수정 모드 토글
 function toggleSundayEdit() {
@@ -107,8 +111,7 @@ function toggleSundayEdit() {
     cancelSundayEdit();
     return;
   }
-  sundayEditData = JSON.parse(JSON.stringify(serviceList.filter(s => s.sub && s.sub.includes('일요일'))));
-  document.getElementById('sunday-service-view').style.display = 'none';
+    document.getElementById('sunday-service-view').style.display = 'none';
   document.getElementById('sunday-service-edit').style.display = 'block';
   renderSundayEditList();
 }
@@ -164,7 +167,6 @@ function toggleOtherEdit() {
     cancelOtherEdit();
     return;
   }
-  otherEditData = JSON.parse(JSON.stringify(serviceList.filter(s => !s.sub || !s.sub.includes('일요일'))));
   document.getElementById('other-service-view').style.display = 'none';
   document.getElementById('other-service-edit').style.display = 'block';
   renderOtherEditList();
@@ -220,29 +222,34 @@ function cancelOtherEdit() {
 function renderScheduleView() {
   const el = document.getElementById('schedule-list-view');
   if (!el) return;
-  firebase.database().ref('scheduleList').once('value', snap => {
-    const raw = snap.val();
-    const data = raw
-      ? (Array.isArray(raw) ? raw : Object.values(raw))
-      : [];
-    scheduleList = data.length > 0 ? data : [];
-    if (scheduleList.length === 0) {
-      el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">등록된 시간표가 없습니다.</div>';
-      return;
-    }
-    el.innerHTML = scheduleList.map(s => `
-      <div class="service-row">
-        <div>
-          <div class="service-name">${escapeHtml(s.emoji)} ${escapeHtml(s.name)}</div>
-          <div class="service-time">${escapeHtml(s.sub)}</div>
-        </div>
-        <span style="font-weight:700;color:var(--purple);">${escapeHtml(s.time)}</span>
-      </div>
-    `).join('');
-    }).catch(() => {
+  if (!window.FB_READY) {
     el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">시간표를 불러올 수 없습니다.</div>';
-  });
+    return;
+  }
+  firebase.database().ref('scheduleList').once('value')
+    .then(snap => {
+      const raw = snap.val();
+      scheduleList = raw ? (Array.isArray(raw) ? raw : Object.values(raw)) : [];
+      if (!scheduleList.length) {
+        el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">등록된 시간표가 없습니다.</div>';
+        return;
+      }
+      el.innerHTML = scheduleList.map(s => `
+        <div class="service-row">
+          <div>
+            <div class="service-name">${escapeHtml(s.emoji)} ${escapeHtml(s.name)}</div>
+            <div class="service-time">${escapeHtml(s.sub)}</div>
+          </div>
+          <span style="font-weight:700;color:var(--purple);">${escapeHtml(s.time)}</span>
+        </div>
+      `).join('');
+    })
+    .catch(() => {
+      el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">시간표를 불러올 수 없습니다.</div>';
+    });
 }
+
+
 
 
 function toggleScheduleEdit() {

@@ -63,7 +63,6 @@ let accordOpen = { member: false, offering: false, approval: false };
 
 
 // 토스트
-let toastTimer = null;
 
 
 const LS = {

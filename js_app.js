@@ -12,6 +12,9 @@ window.addEventListener('load', () => {
       fbSync();
 if (typeof renderServiceView === 'function') renderServiceView();
 if (typeof renderScheduleView === 'function') renderScheduleView();
+if (typeof renderHomeService === 'function') {
+      renderHomeService();
+}
     } else {
       console.log('로컬 모드: localStorage 데이터만 사용합니다');
       FB_KEYS.forEach(key => {
@@ -19,9 +22,9 @@ if (typeof renderScheduleView === 'function') renderScheduleView();
           const data = localStorage.getItem('ch2_' + key);
           if (data) fbUpdateUI(key, JSON.parse(data));
         } catch(e) {}
-      });
-    }
+          }
   }, 300);
+});
 
 
   // 2. 스플래시 제거 및 초기 렌더링, 자동 로그인 처리
@@ -435,3 +438,17 @@ function loadBibleHallOfFame() {
     document.getElementById('bible-hall-of-fame').innerHTML = html || '<div style="text-align:center; padding:20px;">아직 완독자가 없습니다.</div>';
   });
 }
+
+
+// js_app.js 맨 아래에 추가
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    if (typeof renderServiceView === 'function') {
+      try {
+        renderServiceView();
+      } catch(e) {
+        console.error('예배 로딩 오류:', e);
+      }
+    }
+  }, 900);
+});

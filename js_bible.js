@@ -1,24 +1,6 @@
 ﻿// ==================== 성경 초기화 ====================
 let bibleReadingFontSize = 15;  
 let appendixFontSize = 14;
-let fontSize = 16;  // 성경 본문 폰트 크기
-
-
-// 성경 관련 전역 변수
-let currentBook = null;
-let currentBookInfo = null;
-let currentChapter = 1;
-let currentBibleSection = null;
-
-
-// 찬송가 관련 전역 변수
-let hymnTitles = {};
-let hymnTitlesLoaded = false;
-let currentHymnNo = 1;
-let currentHymnRange = 0;
-let hymnSearchQuery = '';
-
-
 
 
 function applyAppendixFont() {

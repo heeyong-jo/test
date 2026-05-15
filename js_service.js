@@ -167,6 +167,8 @@ function toggleOtherEdit() {
     cancelOtherEdit();
     return;
   }
+  // ✅ otherEditData 초기화 추가
+  otherEditData = JSON.parse(JSON.stringify(serviceList.filter(s => !s.sub || !s.sub.includes('일요일'))));
   document.getElementById('other-service-view').style.display = 'none';
   document.getElementById('other-service-edit').style.display = 'block';
   renderOtherEditList();

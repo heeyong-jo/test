@@ -33,12 +33,13 @@ function closeModal(id) {
 }
 // 탭 전환
 function showTab(n) {
-  n = Math.max(0, Math.min(TOTAL_TABS - 1, n));
-  if (n !== 0 && n !== 1 && n !== 2 && !currentUser) {
-    document.getElementById('screen-login').style.display = 'flex';
-    return;
+  // 터치 액션 설정 (최초 1회)
+  const swipeContainer = document.getElementById('swipe-container');
+  if (swipeContainer && !swipeContainer.hasAttribute('data-touch-set')) {
+    swipeContainer.style.touchAction = 'pan-x pan-y pinch-zoom';
+    swipeContainer.setAttribute('data-touch-set', 'true');
   }
-  currentTab = n;
+      currentTab = n;
   document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
   for (let i = 0; i < TOTAL_TABS; i++) {
     document.getElementById('p' + i).classList.toggle('show', i === n);
@@ -72,7 +73,6 @@ function afterTab(n) {
   if (typeof renderPrayers === 'function') renderPrayers();
   if (typeof initBoard === 'function') initBoard();
 }
-document.getElementById('swipe-container').style.touchAction = 'pan-x pan-y pinch-zoom';
   if (n === 3) {
   if (typeof loadBibleStatus === 'function') loadBibleStatus();
   if (typeof loadBibleHallOfFame === 'function') loadBibleHallOfFame();

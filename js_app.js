@@ -255,6 +255,13 @@ function showPrivacyPolicy() {
 const ALL_BOOKS = (typeof OT_BOOKS !== 'undefined' && typeof NT_BOOKS !== 'undefined') 
   ? [...OT_BOOKS, ...NT_BOOKS] 
   : [];
+
+
+// 또는 함수 내에서 동적으로 가져오기
+function getBookByIndex(index) {
+  const books = [...OT_BOOKS, ...NT_BOOKS];
+  return books[index];
+}
 const TOTAL_BIBLE_CHAPTERS = 1189;
 
 

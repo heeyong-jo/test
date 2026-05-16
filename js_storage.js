@@ -1,6 +1,9 @@
 ﻿// ==================== 로컬 스토리지 및 Firebase 저장 ====================
 
 
+// ==================== 로컬 스토리지 및 Firebase 저장 ====================
+
+
 // 전역 변수 선언
 let pendingUsers = [];
 let approvedUsers = [];
@@ -9,9 +12,9 @@ let members = [];
 let notices = [];
 let offerings = [];
 let meditations = [];
-let prayers = [];  // prayers 배열 명시적 초기화
+let prayers = [];
 let serviceList = [];
-let scheduleList = [];
+let scheduleList = [];  // ← 이 줄 추가 (scheduleList 변수)
 let todayVerse = null;
 let posts = [];
 

@@ -1,8 +1,7 @@
 ﻿// ==================== 로컬 스토리지 및 Firebase 저장 ====================
 
 
-
-
+let posts = [];
 let pendingUsers = [];
 let approvedUsers = [];
 let currentUser = null;
@@ -63,6 +62,9 @@ let accordOpen = { member: false, offering: false, approval: false };
 
 
 // 토스트
+
+
+const FB_KEYS = ['notices', 'members', 'meditations', 'pendingUsers', 'approvedUsers', 'offerings', 'todayVerse', 'serviceList', 'scheduleList', 'posts', 'prayers'];
 
 
 const LS = {

@@ -109,49 +109,55 @@ function doAuthSubmit() {
 
 // 로그인 처리 (안전하게 수정)
 function doLogin() {
-  const idInput = document.getElementById('li-id');
-  const pwInput = document.getElementById('li-pw');
+  const id = document.getElementById('li-id').value.trim();
+  const pw = document.getElementById('li-pw').value;
   const errDiv = document.getElementById('login-err');
-  
-  if (!idInput || !pwInput || !errDiv) {
-    console.error('로그인 폼 요소를 찾을 수 없습니다');
-    alert('페이지를 새로고침한 후 다시 시도해주세요.');
-    return;
-  }
-  
-  const id = idInput.value.trim();
-  const pw = pwInput.value;
   errDiv.style.display = 'none';
   
-  if (!id || !pw) {
+  if(!id || !pw) {
     errDiv.textContent = '아이디와 비밀번호를 입력하세요';
     errDiv.style.display = 'block';
     return;
   }
-    
-  // 관리자 계정 확인 (ADMIN_ACCOUNTS 체크)
-  if (typeof ADMIN_ACCOUNTS === 'undefined') {
-    console.error('ADMIN_ACCOUNTS 미정의');
-  } else {
-    const admin = ADMIN_ACCOUNTS.find(a => a.id === id && a.pw === pw);
-    if (admin) {
-      loginSuccess(admin);
-      return;
-    }
+  
+  // ✅ 안전하게 ADMIN_ACCOUNTS 가져오기 (여러 방법 시도)
+  let accounts = null;
+  
+  // 방법 1: 전역 변수에서 직접
+  if (typeof ADMIN_ACCOUNTS !== 'undefined') {
+    accounts = ADMIN_ACCOUNTS;
+  }
+  // 방법 2: window 객체에서
+  else if (typeof window.ADMIN_ACCOUNTS !== 'undefined') {
+    accounts = window.ADMIN_ACCOUNTS;
   }
   
-  // 승인된 일반 회원 확인
+  // 방법 3: 없으면 직접 정의 (백업)
+  if (!accounts) {
+    accounts = [
+      { id: 'hamkke', pw: 'hamkke123', name: '김소녕 목사', role: 'admin', email: 'pastor@hamkke.church', phone: '010-9012-9947', birth: '1955-03-29' },
+      { id: 'reodrino', pw: '232735a', name: '조희용 관리자', role: 'admin', email: 'reodrino@gmail.com', phone: '010-9797-1408', birth: '1981-08-27' }
+    ];
+    window.ADMIN_ACCOUNTS = accounts;
+  }
+  
+  console.log('ADMIN_ACCOUNTS 찾음:', accounts.length);  // 디버깅용
+  
+  const admin = accounts.find(a => a.id === id && a.pw === pw);
+  if(admin) {
+    loginSuccess(admin);
+    return;
+  }
+  
   const user = approvedUsers.find(u => u.id === id && u.pw === pw);
-  if (user) {
+  if(user) {
     loginSuccess(user);
     return;
   }
   
-  // 승인 대기 중인 회원 확인
   const pending = pendingUsers.find(u => u.id === id && u.pw === pw);
-  if (pending) {
-    const pendingMsg = document.getElementById('pending-msg');
-    if (pendingMsg) pendingMsg.style.display = 'block';
+  if(pending) {
+    document.getElementById('pending-msg').style.display = 'block';
     return;
   }
   
@@ -336,79 +342,46 @@ function doSignup() {
 
 // 로그인 성공 처리 (수정됨 - forceRefreshData 제거)
 async function loginSuccess(acc) {
-  console.log('loginSuccess 실행:', acc.name);
+  console.log('loginSuccess 실행:', acc.name);  // 디버깅용
   
-  // 현재 사용자 정보 설정
   currentUser = {
-    id: acc.id,
-    name: acc.name,
-    role: acc.role || 'member',
-    email: acc.email || '',
-    phone: acc.phone || '',
-    birth: acc.birth || ''
+    id: acc.id, name: acc.name, role: acc.role || 'member',
+    email: acc.email, phone: acc.phone, birth: acc.birth
   };
-  window.currentUser = currentUser;
+  window.currentUser = currentUser;  // ✅ 필수!
   
-  // 로그인 정보 저장
-  if (typeof LS !== 'undefined') {
-    LS.save('logged', {
-      id: acc.id,
-      ts: Date.now(),
-      email: acc.email || '',
-      phone: acc.phone || '',
-      birth: acc.birth || '',
-      name: acc.name
-    });
-  }
+  LS.save('logged', {
+    id: acc.id, ts: Date.now(), email: acc.email,
+    phone: acc.phone, birth: acc.birth, name: acc.name
+  });
   
-  // 로그인 화면 닫기
-  const loginScreen = document.getElementById('screen-login');
-  if (loginScreen) loginScreen.style.display = 'none';
+  document.getElementById('screen-login').style.display = 'none';
   
-  // 사용자 정보 표시 업데이트
   const roleText = roleLabel[currentUser.role] || '회원';
-  const userNameSpan = document.getElementById('user-name-display');
-  const userRoleSpan = document.getElementById('user-role-display');
-  const settingInfoSpan = document.getElementById('setting-user-info');
+  document.getElementById('user-name-display').textContent = acc.name;
+  document.getElementById('user-role-display').textContent = roleText;
+  document.getElementById('setting-user-info').textContent = acc.name + ' (' + roleText + ')';
   
-  if (userNameSpan) userNameSpan.textContent = acc.name;
-  if (userRoleSpan) userRoleSpan.textContent = roleText;
-  if (settingInfoSpan) settingInfoSpan.textContent = acc.name + ' (' + roleText + ')';
-  
-  // 권한에 따른 UI 표시
   if (typeof applyRole === 'function') {
     applyRole(currentUser.role);
   }
   
-  // Firebase 데이터 로드 (forceRefreshData 제거)
-  if (window.FB_READY && typeof fbLoadAll === 'function') {
-    try {
-      await fbLoadAll();
-      console.log('Firebase 데이터 로드 완료');
-    } catch(e) {
-      console.error('Firebase 데이터 로드 실패:', e);
-    }
+  // ✅ forceRefreshData 제거
+  if(window.FB_READY && window.FB) {
+    await fbLoadAll();
   }
   
-  // 홈 탭으로 이동
   currentTab = 0;
   if (typeof showTab === 'function') {
     showTab(0);
   }
   
-  // 각종 데이터 렌더링
-  setTimeout(() => {
-    if (typeof renderServiceView === 'function') renderServiceView();
-    if (typeof renderScheduleView === 'function') renderScheduleView();
-    if (typeof renderTodayVerse === 'function') renderTodayVerse();
-    if (typeof renderHomeNotices === 'function') renderHomeNotices();
-  }, 100);
+  if(typeof renderServiceView === 'function') renderServiceView();
+  if(typeof renderScheduleView === 'function') renderScheduleView();
+  if(typeof renderTodayVerse === 'function') renderTodayVerse();
   
-  // 매니저 권한일 때 승인 관리 렌더링
-  if (acc.role === 'manager' || acc.role === 'admin') {
-    setTimeout(() => {
-      if (typeof renderApprovalsAccord === 'function') renderApprovalsAccord();
-    }, 200);
+  if(acc.role === 'manager') {
+    setTimeout(() => { if(typeof renderApprovalsAccord === 'function') renderApprovalsAccord(); }, 150);
   }
   
   showToast('✅ ' + acc.name + '님 환영합니다');
@@ -417,26 +390,15 @@ async function loginSuccess(acc) {
 
 // 로그아웃
 function doLogout() {
-  if (!confirm('로그아웃하시겠습니까?')) return;
-  
-  if (typeof LS !== 'undefined') {
-    LS.del('logged');
-  }
-  
+  if(!confirm('로그아웃하시겠습니까?')) return;
+  LS.del('logged');
   currentUser = null;
-  window.currentUser = null;
-  
-  if (typeof switchAuthTab === 'function') {
-    switchAuthTab('login');
-  }
-  
-  const loginScreen = document.getElementById('screen-login');
-  if (loginScreen) loginScreen.style.display = 'block';
-  
+  window.currentUser = null;  // ✅ 추가!
+  switchAuthTab('login');
+  document.getElementById('screen-login').style.display = 'block';
   if (typeof showTab === 'function') {
     showTab(0);
   }
-  
   showToast('로그아웃되었습니다');
 }
 

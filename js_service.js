@@ -20,6 +20,12 @@ const DEFAULT_SERVICE_LIST = [
 ];
 
 
+// 수정된 js_service.js (정상)
+// 전역 변수 선언
+let serviceList = [];
+let prayers = [];
+
+
 function initServiceData() {
   if (typeof LS === 'undefined') return;
   serviceList = LS.load('serviceList', DEFAULT_SERVICE_LIST);
@@ -39,7 +45,14 @@ function renderServiceView() {
   if (!list) return;
 
 
-  const sunday = serviceList.filter(s => s.sub && s.sub.includes('일요일'));
+  // serviceList가 비어있으면 기본값 사용
+  let dataToRender = serviceList;
+  if (!dataToRender || dataToRender.length === 0) {
+    dataToRender = DEFAULT_SERVICE_LIST;
+  }
+
+
+  const sunday = dataToRender.filter(s => s.sub && s.sub.includes('일요일'));
   if (sunday.length === 0) {
     list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text2);">등록된 주일 예배가 없습니다.</div>';
     return;
@@ -59,7 +72,14 @@ function renderOtherService() {
   if (!list) return;
 
 
-  const other = serviceList.filter(s => !s.sub || !s.sub.includes('일요일'));
+  // serviceList가 비어있으면 기본값 사용
+  let dataToRender = serviceList;
+  if (!dataToRender || dataToRender.length === 0) {
+    dataToRender = DEFAULT_SERVICE_LIST;
+  }
+
+
+  const other = dataToRender.filter(s => !s.sub || !s.sub.includes('일요일'));
   
   if (other.length === 0) {
     list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text2);">등록된 기타 예배가 없습니다.</div>';
@@ -111,7 +131,9 @@ function toggleSundayEdit() {
     cancelSundayEdit();
     return;
   }
-    document.getElementById('sunday-service-view').style.display = 'none';
+  // ✅ sundayEditData 초기화 추가
+  sundayEditData = JSON.parse(JSON.stringify(serviceList.filter(s => s.sub && s.sub.includes('일요일'))));
+  document.getElementById('sunday-service-view').style.display = 'none';
   document.getElementById('sunday-service-edit').style.display = 'block';
   renderSundayEditList();
 }

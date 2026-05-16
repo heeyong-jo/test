@@ -313,55 +313,47 @@
 
   <!-- 게시판 본문 -->
   <div id="board-content" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); overflow-y:auto; padding: 90px 14px 100px 14px;">
-     <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-  <button id="board-back-btn" style="background:var(--bg2); border:1.5px solid var(--border); border-radius:8px; padding:5px 12px; cursor:pointer; color:var(--text); font-weight:600;" onclick="showBoardCategoryList()">← 목록</button>
-  <div id="board-category-title" style="font-size:16px; font-weight:800; color:var(--text); flex:1;"></div>
-  <!-- 글쓰기 버튼을 오른쪽으로 이동 -->
-  <div id="board-write-btn-wrap" style="display:none; margin-left:auto;">
-    <button class="btn-primary" style="width:auto; padding:5px 12px; font-size:12px;" onclick="openBoardWrite()">✏️ 글쓰기</button>
-  </div>
-</div>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+      <button id="board-back-btn" style="background:var(--bg2); border:1.5px solid var(--border); border-radius:8px; padding:5px 12px; cursor:pointer; color:var(--text); font-weight:600;" onclick="showBoardCategoryList()">← 목록</button>
+      <div id="board-category-title" style="font-size:16px; font-weight:800; color:var(--text); flex:1;"></div>
+      <div id="board-write-btn-wrap" style="display:none;">
+        <button class="btn-primary" style="width:auto; padding:5px 12px; font-size:12px;" onclick="openBoardWrite()">✏️ 글쓰기</button>
+      </div>
+    </div>
     <div id="board-manager-area" style="display:none; margin-bottom:10px;">
       <div class="card" style="padding:12px;">
         <div class="card-title" style="margin-bottom:8px;">👑 담당</div>
         <div id="board-manager-content"></div>
       </div>
     </div>
-    
-<!-- ═══════════════════ p3: 성경읽기 ══════════════════════ -->
+    <div id="board-post-list"></div>
+    <div id="board-pagination" style="display:flex; justify-content:center; gap:6px; margin-top:16px; flex-wrap:wrap;"></div>
+  </div> <!-- ✅ board-content 닫는 태그 -->
+</div> <!-- ✅ p2 닫는 태그 -->
+
+
+<!-- ==================== p3: 성경읽기 (p2 밖으로 나와야 함) ==================== -->
 <div id="p3" class="page">
-  <!-- 기본 화면: 통독 시작 + 명예의 전당 -->
   <div id="bible-reader-home">
     <div class="card" style="text-align:center; padding:24px;">
       <div style="font-size:48px; margin-bottom:16px;">📖</div>
       <div style="font-size:18px; font-weight:800; color:var(--text); margin-bottom:8px;">성경 통독</div>
-      <div style="font-size:13px; color:var(--text2); margin-bottom:20px;">
-        하루 최대 10장까지 읽을 수 있습니다
-      </div>
-      <button class="btn-primary" style="width:auto; padding:12px 24px; font-size:14px;" onclick="openBibleReading()">
-        📖 오늘의 읽기 시작
-      </button>
+      <div style="font-size:13px; color:var(--text2); margin-bottom:20px;">하루 최대 10장까지 읽을 수 있습니다</div>
+      <button class="btn-primary" style="width:auto; padding:12px 24px; font-size:14px;" onclick="openBibleReading()">📖 오늘의 읽기 시작</button>
       <div id="bible-reading-today-status" style="margin-top:12px; font-size:12px; color:var(--text2);"></div>
     </div>
-
-
     <div class="card">
       <div class="card-title">🏆 완독자 명예의 전당</div>
-      <div id="bible-hall-of-fame" style="font-size:13px; color:var(--text2);">
-        <div style="text-align:center; padding:20px;">불러오는 중...</div>
-      </div>
+      <div id="bible-hall-of-fame" style="font-size:13px; color:var(--text2);"><div style="text-align:center; padding:20px;">불러오는 중...</div></div>
     </div>
   </div>
-
-
-  <!-- 읽기 화면 (처음에는 숨김) -->
   <div id="bible-reader-screen" style="display:none;">
     <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
       <button style="background:var(--bg2); border:1.5px solid var(--border); border-radius:8px; padding:5px 12px; cursor:pointer; color:var(--text); font-weight:600;" onclick="closeBibleReading()">← 뒤로</button>
       <div id="bible-reading-title" style="font-size:16px; font-weight:800; color:var(--text); flex:1;"></div>
       <span id="bible-reading-today-count" style="font-size:12px; color:var(--text2);"></span>
-      <button onclick="changeBibleReadingFontSize(-1)" style="width:34px;height:34px;border:1px solid var(--border);border-radius:50%;background:var(--bg2);cursor:pointer;font-size:14px;font-weight:700;">A-</button>
-      <button onclick="changeBibleReadingFontSize(1)" style="width:34px;height:34px;border:1px solid var(--border);border-radius:50%;background:var(--bg2);cursor:pointer;font-size:14px;font-weight:700;">A+</button>
+      <button onclick="changeBibleReadingFontSize(-1)" class="font-btn">A-</button>
+      <button onclick="changeBibleReadingFontSize(1)" class="font-btn">A+</button>
     </div>
     <div id="bible-reading-content" style="font-size:15px; line-height:1.8; color:var(--text);"></div>
     <div style="text-align:center; margin-top:20px;">
@@ -517,8 +509,7 @@
     </div>
   </div>
 </div>
-
-
+</div>
 <!-- ══════════════════════ p5: 성경책 ══════════════════════ -->
 <div id="p5" class="page" style="padding:0;padding-bottom:0;">
   <div id="bibleMain" style="height:calc(100dvh - 163px);background:#fdf8f0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 16px;position:relative;overflow:hidden;">

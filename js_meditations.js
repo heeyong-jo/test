@@ -1,4 +1,50 @@
-﻿// ==================== 말씀 나누기 (묵상) ====================
+﻿// ==================== 오늘의 말씀 렌더링 ====================
+function renderTodayVerse() {
+  // localStorage에서 말씀 데이터 로드
+  let todayVerse = null;
+  
+  if (typeof LS !== 'undefined') {
+    todayVerse = LS.load('todayVerse', null);
+  }
+  
+  // Firebase에서도 시도 (선택사항)
+  if (window.FB_READY && typeof firebase !== 'undefined') {
+    firebase.database().ref('todayVerse').once('value')
+      .then(snap => {
+        if (snap.exists()) {
+          todayVerse = snap.val();
+          if (typeof LS !== 'undefined') LS.save('todayVerse', todayVerse);
+          updateVerseUI(todayVerse);
+        } else if (todayVerse) {
+          updateVerseUI(todayVerse);
+        }
+      })
+      .catch(() => {
+        if (todayVerse) updateVerseUI(todayVerse);
+      });
+  } else if (todayVerse) {
+    updateVerseUI(todayVerse);
+  }
+}
+
+
+function updateVerseUI(todayVerse) {
+  if (!todayVerse || !todayVerse.text) return;
+  
+  const textEl = document.getElementById('today-verse-text');
+  const refEl = document.getElementById('today-verse-ref');
+  const bodyEl = document.getElementById('today-verse-body');
+  
+  if (textEl) {
+    const shortText = todayVerse.text.length > 100 ? todayVerse.text.substring(0, 100) + '...' : todayVerse.text;
+    textEl.innerHTML = `"${shortText}"`;
+  }
+  if (refEl) refEl.innerHTML = todayVerse.ref;
+  if (bodyEl) bodyEl.innerHTML = todayVerse.text;
+}
+
+
+// ==================== 말씀 나누기 (묵상) ====================
 
 
 // 전역 변수
@@ -164,8 +210,35 @@ async function deleteMeditation(id) {
     showToast('삭제에 실패했습니다');
   }
 }
+// 말씀 등록 모달 열기
+function openVerseSelector() {
+  const modal = document.getElementById('modal-verse-selector');
+  if (modal) modal.style.display = 'flex';
+}
 
 
+// 말씀 등록 모달 닫기
+function closeVerseSelector() {
+  const modal = document.getElementById('modal-verse-selector');
+  if (modal) modal.style.display = 'none';
+}
+
+
+// 말씀 공유하기
+function shareToday() {
+  const ref = document.getElementById('today-verse-ref')?.innerText || '';
+  const text = document.getElementById('today-verse-text')?.innerText || '';
+  
+  if (navigator.share) {
+    navigator.share({
+      title: '가좌제일교회 오늘의 말씀',
+      text: `${ref}\n\n${text}`,
+    }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(`${ref}\n\n${text}`);
+    showToast('말씀이 클립보드에 복사되었습니다');
+  }
+}
 // 실시간 묵상 구독 (Firebase)
 function subscribeMeditations() {
   if (!window.FB_READY) return;

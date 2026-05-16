@@ -8,7 +8,7 @@ if (typeof FB_KEYS === 'undefined') {
 }
 
 
-// 전역 변수 선언 (serviceList, scheduleList는 js_service.js에서만 선언 - 중복 방지)
+// 전역 변수 선언
 let pendingUsers = [];
 let approvedUsers = [];
 let currentUser = null;
@@ -17,6 +17,8 @@ let notices = [];
 let offerings = [];
 let meditations = [];
 let prayers = [];
+let serviceList = [];      // ✅ 추가됨
+let scheduleList = [];     // ✅ 추가됨
 let todayVerse = null;
 let posts = [];
 

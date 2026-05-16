@@ -43,7 +43,7 @@ window.FB_READY = FB_READY;
 
 
 // Firebase 동기화 키 목록 (단일 정의)
-const FB_KEYS = ['notices', 'members', 'meditations', 'pendingUsers', 'approvedUsers', 
+var FB_KEYS = ['notices', 'members', 'meditations', 'pendingUsers', 'approvedUsers', 
                   'offerings', 'todayVerse', 'serviceList', 'scheduleList', 'posts', 'prayers'];
 
 

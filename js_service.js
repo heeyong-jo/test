@@ -31,10 +31,22 @@ const DEFAULT_SCHEDULE_LIST = [
 ];
 
 
-// 전역 변수 선언
-let serviceList = [];
-let prayers = [];
-let scheduleList = [];  // scheduleList 변수 추가
+// 전역 변수 선언 (중복 선언 방지를 위해 window 객체 사용)
+if (typeof window.serviceList === 'undefined') {
+  window.serviceList = [];
+}
+if (typeof window.scheduleList === 'undefined') {
+  window.scheduleList = [];
+}
+if (typeof window.prayers === 'undefined') {
+  window.prayers = [];
+}
+
+
+// 로컬 참조용 (편의)
+let serviceList = window.serviceList;
+let scheduleList = window.scheduleList;
+let prayers = window.prayers;
 
 
 // 초기화 함수

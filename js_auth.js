@@ -103,6 +103,7 @@ function doAuthSubmit() {
 
 
 // 로그인 처리
+// 로그인 처리 (안전하게 수정)
 function doLogin() {
   const idInput = document.getElementById('li-id');
   const pwInput = document.getElementById('li-pw');
@@ -110,6 +111,7 @@ function doLogin() {
   
   if (!idInput || !pwInput || !errDiv) {
     console.error('로그인 폼 요소를 찾을 수 없습니다');
+    alert('페이지를 새로고침한 후 다시 시도해주세요.');
     return;
   }
   
@@ -123,10 +125,18 @@ function doLogin() {
     return;
   }
   
-  // 관리자 계정 확인 (안전 체크)
-  const admin = (typeof ADMIN_ACCOUNTS !== 'undefined') ? 
-                ADMIN_ACCOUNTS.find(a => a.id === id && a.pw === pw) : 
-                null;
+  // ADMIN_ACCOUNTS가 없으면 직접 정의
+  let accounts = window.ADMIN_ACCOUNTS;
+  if (!accounts || typeof accounts === 'undefined') {
+    accounts = [
+      { id: 'gajwajeil', pw: 'gajwajeil123', name: '김명서 담임목사', role: 'admin', email: 'pastor@hamkke.church', phone: '032-581-4048', birth: '1955-03-29' },
+      { id: 'reodrino', pw: '232735a', name: '조희용 관리자', role: 'admin', email: 'reodrino@gmail.com', phone: '010-9797-1408', birth: '1981-08-27' }
+    ];
+    window.ADMIN_ACCOUNTS = accounts;
+  }
+  
+  // 관리자 계정 확인
+  const admin = accounts.find(a => a.id === id && a.pw === pw);
   if (admin) {
     loginSuccess(admin);
     return;
@@ -168,8 +178,7 @@ function checkIdDuplicate(val) {
   
   clearTimeout(idCheckTimer);
   idCheckTimer = setTimeout(() => {
-    const taken = (typeof ADMIN_ACCOUNTS !== 'undefined' ? 
-                   ADMIN_ACCOUNTS.find(a => a.id === val) : null) || 
+    const taken = ADMIN_ACCOUNTS.find(a => a.id === val) || 
                   pendingUsers.find(u => u.id === val) || 
                   approvedUsers.find(u => u.id === val);
     if (taken) {
@@ -206,9 +215,7 @@ function doResetPassword() {
   }
   
   // 관리자 계정 검색
-  const admin = (typeof ADMIN_ACCOUNTS !== 'undefined') ? 
-                ADMIN_ACCOUNTS.find(a => a.id === id && a.email === email && (a.phone || '').replace(/-/g, '') === phone) : 
-                null;
+  const admin = ADMIN_ACCOUNTS.find(a => a.id === id && a.email === email && (a.phone || '').replace(/-/g, '') === phone);
   if (admin) {
     const tmpPw = 'hamkke' + Math.floor(1000 + Math.random() * 9000);
     admin.pw = tmpPw;
@@ -461,8 +468,7 @@ function openMyProfile() {
     return;
   }
   
-  let userInfo = (typeof ADMIN_ACCOUNTS !== 'undefined' ? 
-                  ADMIN_ACCOUNTS.find(a => a.id === currentUser.id) : null) || 
+  let userInfo = ADMIN_ACCOUNTS.find(a => a.id === currentUser.id) || 
                  approvedUsers.find(u => u.id === currentUser.id);
   
   if (!userInfo) {
@@ -492,8 +498,7 @@ function openMyProfile() {
 function openEditMyProfile() {
   if (!currentUser) return;
   
-  let userInfo = (typeof ADMIN_ACCOUNTS !== 'undefined' ? 
-                  ADMIN_ACCOUNTS.find(a => a.id === currentUser.id) : null) || 
+  let userInfo = ADMIN_ACCOUNTS.find(a => a.id === currentUser.id) || 
                  approvedUsers.find(u => u.id === currentUser.id);
   
   if (!userInfo) return;

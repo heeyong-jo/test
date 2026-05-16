@@ -1,4 +1,14 @@
-﻿// 전역 변수 선언
+﻿// ==================== 로컬 스토리지 및 Firebase 저장 ====================
+
+
+// FB_KEYS가 없으면 직접 정의 (안전 장치)
+if (typeof FB_KEYS === 'undefined') {
+  var FB_KEYS = ['notices', 'members', 'meditations', 'pendingUsers', 'approvedUsers', 
+                  'offerings', 'todayVerse', 'serviceList', 'scheduleList', 'posts', 'prayers'];
+}
+
+
+// 전역 변수 선언 (serviceList, scheduleList는 js_service.js에서만 선언 - 중복 방지)
 let pendingUsers = [];
 let approvedUsers = [];
 let currentUser = null;
@@ -7,17 +17,12 @@ let notices = [];
 let offerings = [];
 let meditations = [];
 let prayers = [];
-// serviceList, scheduleList는 js_service.js에서 선언됨 (중복 방지)
 let todayVerse = null;
 let posts = [];
 
 
-
-
 // localStorage 접두사
 const STORAGE_PREFIX = 'ch2_';
-
-
 
 
 // LS 객체
@@ -43,8 +48,6 @@ const LS = {
     }
   }
 };
-
-
 
 
 // Firebase 실시간 동기화

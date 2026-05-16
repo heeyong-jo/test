@@ -31,6 +31,8 @@ if (typeof LS !== 'undefined') {
 
 // 로그인 폼 표시
 function showLoginForm() {
+  console.log('showLoginForm 호출됨');
+  
   const loginForm = document.getElementById('login-form');
   const signupExtra = document.getElementById('signup-extra');
   const forgotForm = document.getElementById('forgot-form');
@@ -44,16 +46,16 @@ function showLoginForm() {
   if (forgotForm) forgotForm.style.display = 'none';
   if (loginErr) loginErr.style.display = 'none';
   if (pendingMsg) pendingMsg.style.display = 'none';
+  
   if (authTabLogin) {
-    authTabLogin.style.cssText = 'flex:1;padding:10px;border:none;border-radius:10px;background:white;color:#3d0f52;font-size:13px;font-weight:700;';
+    authTabLogin.style.cssText = 'flex:1;padding:10px;border:none;border-radius:10px;background:white;color:#3d0f52;font-size:13px;font-weight:700;cursor:pointer;';
   }
   if (authTabSignup) {
-    authTabSignup.style.cssText = 'flex:1;padding:10px;border:none;border-radius:10px;background:transparent;color:rgba(255,255,255,0.6);font-size:13px;font-weight:600;';
+    authTabSignup.style.cssText = 'flex:1;padding:10px;border:none;border-radius:10px;background:transparent;color:rgba(255,255,255,0.6);font-size:13px;font-weight:600;cursor:pointer;';
   }
+  
   authMode = 'login';
-}
-
-
+  
 // 비밀번호 찾기 폼 표시
 function showForgotPw() {
   const loginForm = document.getElementById('login-form');
@@ -109,31 +111,29 @@ function doAuthSubmit() {
 
 // 로그인 처리 (안전하게 수정)
 function doLogin() {
+  console.log('doLogin 호출됨');
+  
   const id = document.getElementById('li-id').value.trim();
   const pw = document.getElementById('li-pw').value;
   const errDiv = document.getElementById('login-err');
-  errDiv.style.display = 'none';
   
-  if(!id || !pw) {
-    errDiv.textContent = '아이디와 비밀번호를 입력하세요';
-    errDiv.style.display = 'block';
+  if (!id || !pw) {
+    if (errDiv) {
+      errDiv.textContent = '아이디와 비밀번호를 입력하세요';
+      errDiv.style.display = 'block';
+    }
     return;
   }
   
-  // ✅ 안전하게 ADMIN_ACCOUNTS 가져오기 (여러 방법 시도)
+  if (errDiv) errDiv.style.display = 'none';
+  
+  // ✅ ADMIN_ACCOUNTS 안전하게 찾기
   let accounts = null;
+  if (typeof ADMIN_ACCOUNTS !== 'undefined') accounts = ADMIN_ACCOUNTS;
+  else if (typeof window.ADMIN_ACCOUNTS !== 'undefined') accounts = window.ADMIN_ACCOUNTS;
   
-  // 방법 1: 전역 변수에서 직접
-  if (typeof ADMIN_ACCOUNTS !== 'undefined') {
-    accounts = ADMIN_ACCOUNTS;
-  }
-  // 방법 2: window 객체에서
-  else if (typeof window.ADMIN_ACCOUNTS !== 'undefined') {
-    accounts = window.ADMIN_ACCOUNTS;
-  }
-  
-  // 방법 3: 없으면 직접 정의 (백업)
   if (!accounts) {
+    // 백업 계정
     accounts = [
       { id: 'hamkke', pw: 'hamkke123', name: '김소녕 목사', role: 'admin', email: 'pastor@hamkke.church', phone: '010-9012-9947', birth: '1955-03-29' },
       { id: 'reodrino', pw: '232735a', name: '조희용 관리자', role: 'admin', email: 'reodrino@gmail.com', phone: '010-9797-1408', birth: '1981-08-27' }
@@ -141,28 +141,37 @@ function doLogin() {
     window.ADMIN_ACCOUNTS = accounts;
   }
   
-  console.log('ADMIN_ACCOUNTS 찾음:', accounts.length);  // 디버깅용
+  console.log('ADMIN_ACCOUNTS:', accounts);
   
   const admin = accounts.find(a => a.id === id && a.pw === pw);
-  if(admin) {
+  if (admin) {
     loginSuccess(admin);
     return;
   }
   
-  const user = approvedUsers.find(u => u.id === id && u.pw === pw);
-  if(user) {
-    loginSuccess(user);
-    return;
+  // 일반 회원 확인
+  if (typeof approvedUsers !== 'undefined') {
+    const user = approvedUsers.find(u => u.id === id && u.pw === pw);
+    if (user) {
+      loginSuccess(user);
+      return;
+    }
   }
   
-  const pending = pendingUsers.find(u => u.id === id && u.pw === pw);
-  if(pending) {
-    document.getElementById('pending-msg').style.display = 'block';
-    return;
+  // 승인 대기 확인
+  if (typeof pendingUsers !== 'undefined') {
+    const pending = pendingUsers.find(u => u.id === id && u.pw === pw);
+    if (pending) {
+      const pendingMsg = document.getElementById('pending-msg');
+      if (pendingMsg) pendingMsg.style.display = 'block';
+      return;
+    }
   }
   
-  errDiv.textContent = '아이디 또는 비밀번호가 일치하지 않습니다';
-  errDiv.style.display = 'block';
+  if (errDiv) {
+    errDiv.textContent = '아이디 또는 비밀번호가 일치하지 않습니다';
+    errDiv.style.display = 'block';
+  }
 }
 
 

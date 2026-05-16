@@ -32,27 +32,37 @@ function closeModal(id) {
   if (modal) modal.style.display = 'none';
 }
 // 탭 전환
+// 탭 전환
 function showTab(n) {
-  // 터치 액션 설정 (최초 1회)
-  const swipeContainer = document.getElementById('swipe-container');
-  if (swipeContainer && !swipeContainer.hasAttribute('data-touch-set')) {
-    swipeContainer.style.touchAction = 'pan-x pan-y pinch-zoom';
-    swipeContainer.setAttribute('data-touch-set', 'true');
+  n = Math.max(0, Math.min(TOTAL_TABS - 1, n));
+  
+  // ✅ 로그인 없이 접근 가능한 탭: 0(홈), 1(말씀), 5(성경책) - 일부만 허용
+  // 관리자 탭(6)은 로그인 필수
+  const needLogin = [2, 3, 4, 6].includes(n);
+  
+  if (needLogin && !currentUser && !window.currentUser) {
+    const loginScreen = document.getElementById('screen-login');
+    if (loginScreen) {
+      loginScreen.style.display = 'flex';
+    }
+    // 현재 탭은 그대로 유지
+    return;
   }
-      currentTab = n;
+  
+  currentTab = n;
   document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
   for (let i = 0; i < TOTAL_TABS; i++) {
-    document.getElementById('p' + i).classList.toggle('show', i === n);
+    const page = document.getElementById('p' + i);
+    if (page) page.classList.toggle('show', i === n);
   }
 
 
-  // 🔥 성경책 탭(p5)을 떠날 때 모든 하위 뷰 강제 숨김
+  // 성경책 탭(p5) 처리
   if (n !== 5) {
     ['bibleScriptureView', 'bibleHymnView', 'bibleAppendixView'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
     });
-    // 성경 메인 화면은 보이도록 복구
     const main = document.getElementById('bibleMain');
     if (main) main.style.display = 'flex';
   }

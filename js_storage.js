@@ -1,10 +1,4 @@
-﻿// ==================== 로컬 스토리지 및 Firebase 저장 ====================
-
-
-// ==================== 로컬 스토리지 및 Firebase 저장 ====================
-
-
-// 전역 변수 선언
+﻿// 전역 변수 선언
 let pendingUsers = [];
 let approvedUsers = [];
 let currentUser = null;
@@ -13,14 +7,17 @@ let notices = [];
 let offerings = [];
 let meditations = [];
 let prayers = [];
-let serviceList = [];
-let scheduleList = [];  // ← 이 줄 추가 (scheduleList 변수)
+// serviceList, scheduleList는 js_service.js에서 선언됨 (중복 방지)
 let todayVerse = null;
 let posts = [];
 
 
+
+
 // localStorage 접두사
 const STORAGE_PREFIX = 'ch2_';
+
+
 
 
 // LS 객체
@@ -48,6 +45,8 @@ const LS = {
 };
 
 
+
+
 // Firebase 실시간 동기화
 function fbSync() {
   if (!window.FB_READY) return;
@@ -64,6 +63,8 @@ function fbSync() {
     } catch(e) { console.warn(key + ' 동기화 오류:', e); }
   });
 }
+
+
 
 
 // Firebase 데이터로 UI 업데이트
@@ -119,6 +120,8 @@ function fbUpdateUI(key, data) {
       break;
   }
 }
+
+
 
 
 // 모든 데이터 로드

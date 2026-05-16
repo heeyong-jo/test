@@ -123,8 +123,10 @@ function doLogin() {
     return;
   }
   
-  // 관리자 계정 확인
-  const admin = ADMIN_ACCOUNTS.find(a => a.id === id && a.pw === pw);
+  // 관리자 계정 확인 (안전 체크)
+  const admin = (typeof ADMIN_ACCOUNTS !== 'undefined') ? 
+                ADMIN_ACCOUNTS.find(a => a.id === id && a.pw === pw) : 
+                null;
   if (admin) {
     loginSuccess(admin);
     return;
@@ -166,7 +168,8 @@ function checkIdDuplicate(val) {
   
   clearTimeout(idCheckTimer);
   idCheckTimer = setTimeout(() => {
-    const taken = ADMIN_ACCOUNTS.find(a => a.id === val) || 
+    const taken = (typeof ADMIN_ACCOUNTS !== 'undefined' ? 
+                   ADMIN_ACCOUNTS.find(a => a.id === val) : null) || 
                   pendingUsers.find(u => u.id === val) || 
                   approvedUsers.find(u => u.id === val);
     if (taken) {
@@ -203,7 +206,9 @@ function doResetPassword() {
   }
   
   // 관리자 계정 검색
-  const admin = ADMIN_ACCOUNTS.find(a => a.id === id && a.email === email && (a.phone || '').replace(/-/g, '') === phone);
+  const admin = (typeof ADMIN_ACCOUNTS !== 'undefined') ? 
+                ADMIN_ACCOUNTS.find(a => a.id === id && a.email === email && (a.phone || '').replace(/-/g, '') === phone) : 
+                null;
   if (admin) {
     const tmpPw = 'hamkke' + Math.floor(1000 + Math.random() * 9000);
     admin.pw = tmpPw;
@@ -456,7 +461,8 @@ function openMyProfile() {
     return;
   }
   
-  let userInfo = ADMIN_ACCOUNTS.find(a => a.id === currentUser.id) || 
+  let userInfo = (typeof ADMIN_ACCOUNTS !== 'undefined' ? 
+                  ADMIN_ACCOUNTS.find(a => a.id === currentUser.id) : null) || 
                  approvedUsers.find(u => u.id === currentUser.id);
   
   if (!userInfo) {
@@ -486,7 +492,8 @@ function openMyProfile() {
 function openEditMyProfile() {
   if (!currentUser) return;
   
-  let userInfo = ADMIN_ACCOUNTS.find(a => a.id === currentUser.id) || 
+  let userInfo = (typeof ADMIN_ACCOUNTS !== 'undefined' ? 
+                  ADMIN_ACCOUNTS.find(a => a.id === currentUser.id) : null) || 
                  approvedUsers.find(u => u.id === currentUser.id);
   
   if (!userInfo) return;

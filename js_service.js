@@ -122,10 +122,14 @@ function renderServiceView() {
 }
 
 
+
+
 // 주일 예배 렌더링
 function renderSundayService() {
   const list = document.getElementById('sunday-service-list-view');
   if (!list) return;
+
+
 
 
   let dataToRender = serviceList;
@@ -133,6 +137,8 @@ function renderSundayService() {
     console.log('serviceList가 비어있음, 기본값 사용');
     dataToRender = DEFAULT_SERVICE_LIST;
   }
+
+
 
 
   const sunday = dataToRender.filter(s => s.sub && s.sub.includes('일요일'));
@@ -152,10 +158,14 @@ function renderSundayService() {
 }
 
 
+
+
 // 기타 예배 렌더링
 function renderOtherService() {
   const list = document.getElementById('other-service-list-view');
   if (!list) return;
+
+
 
 
   let dataToRender = serviceList;
@@ -164,12 +174,16 @@ function renderOtherService() {
   }
 
 
+
+
   const other = dataToRender.filter(s => !s.sub || !s.sub.includes('일요일'));
   
   if (other.length === 0) {
     list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text2);">등록된 기타 예배가 없습니다.</div>';
     return;
   }
+
+
 
 
   list.innerHTML = `
@@ -192,10 +206,14 @@ function renderOtherService() {
 }
 
 
+
+
 function toggleOtherServiceBody() {
   const body = document.getElementById('other-service-body');
   const arrow = document.getElementById('other-service-arrow');
   if (!body || !arrow) return;
+
+
 
 
   const isOpen = body.style.display === 'block';
@@ -203,6 +221,8 @@ function toggleOtherServiceBody() {
   arrow.textContent = isOpen ? '▶' : '▼';
   arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';
 }
+
+
 
 
 let serviceEditData = [];
@@ -224,6 +244,8 @@ function toggleSundayEdit() {
 }
 
 
+
+
 function renderSundayEditList() {
   const el = document.getElementById('sunday-service-list-edit');
   if (!el) return;
@@ -240,10 +262,14 @@ function renderSundayEditList() {
 }
 
 
+
+
 function deleteSundayEditRow(i) {
   sundayEditData.splice(i, 1);
   renderSundayEditList();
 }
+
+
 
 
 function addSundayServiceRow() {
@@ -252,6 +278,8 @@ function addSundayServiceRow() {
   sundayEditData.push({ emoji: '✨', name, sub: '매주 일요일', time: '오전 11:00' });
   renderSundayEditList();
 }
+
+
 
 
 function saveSundayEdit() {
@@ -276,6 +304,8 @@ function saveSundayEdit() {
 }
 
 
+
+
 function toggleOtherEdit() {
   if (document.getElementById('other-service-edit').style.display === 'block') {
     cancelOtherEdit();
@@ -286,6 +316,8 @@ function toggleOtherEdit() {
   document.getElementById('other-service-edit').style.display = 'block';
   renderOtherEditList();
 }
+
+
 
 
 function renderOtherEditList() {
@@ -304,10 +336,14 @@ function renderOtherEditList() {
 }
 
 
+
+
 function deleteOtherEditRow(i) {
   otherEditData.splice(i, 1);
   renderOtherEditList();
 }
+
+
 
 
 function addOtherServiceRow() {
@@ -316,6 +352,8 @@ function addOtherServiceRow() {
   otherEditData.push({ emoji: '🔥', name, sub: '매주 금요일', time: '저녁 8:00' });
   renderOtherEditList();
 }
+
+
 
 
 function saveOtherEdit() {
@@ -338,6 +376,8 @@ function saveOtherEdit() {
   renderServiceView();
   showToast('✅ 기타 예배가 저장되었습니다');
 }
+
+
 
 
 // ==================== 예배 시간표 (수정된 버전) ====================
@@ -419,6 +459,8 @@ function renderScheduleList(container, list) {
 }
 
 
+
+
 function toggleScheduleEdit() {
   const isEdit = document.getElementById('schedule-edit').style.display !== 'none';
   if (isEdit) {
@@ -431,6 +473,8 @@ function toggleScheduleEdit() {
   document.getElementById('schedule-edit-btn').textContent = '✕ 취소';
   renderScheduleEditList();
 }
+
+
 
 
 function renderScheduleEditList() {
@@ -449,10 +493,14 @@ function renderScheduleEditList() {
 }
 
 
+
+
 function deleteScheduleRow(i) {
   scheduleEditData.splice(i, 1);
   renderScheduleEditList();
 }
+
+
 
 
 function addScheduleRow() {
@@ -462,6 +510,8 @@ function addScheduleRow() {
   document.getElementById('new-sch-time').value = '';
   document.getElementById('modal-add-schedule').style.display = 'flex';
 }
+
+
 
 
 function confirmAddSchedule() {
@@ -476,13 +526,19 @@ function confirmAddSchedule() {
 }
 
 
+
+
 function saveScheduleEdit() {
   scheduleList = JSON.parse(JSON.stringify(scheduleEditData));
-  firebase.database().ref('scheduleList').set(scheduleList)
-    .then(() => console.log('scheduleList 저장 성공'))
-    .catch(err => { console.error('시간표 저장 실패:', err); showToast('저장 오류'); });
   
-  // localStorage에도 저장
+  // Firebase 준비 상태 확인 후 저장
+  if (window.FB_READY && typeof firebase !== 'undefined') {
+    firebase.database().ref('scheduleList').set(scheduleList)
+      .then(() => console.log('scheduleList 저장 성공'))
+      .catch(err => { console.error('시간표 저장 실패:', err); showToast('저장 오류'); });
+  }
+  
+  // localStorage에도 저장 (항상 저장)
   try {
     localStorage.setItem('ch2_scheduleList', JSON.stringify(scheduleList));
   } catch(e) {}
@@ -498,6 +554,8 @@ function saveScheduleEdit() {
 }
 
 
+
+
 // ==================== 취소 함수들 ====================
 function cancelSundayEdit() {
   const viewEl = document.getElementById('sunday-service-view');
@@ -505,6 +563,8 @@ function cancelSundayEdit() {
   if (viewEl) viewEl.style.display = 'block';
   if (editEl) editEl.style.display = 'none';
 }
+
+
 
 
 function cancelOtherEdit() {
@@ -515,6 +575,8 @@ function cancelOtherEdit() {
 }
 
 
+
+
 function cancelScheduleEdit() {
   const viewEl = document.getElementById('schedule-view');
   const editEl = document.getElementById('schedule-edit');
@@ -523,6 +585,8 @@ function cancelScheduleEdit() {
   if (editEl) editEl.style.display = 'none';
   if (btn) btn.textContent = '✏️ 수정';
 }
+
+
 
 
 // 홈 화면 예배 안내 렌더링
@@ -541,6 +605,8 @@ function renderHomeService() {
     renderServiceList(container, data);
   }
 }
+
+
 
 
 function renderServiceList(container, serviceList) {

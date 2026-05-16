@@ -219,6 +219,8 @@ async function loginSuccess(acc) {
     id: acc.id, name: acc.name, role: acc.role || 'member',
     email: acc.email, phone: acc.phone, birth: acc.birth
   };
+  window.currentUser = currentUser;  // ← 이 줄 추가 (전역 참조용)
+  
   LS.save('logged', {
     id: acc.id, ts: Date.now(), email: acc.email,
     phone: acc.phone, birth: acc.birth, name: acc.name
@@ -249,6 +251,7 @@ function doLogout() {
   if(!confirm('로그아웃하시겠습니까?')) return;
   LS.del('logged');
   currentUser = null;
+  window.currentUser = null;  // ← 이 줄 추가
   switchAuthTab('login');
   document.getElementById('screen-login').style.display = 'block';
   showTab(0);

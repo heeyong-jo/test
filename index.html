@@ -493,7 +493,7 @@
 </div>
     
     <!-- 찾아오는 길 안내 -->
-    <div style="margin-top:20px; background:linear-gradient(135deg,#f5ede0,#ede0ce); border-radius:16px; padding:16px;"> border-radius:16px; padding:16px;">
+    <div style="margin-top:20px; background:linear-gradient(135deg,#f5ede0,#ede0ce); border-radius:16px; padding:16px;">
       <div style="font-size:13px; font-weight:800; color:var(--purple); margin-bottom:12px; display:flex; align-items:center; gap:6px;">
         <span>📍</span> 찾아오는 길
       </div>
@@ -1037,9 +1037,9 @@
       }
     }, 800);
   });
-</script>
-<script>
-// 페이지 로드 후 초기화
+
+
+// 페이지 로드 후 초기화 (기존 코드 대체)
 window.addEventListener('DOMContentLoaded', function() {
   console.log('DOMContentLoaded - 초기화 시작');
   
@@ -1054,10 +1054,27 @@ window.addEventListener('DOMContentLoaded', function() {
     }
   }, 1500);
   
-  // 예배 데이터 초기화
+  // 현재 로그인 상태 확인 (localStorage에서 복원)
+  try {
+    const logged = localStorage.getItem('ch2_logged');
+    if (logged) {
+      const userData = JSON.parse(logged);
+      // 실제 사용자 정보는 approvedUsers나 ADMIN_ACCOUNTS에서 찾아야 함
+      console.log('저장된 로그인 정보 있음:', userData);
+    }
+  } catch(e) {}
+  
+  // 예배 데이터 초기화 (가장 중요)
   if (typeof initServiceData === 'function') {
     initServiceData();
   } else if (typeof renderServiceView === 'function') {
+    // initServiceData가 없으면 serviceList 직접 초기화
+    if (typeof serviceList !== 'undefined' && (!serviceList || serviceList.length === 0)) {
+      if (typeof DEFAULT_SERVICE_LIST !== 'undefined') {
+        serviceList = JSON.parse(JSON.stringify(DEFAULT_SERVICE_LIST));
+        console.log('serviceList 기본값 설정 완료');
+      }
+    }
     renderServiceView();
   }
   
@@ -1072,6 +1089,16 @@ window.addEventListener('DOMContentLoaded', function() {
       renderPrayers();
     }
   }, 300);
+  
+  // 말씀 렌더링
+  setTimeout(function() {
+    if (typeof renderTodayVerse === 'function') {
+      renderTodayVerse();
+    }
+    if (typeof renderMeditations === 'function') {
+      renderMeditations();
+    }
+  }, 400);
 });
 </script>
 <!-- 카카오 광고 스크립트 (필요시) -->

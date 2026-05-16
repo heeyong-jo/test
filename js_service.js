@@ -27,9 +27,50 @@ let prayers = [];
 
 
 function initServiceData() {
-  if (typeof LS === 'undefined') return;
+  console.log('initServiceData 실행');
+  
+  if (typeof LS === 'undefined') {
+    // LS가 없으면 localStorage 직접 사용
+    try {
+      const saved = localStorage.getItem('ch2_serviceList');
+      if (saved) {
+        serviceList = JSON.parse(saved);
+        console.log('localStorage에서 로드됨:', serviceList.length);
+      } else {
+        serviceList = JSON.parse(JSON.stringify(DEFAULT_SERVICE_LIST));
+        localStorage.setItem('ch2_serviceList', JSON.stringify(serviceList));
+        console.log('기본값 설정됨');
+      }
+    } catch(e) {
+      serviceList = JSON.parse(JSON.stringify(DEFAULT_SERVICE_LIST));
+      console.log('기본값 설정(예외)');
+    }
+    return;
+  }
+  
   serviceList = LS.load('serviceList', DEFAULT_SERVICE_LIST);
   prayers = LS.load('prayers', []);
+  console.log('serviceList 로드 완료:', serviceList.length);
+  
+  // Firebase에서 최신 데이터 가져오기
+  if (window.FB_READY && typeof firebase !== 'undefined') {
+    firebase.database().ref('serviceList').once('value')
+      .then(snap => {
+        const data = snap.val();
+        if (data) {
+          const fbData = Array.isArray(data) ? data : Object.values(data);
+          if (fbData.length > 0) {
+            serviceList = fbData;
+            LS.save('serviceList', serviceList);
+            console.log('Firebase에서 로드됨:', serviceList.length);
+            renderServiceView();
+          }
+        }
+      })
+      .catch(err => console.error('Firebase 로드 실패:', err));
+  }
+  
+  renderServiceView();
 }
 
 
@@ -48,6 +89,7 @@ function renderServiceView() {
   // serviceList가 비어있으면 기본값 사용
   let dataToRender = serviceList;
   if (!dataToRender || dataToRender.length === 0) {
+    console.log('serviceList가 비어있음, 기본값 사용');
     dataToRender = DEFAULT_SERVICE_LIST;
   }
 
@@ -346,9 +388,12 @@ function saveScheduleEdit() {
 }
 
 
-function cancelScheduleEdit() {
-  document.getElementById('schedule-view').style.display = 'block';
-  document.getElementById('schedule-edit').style.display = 'none';
+function cancelOtherEdit() {
+  const viewEl = document.getElementById('other-service-view');
+  const editEl = document.getElementById('other-service-edit');
+  if (viewEl) viewEl.style.display = 'block';
+  if (editEl) editEl.style.display = 'none';
+}
   document.getElementById('schedule-edit-btn').textContent = '✏️ 수정';
 }
 // 홈 화면 예배 안내 렌더링
@@ -384,4 +429,29 @@ function renderServiceList(container, serviceList) {
       <span style="font-weight:700;color:var(--purple);">${escapeHtml(s.time)}</span>
     </div>
   `).join('');
+}
+// 저장 후 취소 함수들 (파일 하단에 위치)
+function cancelSundayEdit() {
+  const viewEl = document.getElementById('sunday-service-view');
+  const editEl = document.getElementById('sunday-service-edit');
+  if (viewEl) viewEl.style.display = 'block';
+  if (editEl) editEl.style.display = 'none';
+}
+
+
+function cancelOtherEdit() {
+  const viewEl = document.getElementById('other-service-view');
+  const editEl = document.getElementById('other-service-edit');
+  if (viewEl) viewEl.style.display = 'block';
+  if (editEl) editEl.style.display = 'none';
+}
+
+
+function cancelScheduleEdit() {
+  const viewEl = document.getElementById('schedule-view');
+  const editEl = document.getElementById('schedule-edit');
+  const btn = document.getElementById('schedule-edit-btn');
+  if (viewEl) viewEl.style.display = 'block';
+  if (editEl) editEl.style.display = 'none';
+  if (btn) btn.textContent = '✏️ 수정';
 }

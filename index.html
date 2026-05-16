@@ -300,6 +300,7 @@
       <button class="btn-primary" style="flex:1;padding:12px;" onclick="shareToday()">📤 공유</button>
     </div>
   </div>
+  
   <div class="card" id="write-meditation-card">
     <div class="card-title">✏️ 말씀 나누기</div>
     <div class="write-area">
@@ -307,18 +308,27 @@
       <div style="overflow:hidden;"><button class="write-submit" onclick="submitMeditation()">등록</button></div>
     </div>
   </div>
+  
   <div class="card">
     <div class="card-title">💬 성도들의 묵상</div>
     <div id="meditation-list"></div>
   </div>
+  
+  <!-- 기도제목 목록 영역을 p1 내부로 이동 -->
+  <div class="card">
+    <div class="card-title" style="justify-content:space-between;">
+      <span>🙏 기도제목</span>
+      <button class="btn-secondary" style="padding:4px 12px;font-size:11px;" onclick="openAddPrayer()">+ 기도제목 작성</button>
+    </div>
+    <div id="prayer-list" class="prayer-list-container"></div>
+  </div>
 </div>
-<!-- 기도제목 목록 영역 -->
-<div id="prayer-list" class="prayer-list-container"></div>
+
+
 <!-- ══════════════════════ p2: 게시물 ══════════════════════ -->
 <div id="p2" class="page">
-  <!-- 카테고리 목록 (세로) -->
-  <div id="board-category-list" class="board-tab-col">
-    <button class="board-cat-btn active" data-cat="일반성도">📌 일반성도<span class="board-tab-sub">&nbsp;</span></button>
+  <!-- 카테고리 목록 -->
+  <div id="board-category-list" class="board-tab-col">    <button class="board-cat-btn active" data-cat="일반성도">📌 일반성도<span class="board-tab-sub">&nbsp;</span></button>
     <button class="board-cat-btn" data-cat="꿈지락">🐣 꿈지락<span class="board-tab-sub">0~4세</span></button>
     <button class="board-cat-btn" data-cat="꿈트리">🌱 꿈트리<span class="board-tab-sub">5~7세</span></button>
     <button class="board-cat-btn" data-cat="꿈마루">📚 꿈마루<span class="board-tab-sub">초등</span></button>
@@ -483,7 +493,7 @@
 </div>
     
     <!-- 찾아오는 길 안내 -->
-    <div style="margin-top:20px; background:linear-gradient(135deg,#f5ede0,#ede0ce); border-radius:16px; padding:16px;">; border-radius:16px; padding:16px;">
+    <div style="margin-top:20px; background:linear-gradient(135deg,#f5ede0,#ede0ce); border-radius:16px; padding:16px;"> border-radius:16px; padding:16px;">
       <div style="font-size:13px; font-weight:800; color:var(--purple); margin-bottom:12px; display:flex; align-items:center; gap:6px;">
         <span>📍</span> 찾아오는 길
       </div>
@@ -1027,6 +1037,42 @@
       }
     }, 800);
   });
+</script>
+<script>
+// 페이지 로드 후 초기화
+window.addEventListener('DOMContentLoaded', function() {
+  console.log('DOMContentLoaded - 초기화 시작');
+  
+  // 스플래시 숨김
+  setTimeout(function() {
+    var splash = document.getElementById('splash');
+    if (splash) {
+      splash.style.opacity = '0';
+      setTimeout(function() {
+        if (splash) splash.style.display = 'none';
+      }, 500);
+    }
+  }, 1500);
+  
+  // 예배 데이터 초기화
+  if (typeof initServiceData === 'function') {
+    initServiceData();
+  } else if (typeof renderServiceView === 'function') {
+    renderServiceView();
+  }
+  
+  // 공지사항 렌더링
+  if (typeof renderHomeNotices === 'function') {
+    renderHomeNotices();
+  }
+  
+  // 기도제목 렌더링
+  setTimeout(function() {
+    if (typeof renderPrayers === 'function') {
+      renderPrayers();
+    }
+  }, 300);
+});
 </script>
 <!-- 카카오 광고 스크립트 (필요시) -->
 <script type="text/javascript" src="//t1.kakaocdn.net/kas/static/ba.min.js" async></script>

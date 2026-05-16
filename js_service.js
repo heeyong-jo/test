@@ -169,67 +169,60 @@ function addSundayServiceRow() {
 }
 
 
+// saveSundayEdit 함수 수정
 function saveSundayEdit() {
-  // 기존 기타예배 + 편집된 주일예배 합치기
+  console.log('saveSundayEdit 실행', sundayEditData);
+  
+  // 기존 기타예배 가져오기
   const other = serviceList.filter(s => !s.sub || !s.sub.includes('일요일'));
-  serviceList = [...sundayEditData, ...other];
-  LS.save('serviceList', serviceList);
+  
+  // 새 serviceList 생성
+  const newServiceList = [...sundayEditData, ...other];
+  
+  // 전역 변수 업데이트
+  serviceList = newServiceList;
+  
+  // localStorage 저장
+  if (typeof LS !== 'undefined') {
+    LS.save('serviceList', serviceList);
+  }
+  
+  // Firebase 저장
+  if (window.FB_READY && typeof firebase !== 'undefined') {
+    firebase.database().ref('serviceList').set(serviceList)
+      .catch(err => console.error('Firebase 저장 실패:', err));
+  }
+  
   cancelSundayEdit();
   renderServiceView();
   showToast('✅ 주일 예배가 저장되었습니다');
 }
 
 
-function cancelSundayEdit() {
-  document.getElementById('sunday-service-view').style.display = 'block';
-  document.getElementById('sunday-service-edit').style.display = 'none';
-}
-function toggleOtherEdit() {
-  if (document.getElementById('other-service-edit').style.display === 'block') {
-    cancelOtherEdit();
-    return;
-  }
-  // ✅ otherEditData 초기화 추가
-  otherEditData = JSON.parse(JSON.stringify(serviceList.filter(s => !s.sub || !s.sub.includes('일요일'))));
-  document.getElementById('other-service-view').style.display = 'none';
-  document.getElementById('other-service-edit').style.display = 'block';
-  renderOtherEditList();
-}
-
-
-function renderOtherEditList() {
-  const el = document.getElementById('other-service-list-edit');
-  el.innerHTML = otherEditData.map((s, i) => `
-    <div class="service-edit-row">
-      <div class="service-edit-name">
-        <div>${escapeHtml(s.emoji)} ${escapeHtml(s.name)}</div>
-        <div class="service-edit-sub">${escapeHtml(s.sub)}</div>
-      </div>
-      <input class="service-time-input" value="${s.time}" onchange="otherEditData[${i}].time=this.value">
-      <button class="service-del-btn" onclick="deleteOtherEditRow(${i})">삭제</button>
-    </div>
-  `).join('');
-}
-
-
-function deleteOtherEditRow(i) {
-  otherEditData.splice(i, 1);
-  renderOtherEditList();
-}
-
-
-function addOtherServiceRow() {
-  const name = prompt('예배 이름', '');
-  if (!name) return;
-  otherEditData.push({ emoji: '🔥', name, sub: '매주 금요일', time: '저녁 8:00' });
-  renderOtherEditList();
-}
-
-
+// saveOtherEdit 함수 수정
 function saveOtherEdit() {
+  console.log('saveOtherEdit 실행', otherEditData);
+  
+  // 기존 주일예배 가져오기
   const sunday = serviceList.filter(s => s.sub && s.sub.includes('일요일'));
-  serviceList = [...sunday, ...otherEditData];
-  LS.save('serviceList', serviceList);
+  
+  // 새 serviceList 생성
+  const newServiceList = [...sunday, ...otherEditData];
+  
+  // 전역 변수 업데이트
+  serviceList = newServiceList;
+  
+  // localStorage 저장
+  if (typeof LS !== 'undefined') {
+    LS.save('serviceList', serviceList);
+  }
+  
+  // Firebase 저장
+  if (window.FB_READY && typeof firebase !== 'undefined') {
+    firebase.database().ref('serviceList').set(serviceList)
+      .catch(err => console.error('Firebase 저장 실패:', err));
+  }
+  
   cancelOtherEdit();
   renderServiceView();
   showToast('✅ 기타 예배가 저장되었습니다');

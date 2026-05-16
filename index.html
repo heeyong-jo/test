@@ -206,8 +206,24 @@
       <button class="btn-primary" onclick="submitBoardPost()">등록</button>
     </div>
   </div>
-
-
+<!-- 기도제목 작성 모달 -->
+<div id="modal-prayer" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">🙏 기도제목 작성</div>
+      <button class="modal-close" onclick="closeModal('modal-prayer')">✕</button>
+    </div>
+    <div class="input-group">
+      <div class="input-label">제목 (선택)</div>
+      <input class="input-field" id="prayer-title" placeholder="기도제목 제목">
+    </div>
+    <div class="input-group">
+      <div class="input-label">기도 내용</div>
+      <textarea class="input-field" id="prayer-content" rows="5" placeholder="기도해주실 내용을 입력하세요..."></textarea>
+    </div>
+    <button class="btn-primary" onclick="submitPrayer()">기도제목 등록</button>
+  </div>
+</div>
 
 
 <!-- ══════════════════════ p0: 홈 ══════════════════════ -->
@@ -296,8 +312,8 @@
     <div id="meditation-list"></div>
   </div>
 </div>
-
-
+<!-- 기도제목 목록 영역 -->
+<div id="prayer-list" class="prayer-list-container"></div>
 <!-- ══════════════════════ p2: 게시물 ══════════════════════ -->
 <div id="p2" class="page">
   <!-- 카테고리 목록 (세로) -->

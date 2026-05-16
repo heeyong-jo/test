@@ -62,26 +62,35 @@ function showTab(n) {
 }
 
 
-// 탭 전환 후 추가 작업
+// 탭 전환 후 추가 작업 (수정)
 function afterTab(n) {
-  if (n === 0 && typeof renderHomeNotices === 'function') renderHomeNotices();
+  console.log('afterTab:', n);
+  
+  if (n === 0) {
+    if (typeof renderHomeNotices === 'function') renderHomeNotices();
+    if (typeof renderServiceView === 'function') renderServiceView();
+  }
   if (n === 1) {
     if (typeof renderMeditations === 'function') renderMeditations();
     if (typeof renderTodayVerse === 'function') renderTodayVerse();
   }
   if (n === 2) {
-  if (typeof renderPrayers === 'function') renderPrayers();
-  if (typeof initBoard === 'function') initBoard();
-}
+    if (typeof initBoard === 'function') initBoard();
+    // 게시물 목록 렌더링
+    if (typeof renderBoardPosts === 'function') renderBoardPosts();
+  }
   if (n === 3) {
-  if (typeof loadBibleStatus === 'function') loadBibleStatus();
-  if (typeof loadBibleHallOfFame === 'function') loadBibleHallOfFame();
-}
+    // 성경 읽기 - 함수가 없으면 조용히 넘어감
+    if (typeof loadBibleStatus === 'function') loadBibleStatus();
+    if (typeof loadBibleHallOfFame === 'function') loadBibleHallOfFame();
+  }
   if (n === 4) {
     if (typeof renderServiceView === 'function') renderServiceView();
     if (typeof renderScheduleView === 'function') renderScheduleView();
   }
-  if (n === 5 && typeof initBible === 'function') initBible();
+  if (n === 5 && typeof initBible === 'function') {
+    initBible();
+  }
   if (n === 6) {
     if (currentUser && currentUser.role === 'admin') {
       if (typeof renderMembersAccord === 'function') renderMembersAccord();

@@ -1,112 +1,61 @@
 ﻿// ==================== 로컬 스토리지 및 Firebase 저장 ====================
 
 
-let posts = [];
+// 전역 변수 선언
 let pendingUsers = [];
 let approvedUsers = [];
 let currentUser = null;
-
-
 let members = [];
 let notices = [];
 let offerings = [];
 let meditations = [];
-let posts = [];
-let prayers = [];
+let prayers = [];  // prayers 배열 명시적 초기화
 let serviceList = [];
 let scheduleList = [];
 let todayVerse = null;
+let posts = [];
 
 
-// 성경책 관련
-let currentBook = null;
-let currentBookInfo = null;
-let currentChapter = 1;
-let fontSize = 15;
-let currentBibleSection = null;
+// localStorage 접두사
+const STORAGE_PREFIX = 'ch2_';
 
 
-// 찬송가 관련
-let hymnTitles = {};
-let hymnTitlesLoaded = false;
-let currentHymnNo = 1;
-let currentHymnRange = 0;
-let hymnSearchQuery = '';
-
-
-// 성도 관리
-let currentMemberId = null;
-
-
-// 게시물 이미지
-let currentPostImageData = null;
-
-
-// 말씀 선택기
-let vsBookInfo = null;
-let vsChapterData = null;
-
-
-// 예배 수정
-let serviceEditData = [];
-let scheduleEditData = [];
-
-
-// 로그인 UI
-let authMode = 'login';
-let idCheckTimer = null;
-
-
-// 아코디언
-let accordOpen = { member: false, offering: false, approval: false };
-
-
-// 토스트
-
-
-const FB_KEYS = ['notices', 'members', 'meditations', 'pendingUsers', 'approvedUsers', 'offerings', 'todayVerse', 'serviceList', 'scheduleList', 'posts', 'prayers'];
-
-
+// LS 객체
 const LS = {
   save: (k, v) => {
-    try { localStorage.setItem('ch2_' + k, JSON.stringify(v)); } catch(e) {}
-    if (FB_KEYS.includes(k) && window.FB_READY && window.FB) {
-      try { fbSave(k, v); } catch(e) { console.warn('FB 저장 실패:', e); }
+    try { localStorage.setItem(STORAGE_PREFIX + k, JSON.stringify(v)); } catch(e) { console.warn('LS 저장 실패:', e); }
+    if (FB_KEYS && FB_KEYS.includes(k) && window.FB_READY) {
+      try { 
+        firebase.database().ref(k).set(v);
+      } catch(e) { console.warn('FB 저장 실패:', e); }
     }
   },
   load: (k, d) => {
-    try { const r = localStorage.getItem('ch2_' + k); return r !== null ? JSON.parse(r) : d; } catch(e) { return d; }
+    try { 
+      const r = localStorage.getItem(STORAGE_PREFIX + k); 
+      return r !== null ? JSON.parse(r) : d; 
+    } catch(e) { return d; }
   },
   del: (k) => {
-    try { localStorage.removeItem('ch2_' + k); } catch(e) {}
-    if (FB_KEYS.includes(k) && window.FB_READY && window.FB) {
-      try { fbDelete(k); } catch(e) {}
+    try { localStorage.removeItem(STORAGE_PREFIX + k); } catch(e) {}
+    if (FB_KEYS && FB_KEYS.includes(k) && window.FB_READY) {
+      try { firebase.database().ref(k).remove(); } catch(e) {}
     }
   }
 };
 
 
-function fbSave(key, value) {
-  if (!window.FB_READY || !window.FB) return;
-  try { window.FB.ref('church/' + key).set(value); } catch(e) { console.warn('FB save 오류:', e); }
-}
-
-
-function fbDelete(key) {
-  if (!window.FB_READY || !window.FB) return;
-  try { window.FB.ref('church/' + key).remove(); } catch(e) { console.warn('FB delete 오류:', e); }
-}
-
-
-// Firebase 실시간 동기화 (읽기)
+// Firebase 실시간 동기화
 function fbSync() {
-  if (!window.FB_READY || !window.FB) return;
+  if (!window.FB_READY) return;
+  
   FB_KEYS.forEach(key => {
     try {
-      window.FB.ref('church/' + key).on('value', (snapshot) => {
+      firebase.database().ref(key).on('value', (snapshot) => {
         const data = snapshot.val();
         if (data === null) return;
-        try { localStorage.setItem('ch2_' + key, JSON.stringify(data)); } catch(e) {}
+        
+        try { localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(data)); } catch(e) {}
         fbUpdateUI(key, data);
       });
     } catch(e) { console.warn(key + ' 동기화 오류:', e); }
@@ -118,25 +67,20 @@ function fbSync() {
 function fbUpdateUI(key, data) {
   let arr = data;
   if (data && typeof data === 'object' && !Array.isArray(data)) arr = Object.values(data);
+  
+  console.log('fbUpdateUI:', key, '데이터 개수:', arr ? arr.length : 0);
+  
   switch(key) {
     case 'notices':
-      const localNotices = Array.isArray(notices) ? notices : [];
-      const fbNotices = arr || [];
-      const mergedNotices = [...fbNotices];
-      localNotices.forEach(local => { if (!fbNotices.find(fb => fb.id === local.id)) mergedNotices.push(local); });
-      notices = mergedNotices.sort((a,b) => (b.id||0) - (a.id||0));
+      notices = arr || [];
       if (typeof renderHomeNotices === 'function') renderHomeNotices();
       break;
     case 'members':
-      const localMembers = Array.isArray(members) ? members : [];
-      const fbMembers = arr || [];
-      const mergedMembers = [...fbMembers];
-      localMembers.forEach(local => { if (!fbMembers.find(fb => fb.id === local.id)) mergedMembers.push(local); });
-      members = mergedMembers;
+      members = arr || [];
       if (typeof renderMembersAccord === 'function') renderMembersAccord();
       break;
     case 'meditations':
-      meditations = arr || [];
+      meditations = (arr || []).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
       if (typeof renderMeditations === 'function') renderMeditations();
       break;
     case 'pendingUsers':
@@ -164,34 +108,35 @@ function fbUpdateUI(key, data) {
       break;
     case 'posts':
       posts = arr || [];
-      if (typeof renderPosts === 'function') renderPosts();
+      if (typeof renderBoardPosts === 'function') renderBoardPosts();
       break;
     case 'prayers':
-      prayers = arr || [];
+      prayers = arr || [];  // prayers 업데이트
       if (typeof renderPrayers === 'function') renderPrayers();
       break;
   }
 }
 
 
-// js_storage.js 하단에 추가
+// 모든 데이터 로드
 async function fbLoadAll() {
   if (!window.FB_READY) return;
+  
+  console.log('Firebase 데이터 로드 시작');
   try {
-    const promises = FB_KEYS.map(key => 
-      firebase.database().ref(key).once('value').then(snap => {
+    for (const key of FB_KEYS) {
+      try {
+        const snap = await firebase.database().ref(key).once('value');
         const data = snap.val();
-        if (data) fbUpdateUI(key, data);
-      })
-    );
-    await Promise.all(promises);
+        if (data) {
+          fbUpdateUI(key, data);
+        }
+      } catch(e) {
+        console.warn(key + ' 로드 실패:', e);
+      }
+    }
+    console.log('Firebase 데이터 로드 완료');
   } catch(e) {
     console.error('fbLoadAll 오류:', e);
   }
-}
-
-
-function fbSync() {
-  // 실시간 동기화 설정 (필요시 구현)
-  console.log('Firebase sync ready');
 }

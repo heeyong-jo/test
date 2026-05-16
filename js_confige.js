@@ -20,35 +20,31 @@ const ADMIN_ACCOUNTS = [
 ];
 
 
-// Firebase 초기화
+// Firebase 초기화 (단순화 - 복잡한 래퍼 제거)
+let FB_READY = false;
+
+
 try {
-  const _fbApp = firebase.initializeApp(firebaseConfig);
-  const _fbDb  = firebase.database();
-  window.FB = {
-    db:      _fbDb,
-    ref:     (path) => _fbDb.ref(path),
-    onValue: (path, callback) => {
-      _fbDb.ref(path).on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (typeof fbUpdateUI === 'function') fbUpdateUI(path, data);
-        localStorage.setItem('ch2_' + path, JSON.stringify(data));
-        if (callback) callback(data);
-      });
-    },
-    push:   (r, v) => r.push(v),
-    set:    (r, v) => r.set(v),
-    remove: (r)    => r.remove()
-  };
-  window.FB_READY = true;
-  console.log('✅ Firebase 실시간 시스템 가동 중');
+  if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+    FB_READY = true;
+    console.log('✅ Firebase 연결 성공');
+  } else if (firebase && firebase.apps.length) {
+    FB_READY = true;
+    console.log('✅ Firebase 이미 연결됨');
+  }
 } catch(e) {
   console.error('❌ Firebase 연결 오류:', e);
-  window.FB_READY = false;
+  FB_READY = false;
 }
 
 
-// Firebase 동기화할 키 목록
-const FB_KEYS = ['notices', 'members', 'meditations', 'pendingUsers', 'approvedUsers', 'offerings', 'todayVerse', 'serviceList', 'scheduleList', 'posts', 'prayers'];
+window.FB_READY = FB_READY;
+
+
+// Firebase 동기화 키 목록 (단일 정의)
+const FB_KEYS = ['notices', 'members', 'meditations', 'pendingUsers', 'approvedUsers', 
+                  'offerings', 'todayVerse', 'serviceList', 'scheduleList', 'posts', 'prayers'];
 
 
 // 성경 CDN
@@ -60,7 +56,7 @@ const HYMN_CDN = 'https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@main';
 const roleLabel = { admin: '관리자', manager: '매니저', member: '일반성도' };
 
 
-// 구약 39권 (전체 목록)
+// 구약 39권
 const OT_BOOKS = [
   { name: "창세기", abbr: "창", chapters: 50, file: "ot01_genesis.json" },
   { name: "출애굽기", abbr: "출", chapters: 40, file: "ot02_exodus.json" },

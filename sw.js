@@ -1,5 +1,5 @@
 ﻿// ── 가좌제일교회 Service Worker ──
-const CACHE_NAME = 'hamkke-church-v9';
+const CACHE_NAME = 'hamkke-church-v10';
 const CACHE_FILES = [
   './',
   './index.html',

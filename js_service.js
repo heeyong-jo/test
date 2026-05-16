@@ -543,14 +543,16 @@ function confirmAddSchedule() {
 function saveScheduleEdit() {
   scheduleList = JSON.parse(JSON.stringify(scheduleEditData));
   
-  // Firebase 준비 상태 확인 후 저장
+  // ← 이 부분 추가! Firebase 체크
   if (window.FB_READY && typeof firebase !== 'undefined') {
     firebase.database().ref('scheduleList').set(scheduleList)
       .then(() => console.log('scheduleList 저장 성공'))
       .catch(err => { console.error('시간표 저장 실패:', err); showToast('저장 오류'); });
+  } else {
+    console.warn('Firebase 미준비 상태 - localStorage만 사용');
   }
   
-  // localStorage에도 저장 (항상 저장)
+  // localStorage에도 저장
   try {
     localStorage.setItem('ch2_scheduleList', JSON.stringify(scheduleList));
   } catch(e) {}
@@ -566,8 +568,6 @@ function saveScheduleEdit() {
 }
 
 
-
-
 // ==================== 취소 함수들 ====================
 function cancelSundayEdit() {
   const viewEl = document.getElementById('sunday-service-view');
@@ -575,8 +575,6 @@ function cancelSundayEdit() {
   if (viewEl) viewEl.style.display = 'block';
   if (editEl) editEl.style.display = 'none';
 }
-
-
 
 
 function cancelOtherEdit() {

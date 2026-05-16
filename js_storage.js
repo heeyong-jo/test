@@ -17,8 +17,6 @@ let notices = [];
 let offerings = [];
 let meditations = [];
 let prayers = [];
-let serviceList = [];      // ✅ 추가됨
-let scheduleList = [];     // ✅ 추가됨
 let todayVerse = null;
 let posts = [];
 

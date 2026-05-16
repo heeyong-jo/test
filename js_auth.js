@@ -1,6 +1,11 @@
 ﻿// ==================== 로그인/회원가입/비밀번호 찾기 ====================
 
 
+// 전역 변수 선언 (필수!)
+let authMode = 'login';        // ← 추가
+let idCheckTimer = null;       // ← 추가
+
+
 // 전역 변수 안전하게 초기화
 if (typeof pendingUsers === 'undefined') {
   var pendingUsers = [];
@@ -102,7 +107,6 @@ function doAuthSubmit() {
 }
 
 
-// 로그인 처리
 // 로그인 처리 (안전하게 수정)
 function doLogin() {
   const idInput = document.getElementById('li-id');
@@ -124,22 +128,16 @@ function doLogin() {
     errDiv.style.display = 'block';
     return;
   }
-  
-  // ADMIN_ACCOUNTS가 없으면 직접 정의
-  let accounts = window.ADMIN_ACCOUNTS;
-  if (!accounts || typeof accounts === 'undefined') {
-    accounts = [
-      { id: 'gajwajeil', pw: 'gajwajeil123', name: '김명서 담임목사', role: 'admin', email: 'pastor@hamkke.church', phone: '032-581-4048', birth: '1955-03-29' },
-      { id: 'reodrino', pw: '232735a', name: '조희용 관리자', role: 'admin', email: 'reodrino@gmail.com', phone: '010-9797-1408', birth: '1981-08-27' }
-    ];
-    window.ADMIN_ACCOUNTS = accounts;
-  }
-  
-  // 관리자 계정 확인
-  const admin = accounts.find(a => a.id === id && a.pw === pw);
-  if (admin) {
-    loginSuccess(admin);
-    return;
+    
+  // 관리자 계정 확인 (ADMIN_ACCOUNTS 체크)
+  if (typeof ADMIN_ACCOUNTS === 'undefined') {
+    console.error('ADMIN_ACCOUNTS 미정의');
+  } else {
+    const admin = ADMIN_ACCOUNTS.find(a => a.id === id && a.pw === pw);
+    if (admin) {
+      loginSuccess(admin);
+      return;
+    }
   }
   
   // 승인된 일반 회원 확인
@@ -178,7 +176,9 @@ function checkIdDuplicate(val) {
   
   clearTimeout(idCheckTimer);
   idCheckTimer = setTimeout(() => {
-    const taken = ADMIN_ACCOUNTS.find(a => a.id === val) || 
+    const adminTaken = (typeof ADMIN_ACCOUNTS !== 'undefined') ? 
+                       ADMIN_ACCOUNTS.find(a => a.id === val) : null;
+    const taken = adminTaken || 
                   pendingUsers.find(u => u.id === val) || 
                   approvedUsers.find(u => u.id === val);
     if (taken) {
@@ -189,7 +189,6 @@ function checkIdDuplicate(val) {
       msg.textContent = '✅ 사용 가능한 아이디입니다';
     }
   }, 400);
-}
 
 
 // 비밀번호 재설정

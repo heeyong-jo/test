@@ -106,16 +106,18 @@ function fbUpdateUI(key, data) {
       if (typeof renderTodayVerse === 'function') renderTodayVerse();
       break;
     case 'serviceList':
-      serviceList = arr || [];
-      if (typeof renderServiceView === 'function') renderServiceView();
-      break;
-    case 'scheduleList':
-      scheduleList = arr || [];
-      if (typeof renderScheduleView === 'function') renderScheduleView();
-      break;
-    case 'posts':
-      posts = arr || [];
-      if (typeof renderBoardPosts === 'function') renderBoardPosts();
+  if (typeof window.serviceList !== 'undefined') {
+    window.serviceList = arr || [];
+  }
+  if (typeof renderServiceView === 'function') renderServiceView();
+  break;
+case 'scheduleList':
+  if (typeof window.scheduleList !== 'undefined') {
+    window.scheduleList = arr || [];
+  }
+  if (typeof renderScheduleView === 'function') renderScheduleView();
+  break;
+ renderBoardPosts();
       break;
     case 'prayers':
       prayers = arr || [];  // prayers 업데이트
@@ -123,8 +125,6 @@ function fbUpdateUI(key, data) {
       break;
   }
 }
-
-
 
 
 // 모든 데이터 로드

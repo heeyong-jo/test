@@ -44,9 +44,9 @@ if (typeof window.prayers === 'undefined') {
 
 
 // 로컬 참조용 (편의)
-let serviceList = window.serviceList;
-let scheduleList = window.scheduleList;
-let prayers = window.prayers;
+var serviceList = [];
+var prayers = [];
+var scheduleList = [];
 
 
 // 초기화 함수

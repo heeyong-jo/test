@@ -104,70 +104,73 @@ function switchAuthTab(mode) {
 
 // 로그인/회원가입 제출
 function doAuthSubmit() {
-  if (authMode === 'login') doLogin();
-  else doSignup();
+  console.log('doAuthSubmit 버튼 클릭됨!');
+  alert('로그인 시도 중...');  // 디버깅용 알림
+  
+  if(authMode === 'login') {
+    console.log('로그인 모드, doLogin 호출');
+    doLogin();
+  } else {
+    console.log('회원가입 모드, doSignup 호출');
+    doSignup();
+  }
 }
 
 
 // 로그인 처리 (안전하게 수정)
 function doLogin() {
-  console.log('doLogin 호출됨');
+  console.log('doLogin 함수 실행 시작!');
+  alert('doLogin 실행됨');  // 디버깅용 알림
   
-  const id = document.getElementById('li-id').value.trim();
-  const pw = document.getElementById('li-pw').value;
+  const idInput = document.getElementById('li-id');
+  const pwInput = document.getElementById('li-pw');
   const errDiv = document.getElementById('login-err');
+  
+  if (!idInput || !pwInput) {
+    console.error('입력 요소를 찾을 수 없음');
+    alert('로그인 폼을 찾을 수 없습니다');
+    return;
+  }
+  
+  const id = idInput.value.trim();
+  const pw = pwInput.value;
+  
+  console.log('입력된 아이디:', id);
+  
+  if (errDiv) errDiv.style.display = 'none';
   
   if (!id || !pw) {
     if (errDiv) {
       errDiv.textContent = '아이디와 비밀번호를 입력하세요';
       errDiv.style.display = 'block';
     }
+    alert('아이디와 비밀번호를 입력하세요');
     return;
   }
   
-  if (errDiv) errDiv.style.display = 'none';
-  
-  // ✅ ADMIN_ACCOUNTS 안전하게 찾기
+  // ADMIN_ACCOUNTS 찾기
   let accounts = null;
   if (typeof ADMIN_ACCOUNTS !== 'undefined') accounts = ADMIN_ACCOUNTS;
   else if (typeof window.ADMIN_ACCOUNTS !== 'undefined') accounts = window.ADMIN_ACCOUNTS;
   
   if (!accounts) {
-    // 백업 계정
     accounts = [
-      { id: 'hamkke', pw: 'hamkke123', name: '김소녕 목사', role: 'admin', email: 'pastor@hamkke.church', phone: '010-9012-9947', birth: '1955-03-29' },
-      { id: 'reodrino', pw: '232735a', name: '조희용 관리자', role: 'admin', email: 'reodrino@gmail.com', phone: '010-9797-1408', birth: '1981-08-27' }
+      { id: 'hamkke', pw: 'hamkke123', name: '김소녕 목사', role: 'admin' },
+      { id: 'reodrino', pw: '232735a', name: '조희용 관리자', role: 'admin' }
     ];
-    window.ADMIN_ACCOUNTS = accounts;
   }
   
-  console.log('ADMIN_ACCOUNTS:', accounts);
+  console.log('계정 목록:', accounts);
   
   const admin = accounts.find(a => a.id === id && a.pw === pw);
   if (admin) {
+    console.log('관리자 계정 찾음:', admin.name);
+    alert('관리자 로그인 성공!');
     loginSuccess(admin);
     return;
   }
   
-  // 일반 회원 확인
-  if (typeof approvedUsers !== 'undefined') {
-    const user = approvedUsers.find(u => u.id === id && u.pw === pw);
-    if (user) {
-      loginSuccess(user);
-      return;
-    }
-  }
-  
-  // 승인 대기 확인
-  if (typeof pendingUsers !== 'undefined') {
-    const pending = pendingUsers.find(u => u.id === id && u.pw === pw);
-    if (pending) {
-      const pendingMsg = document.getElementById('pending-msg');
-      if (pendingMsg) pendingMsg.style.display = 'block';
-      return;
-    }
-  }
-  
+  alert('아이디 또는 비밀번호가 틀렸습니다');
   if (errDiv) {
     errDiv.textContent = '아이디 또는 비밀번호가 일치하지 않습니다';
     errDiv.style.display = 'block';
@@ -607,3 +610,8 @@ function changePassword() {
   
   showToast('현재 비밀번호가 일치하지 않습니다');
 }
+// ==================== 디버깅: 함수 존재 확인 ====================
+console.log('js_auth.js 로드됨');
+console.log('doLogin 함수:', typeof doLogin);
+console.log('doAuthSubmit 함수:', typeof doAuthSubmit);
+console.log('ADMIN_ACCOUNTS:', typeof ADMIN_ACCOUNTS);

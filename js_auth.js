@@ -2,8 +2,8 @@
 
 
 // 전역 변수 선언 (필수!)
-let authMode = 'login';        // ← 추가
-let idCheckTimer = null;       // ← 추가
+let authMode = 'login';
+let idCheckTimer = null;
 
 
 // 전역 변수 안전하게 초기화
@@ -55,7 +55,9 @@ function showLoginForm() {
   }
   
   authMode = 'login';
-  
+}  // ✅ showLoginForm 닫는 중괄호
+
+
 // 비밀번호 찾기 폼 표시
 function showForgotPw() {
   const loginForm = document.getElementById('login-form');
@@ -105,9 +107,8 @@ function switchAuthTab(mode) {
 // 로그인/회원가입 제출
 function doAuthSubmit() {
   console.log('doAuthSubmit 버튼 클릭됨!');
-  alert('로그인 시도 중...');  // 디버깅용 알림
   
-  if(authMode === 'login') {
+  if (authMode === 'login') {
     console.log('로그인 모드, doLogin 호출');
     doLogin();
   } else {
@@ -117,50 +118,72 @@ function doAuthSubmit() {
 }
 
 
-// 로그인 처리 (안전하게 수정)
+// 로그인 처리
 function doLogin() {
-  var id = document.getElementById('li-id').value.trim();
-  var pw = document.getElementById('li-pw').value;
-  var errDiv = document.getElementById('login-err');
+  console.log('doLogin 실행됨');
   
-  errDiv.style.display = 'none';
+  const idInput = document.getElementById('li-id');
+  const pwInput = document.getElementById('li-pw');
+  const errDiv = document.getElementById('login-err');
   
-  if (!id || !pw) {
-    errDiv.textContent = '아이디와 비밀번호를 입력하세요';
-    errDiv.style.display = 'block';
+  if (!idInput || !pwInput) {
+    console.error('입력 요소 없음');
     return;
   }
   
-  // 관리자 계정 확인
-  var admin = null;
-  for (var i = 0; i < ADMIN_ACCOUNTS.length; i++) {
-    if (ADMIN_ACCOUNTS[i].id === id && ADMIN_ACCOUNTS[i].pw === pw) {
-      admin = ADMIN_ACCOUNTS[i];
-      break;
+  const id = idInput.value.trim();
+  const pw = pwInput.value;
+  
+  if (errDiv) errDiv.style.display = 'none';
+  
+  if (!id || !pw) {
+    if (errDiv) {
+      errDiv.textContent = '아이디와 비밀번호를 입력하세요';
+      errDiv.style.display = 'block';
     }
+    return;
   }
   
+  // ADMIN_ACCOUNTS 확인
+  let accounts = null;
+  if (typeof ADMIN_ACCOUNTS !== 'undefined') accounts = ADMIN_ACCOUNTS;
+  else if (typeof window.ADMIN_ACCOUNTS !== 'undefined') accounts = window.ADMIN_ACCOUNTS;
+  
+  if (!accounts) {
+    console.error('ADMIN_ACCOUNTS 없음');
+    accounts = [
+      { id: 'hamkke', pw: 'hamkke123', name: '김소녕 목사', role: 'admin' },
+      { id: 'reodrino', pw: '232735a', name: '조희용 관리자', role: 'admin' }
+    ];
+  }
+  
+  // 관리자 계정 확인
+  const admin = accounts.find(a => a.id === id && a.pw === pw);
   if (admin) {
+    console.log('관리자 로그인 성공:', admin.name);
     loginSuccess(admin);
     return;
   }
   
   // 일반 회원 확인
-  var user = null;
-  for (var i = 0; i < approvedUsers.length; i++) {
-    if (approvedUsers[i].id === id && approvedUsers[i].pw === pw) {
-      user = approvedUsers[i];
-      break;
-    }
-  }
-  
+  const user = approvedUsers.find(u => u.id === id && u.pw === pw);
   if (user) {
     loginSuccess(user);
     return;
   }
   
-  errDiv.textContent = '아이디 또는 비밀번호가 일치하지 않습니다';
-  errDiv.style.display = 'block';
+  // 승인 대기 확인
+  const pending = pendingUsers.find(u => u.id === id && u.pw === pw);
+  if (pending) {
+    const pendingMsg = document.getElementById('pending-msg');
+    if (pendingMsg) pendingMsg.style.display = 'block';
+    return;
+  }
+  
+  if (errDiv) {
+    errDiv.textContent = '아이디 또는 비밀번호가 일치하지 않습니다';
+    errDiv.style.display = 'block';
+  }
 }
 
 
@@ -180,11 +203,13 @@ function checkIdDuplicate(val) {
   
   clearTimeout(idCheckTimer);
   idCheckTimer = setTimeout(() => {
-    const adminTaken = (typeof ADMIN_ACCOUNTS !== 'undefined') ? 
-                       ADMIN_ACCOUNTS.find(a => a.id === val) : null;
-    const taken = adminTaken || 
-                  pendingUsers.find(u => u.id === val) || 
-                  approvedUsers.find(u => u.id === val);
+    let taken = false;
+    if (typeof ADMIN_ACCOUNTS !== 'undefined') {
+      taken = ADMIN_ACCOUNTS.find(a => a.id === val);
+    }
+    if (!taken) taken = pendingUsers.find(u => u.id === val);
+    if (!taken) taken = approvedUsers.find(u => u.id === val);
+    
     if (taken) {
       msg.style.color = '#fca5a5';
       msg.textContent = '❌ 이미 사용 중인 아이디입니다';
@@ -193,6 +218,7 @@ function checkIdDuplicate(val) {
       msg.textContent = '✅ 사용 가능한 아이디입니다';
     }
   }, 400);
+}
 
 
 // 비밀번호 재설정
@@ -217,22 +243,26 @@ function doResetPassword() {
     return;
   }
   
-  // 관리자 계정 검색
-  const admin = ADMIN_ACCOUNTS.find(a => a.id === id && a.email === email && (a.phone || '').replace(/-/g, '') === phone);
-  if (admin) {
-    const tmpPw = 'hamkke' + Math.floor(1000 + Math.random() * 9000);
-    admin.pw = tmpPw;
-    showLoginForm();
-    setTimeout(() => {
-      errDiv.style.background = 'rgba(134,239,172,0.15)';
-      errDiv.style.color = '#86efac';
-      errDiv.textContent = '임시 비밀번호: ' + tmpPw + ' (로그인 후 변경하세요)';
-      errDiv.style.display = 'block';
-    }, 300);
-    return;
+  let accounts = null;
+  if (typeof ADMIN_ACCOUNTS !== 'undefined') accounts = ADMIN_ACCOUNTS;
+  else if (typeof window.ADMIN_ACCOUNTS !== 'undefined') accounts = window.ADMIN_ACCOUNTS;
+  
+  if (accounts) {
+    const admin = accounts.find(a => a.id === id && a.email === email && (a.phone || '').replace(/-/g, '') === phone);
+    if (admin) {
+      const tmpPw = 'hamkke' + Math.floor(1000 + Math.random() * 9000);
+      admin.pw = tmpPw;
+      showLoginForm();
+      setTimeout(() => {
+        errDiv.style.background = 'rgba(134,239,172,0.15)';
+        errDiv.style.color = '#86efac';
+        errDiv.textContent = '임시 비밀번호: ' + tmpPw + ' (로그인 후 변경하세요)';
+        errDiv.style.display = 'block';
+      }, 300);
+      return;
+    }
   }
   
-  // 일반 회원 검색
   const user = approvedUsers.find(u => u.id === id && u.email === email && (u.phone || '').replace(/-/g, '') === phone);
   if (!user) {
     errDiv.textContent = '입력한 정보와 일치하는 회원이 없습니다';
@@ -304,9 +334,17 @@ function doSignup() {
     errDiv.style.display = 'block';
     return;
   }
-  if (ADMIN_ACCOUNTS.find(a => a.id === signupId) || 
-      pendingUsers.find(u => u.id === signupId) || 
-      approvedUsers.find(u => u.id === signupId)) {
+  
+  let accounts = null;
+  if (typeof ADMIN_ACCOUNTS !== 'undefined') accounts = ADMIN_ACCOUNTS;
+  else if (typeof window.ADMIN_ACCOUNTS !== 'undefined') accounts = window.ADMIN_ACCOUNTS;
+  
+  if (accounts && accounts.find(a => a.id === signupId)) {
+    errDiv.textContent = '이미 사용 중인 아이디입니다';
+    errDiv.style.display = 'block';
+    return;
+  }
+  if (pendingUsers.find(u => u.id === signupId) || approvedUsers.find(u => u.id === signupId)) {
     errDiv.textContent = '이미 사용 중인 아이디입니다';
     errDiv.style.display = 'block';
     return;
@@ -338,8 +376,10 @@ function doSignup() {
 }
 
 
-// 로그인 성공 처리 (수정됨 - forceRefreshData 제거)
+// 로그인 성공 처리
 function loginSuccess(acc) {
+  console.log('loginSuccess 실행:', acc.name);
+  
   currentUser = {
     id: acc.id,
     name: acc.name,
@@ -359,15 +399,21 @@ function loginSuccess(acc) {
   }
   
   // 로그인 화면 닫기
-  document.getElementById('screen-login').style.display = 'none';
+  const loginScreen = document.getElementById('screen-login');
+  if (loginScreen) loginScreen.style.display = 'none';
   
   // 사용자 정보 표시
-  var roleText = (currentUser.role === 'admin') ? '관리자' : (currentUser.role === 'manager') ? '매니저' : '일반성도';
-  document.getElementById('user-name-display').textContent = acc.name;
-  document.getElementById('user-role-display').textContent = roleText;
-  if (document.getElementById('setting-user-info')) {
-    document.getElementById('setting-user-info').textContent = acc.name + ' (' + roleText + ')';
-  }
+  let roleText = '일반성도';
+  if (currentUser.role === 'admin') roleText = '관리자';
+  else if (currentUser.role === 'manager') roleText = '매니저';
+  
+  const userNameSpan = document.getElementById('user-name-display');
+  const userRoleSpan = document.getElementById('user-role-display');
+  const settingInfoSpan = document.getElementById('setting-user-info');
+  
+  if (userNameSpan) userNameSpan.textContent = acc.name;
+  if (userRoleSpan) userRoleSpan.textContent = roleText;
+  if (settingInfoSpan) settingInfoSpan.textContent = acc.name + ' (' + roleText + ')';
   
   // 권한 적용
   if (typeof applyRole === 'function') {
@@ -375,14 +421,18 @@ function loginSuccess(acc) {
   }
   
   // 홈 탭으로 이동
-  showTab(0);
+  if (typeof showTab === 'function') {
+    showTab(0);
+  }
   
   // 데이터 새로고침
-  if (typeof renderServiceView === 'function') renderServiceView();
-  if (typeof renderScheduleView === 'function') renderScheduleView();
-  if (typeof renderTodayVerse === 'function') renderTodayVerse();
-  if (typeof renderMeditations === 'function') renderMeditations();
-  if (typeof renderPrayers === 'function') renderPrayers();
+  setTimeout(function() {
+    if (typeof renderServiceView === 'function') renderServiceView();
+    if (typeof renderScheduleView === 'function') renderScheduleView();
+    if (typeof renderTodayVerse === 'function') renderTodayVerse();
+    if (typeof renderMeditations === 'function') renderMeditations();
+    if (typeof renderPrayers === 'function') renderPrayers();
+  }, 100);
   
   showToast('✅ ' + acc.name + '님 환영합니다');
 }
@@ -399,10 +449,13 @@ function doLogout() {
   currentUser = null;
   
   // 로그인 화면 표시
-  document.getElementById('screen-login').style.display = 'flex';
+  const loginScreen = document.getElementById('screen-login');
+  if (loginScreen) loginScreen.style.display = 'flex';
   
   // 홈 탭으로 이동
-  showTab(0);
+  if (typeof showTab === 'function') {
+    showTab(0);
+  }
   
   showToast('로그아웃되었습니다');
 }
@@ -415,13 +468,13 @@ function toggleProfileDropdown() {
   
   dropdown.classList.toggle('show');
   
-  setTimeout(() => {
-    const closeDropdown = function(e) {
+  setTimeout(function() {
+    function closeDropdown(e) {
       if (!dropdown.contains(e.target) && !e.target.closest('.user-badge')) {
         dropdown.classList.remove('show');
         document.removeEventListener('click', closeDropdown);
       }
-    };
+    }
     document.addEventListener('click', closeDropdown);
   }, 0);
 }
@@ -434,8 +487,13 @@ function openMyProfile() {
     return;
   }
   
-  let userInfo = ADMIN_ACCOUNTS.find(a => a.id === currentUser.id) || 
-                 approvedUsers.find(u => u.id === currentUser.id);
+  let accounts = null;
+  if (typeof ADMIN_ACCOUNTS !== 'undefined') accounts = ADMIN_ACCOUNTS;
+  else if (typeof window.ADMIN_ACCOUNTS !== 'undefined') accounts = window.ADMIN_ACCOUNTS;
+  
+  let userInfo = null;
+  if (accounts) userInfo = accounts.find(a => a.id === currentUser.id);
+  if (!userInfo) userInfo = approvedUsers.find(u => u.id === currentUser.id);
   
   if (!userInfo) {
     showToast('사용자 정보를 찾을 수 없습니다');
@@ -464,8 +522,13 @@ function openMyProfile() {
 function openEditMyProfile() {
   if (!currentUser) return;
   
-  let userInfo = ADMIN_ACCOUNTS.find(a => a.id === currentUser.id) || 
-                 approvedUsers.find(u => u.id === currentUser.id);
+  let accounts = null;
+  if (typeof ADMIN_ACCOUNTS !== 'undefined') accounts = ADMIN_ACCOUNTS;
+  else if (typeof window.ADMIN_ACCOUNTS !== 'undefined') accounts = window.ADMIN_ACCOUNTS;
+  
+  let userInfo = null;
+  if (accounts) userInfo = accounts.find(a => a.id === currentUser.id);
+  if (!userInfo) userInfo = approvedUsers.find(u => u.id === currentUser.id);
   
   if (!userInfo) return;
   
@@ -496,26 +559,31 @@ function saveMyProfile() {
     return;
   }
   
-  const adminIdx = ADMIN_ACCOUNTS.findIndex(a => a.id === currentUser.id);
-  if (adminIdx !== -1) {
-    ADMIN_ACCOUNTS[adminIdx].name = newName;
-    ADMIN_ACCOUNTS[adminIdx].phone = newPhone;
-    ADMIN_ACCOUNTS[adminIdx].birth = newBirth;
-    currentUser.name = newName;
-  } else {
-    const userIdx = approvedUsers.findIndex(u => u.id === currentUser.id);
-    if (userIdx !== -1) {
-      approvedUsers[userIdx].name = newName;
-      approvedUsers[userIdx].phone = newPhone;
-      approvedUsers[userIdx].birth = newBirth;
-      if (typeof LS !== 'undefined') {
-        LS.save('approvedUsers', approvedUsers);
-      }
+  let accounts = null;
+  if (typeof ADMIN_ACCOUNTS !== 'undefined') accounts = ADMIN_ACCOUNTS;
+  else if (typeof window.ADMIN_ACCOUNTS !== 'undefined') accounts = window.ADMIN_ACCOUNTS;
+  
+  if (accounts) {
+    const adminIdx = accounts.findIndex(a => a.id === currentUser.id);
+    if (adminIdx !== -1) {
+      accounts[adminIdx].name = newName;
+      accounts[adminIdx].phone = newPhone;
+      accounts[adminIdx].birth = newBirth;
       currentUser.name = newName;
     }
   }
   
-  // 화면 표시 업데이트
+  const userIdx = approvedUsers.findIndex(u => u.id === currentUser.id);
+  if (userIdx !== -1) {
+    approvedUsers[userIdx].name = newName;
+    approvedUsers[userIdx].phone = newPhone;
+    approvedUsers[userIdx].birth = newBirth;
+    if (typeof LS !== 'undefined') {
+      LS.save('approvedUsers', approvedUsers);
+    }
+    currentUser.name = newName;
+  }
+  
   const userNameSpan = document.getElementById('user-name-display');
   const settingInfoSpan = document.getElementById('setting-user-info');
   const roleText = currentUser.role === 'admin' ? '관리자' : '일반성도';
@@ -578,17 +646,21 @@ function changePassword() {
     return;
   }
   
-  // 관리자 계정 비밀번호 변경
-  const admin = ADMIN_ACCOUNTS.find(a => a.id === currentUser.id && a.pw === currentPw);
-  if (admin) {
-    admin.pw = newPw;
-    showToast('✅ 비밀번호가 변경되었습니다');
-    const modal = document.getElementById('modal-change-pw');
-    if (modal) modal.style.display = 'none';
-    return;
+  let accounts = null;
+  if (typeof ADMIN_ACCOUNTS !== 'undefined') accounts = ADMIN_ACCOUNTS;
+  else if (typeof window.ADMIN_ACCOUNTS !== 'undefined') accounts = window.ADMIN_ACCOUNTS;
+  
+  if (accounts) {
+    const admin = accounts.find(a => a.id === currentUser.id && a.pw === currentPw);
+    if (admin) {
+      admin.pw = newPw;
+      showToast('✅ 비밀번호가 변경되었습니다');
+      const modal = document.getElementById('modal-change-pw');
+      if (modal) modal.style.display = 'none';
+      return;
+    }
   }
   
-  // 일반 회원 비밀번호 변경
   const user = approvedUsers.find(u => u.id === currentUser.id && u.pw === currentPw);
   if (user) {
     user.pw = newPw;
@@ -603,8 +675,16 @@ function changePassword() {
   
   showToast('현재 비밀번호가 일치하지 않습니다');
 }
-// ==================== 디버깅: 함수 존재 확인 ====================
+
+
+// 디버깅
 console.log('js_auth.js 로드됨');
 console.log('doLogin 함수:', typeof doLogin);
 console.log('doAuthSubmit 함수:', typeof doAuthSubmit);
-console.log('ADMIN_ACCOUNTS:', typeof ADMIN_ACCOUNTS);
+
+
+// ADMIN_ACCOUNTS 확인
+let adminAccountsExist = false;
+if (typeof ADMIN_ACCOUNTS !== 'undefined') adminAccountsExist = true;
+else if (typeof window.ADMIN_ACCOUNTS !== 'undefined') adminAccountsExist = true;
+console.log('ADMIN_ACCOUNTS 존재:', adminAccountsExist);

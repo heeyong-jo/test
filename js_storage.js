@@ -1,7 +1,11 @@
-// ==================== 로컬 스토리지 및 Firebase 저장 ====================
+﻿// ==================== 로컬 스토리지 및 Firebase 저장 ====================
 
 
-// ==================== 로컬 스토리지 및 Firebase 저장 ====================
+// FB_KEYS가 없으면 직접 정의 (안전 장치)
+if (typeof FB_KEYS === 'undefined') {
+  var FB_KEYS = ['notices', 'members', 'meditations', 'pendingUsers', 'approvedUsers', 
+                  'offerings', 'todayVerse', 'serviceList', 'scheduleList', 'posts', 'prayers'];
+}
 
 
 // 전역 변수 선언
@@ -13,8 +17,6 @@ let notices = [];
 let offerings = [];
 let meditations = [];
 let prayers = [];
-let serviceList = [];
-let scheduleList = [];  // ← 이 줄 추가 (scheduleList 변수)
 let todayVerse = null;
 let posts = [];
 
@@ -66,6 +68,8 @@ function fbSync() {
 }
 
 
+
+
 // Firebase 데이터로 UI 업데이트
 function fbUpdateUI(key, data) {
   let arr = data;
@@ -102,16 +106,18 @@ function fbUpdateUI(key, data) {
       if (typeof renderTodayVerse === 'function') renderTodayVerse();
       break;
     case 'serviceList':
-      serviceList = arr || [];
-      if (typeof renderServiceView === 'function') renderServiceView();
-      break;
-    case 'scheduleList':
-      scheduleList = arr || [];
-      if (typeof renderScheduleView === 'function') renderScheduleView();
-      break;
-    case 'posts':
-      posts = arr || [];
-      if (typeof renderBoardPosts === 'function') renderBoardPosts();
+  if (typeof window.serviceList !== 'undefined') {
+    window.serviceList = arr || [];
+  }
+  if (typeof renderServiceView === 'function') renderServiceView();
+  break;
+case 'scheduleList':
+  if (typeof window.scheduleList !== 'undefined') {
+    window.scheduleList = arr || [];
+  }
+  if (typeof renderScheduleView === 'function') renderScheduleView();
+  break;
+ renderBoardPosts();
       break;
     case 'prayers':
       prayers = arr || [];  // prayers 업데이트

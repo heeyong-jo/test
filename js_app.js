@@ -1,23 +1,83 @@
 ﻿// ==================== 앱 초기화 ====================
-window.addEventListener('load', function() {
-  // 스플래시 제거
-  setTimeout(function() {
-    var splash = document.getElementById('splash');
+
+
+window.addEventListener('load', () => {
+  // 1. Firebase 데이터 로드
+  setTimeout(async () => {
+    if (window.FB_READY && window.FB) {
+      await fbLoadAll();
+      fbSync();
+    } else {
+      console.log('로컬 모드: localStorage 데이터만 사용합니다');
+      if (typeof FB_KEYS !== 'undefined') {
+        FB_KEYS.forEach(key => {
+          try {
+            const data = localStorage.getItem('ch2_' + key);
+            if (data) fbUpdateUI(key, JSON.parse(data));
+          } catch(e) {}
+        });
+      }
+    }
+  }, 300);
+
+
+  // 2. 스플래시 제거 및 초기 화면 표시
+  setTimeout(() => {
+    const splash = document.getElementById('splash');
     if (splash) {
       splash.style.opacity = '0';
-      setTimeout(function() { splash.style.display = 'none'; }, 500);
+      setTimeout(() => { splash.style.display = 'none'; }, 500);
     }
-  }, 1500);
-  
-  // 기본 데이터 로드
-  setTimeout(function() {
-    if (typeof renderServiceView === 'function') renderServiceView();
-    if (typeof renderScheduleView === 'function') renderScheduleView();
-    if (typeof renderTodayVerse === 'function') renderTodayVerse();
-    if (typeof renderMeditations === 'function') renderMeditations();
-    if (typeof renderPrayers === 'function') renderPrayers();
-    if (typeof renderPosts === 'function') renderPosts();
-  }, 800);
+
+
+    // ✅ 자동 로그인 체크 (7일 이내)
+    let autoLoggedIn = false;
+    
+    if (typeof LS !== 'undefined') {
+      const logged = LS.load('logged', null);
+      if (logged && (Date.now() - logged.ts < 86400000 * 7)) {
+        // ADMIN_ACCOUNTS 찾기
+        let accounts = null;
+        if (typeof ADMIN_ACCOUNTS !== 'undefined') accounts = ADMIN_ACCOUNTS;
+        else if (typeof window.ADMIN_ACCOUNTS !== 'undefined') accounts = window.ADMIN_ACCOUNTS;
+        
+        if (accounts) {
+          const admin = accounts.find(a => a.id === logged.id);
+          const member = (typeof approvedUsers !== 'undefined') ? approvedUsers.find(u => u.id === logged.id) : null;
+          const acc = admin || member;
+          if (acc && typeof loginSuccess === 'function') {
+            loginSuccess(acc);
+            autoLoggedIn = true;
+          }
+        }
+      }
+    }
+    
+    // ✅ 자동 로그인 실패 시 로그인 화면 표시
+    if (!autoLoggedIn) {
+      const loginScreen = document.getElementById('screen-login');
+      if (loginScreen) {
+        loginScreen.style.display = 'flex';
+        console.log('로그인 화면 표시됨');
+      } else {
+        console.error('screen-login 요소를 찾을 수 없습니다');
+      }
+      
+      // 홈 화면은 로그인 없이 일부 표시 가능 (예배 안내는 로그인 필요)
+      if (typeof showTab === 'function') {
+        showTab(0);
+      }
+    }
+    
+    // 기본 UI 렌더링 (로그인 후에도 다시 렌더링됨)
+    setTimeout(() => {
+      if (typeof renderServiceView === 'function') renderServiceView();
+      if (typeof renderScheduleView === 'function') renderScheduleView();
+      if (typeof renderTodayVerse === 'function') renderTodayVerse();
+      if (typeof renderPosts === 'function') renderPosts();
+    }, 200);
+    
+  }, 1000);
 });
 
 

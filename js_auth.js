@@ -119,61 +119,48 @@ function doAuthSubmit() {
 
 // 로그인 처리 (안전하게 수정)
 function doLogin() {
-  console.log('🔵 doLogin 함수 실행됨');
+  var id = document.getElementById('li-id').value.trim();
+  var pw = document.getElementById('li-pw').value;
+  var errDiv = document.getElementById('login-err');
   
-  const idInput = document.getElementById('li-id');
-  const pwInput = document.getElementById('li-pw');
-  const errDiv = document.getElementById('login-err');
-  
-  if (!idInput || !pwInput) {
-    console.error('❌ 입력 요소 없음');
-    alert('로그인 폼을 찾을 수 없습니다. 페이지를 새로고침해주세요.');
-    return;
-  }
-  
-  const id = idInput.value.trim();
-  const pw = pwInput.value;
-  
-  console.log('입력된 아이디:', id);
-  
-  if (errDiv) errDiv.style.display = 'none';
+  errDiv.style.display = 'none';
   
   if (!id || !pw) {
-    if (errDiv) {
-      errDiv.textContent = '아이디와 비밀번호를 입력하세요';
-      errDiv.style.display = 'block';
-    }
+    errDiv.textContent = '아이디와 비밀번호를 입력하세요';
+    errDiv.style.display = 'block';
     return;
   }
   
-  // ✅ ADMIN_ACCOUNTS 안전하게 찾기
-  let accounts = null;
-  if (typeof ADMIN_ACCOUNTS !== 'undefined') accounts = ADMIN_ACCOUNTS;
-  else if (typeof window.ADMIN_ACCOUNTS !== 'undefined') accounts = window.ADMIN_ACCOUNTS;
-  
-  if (!accounts) {
-    console.warn('ADMIN_ACCOUNTS 없음, 직접 정의');
-    accounts = [
-      { id: 'hamkke', pw: 'hamkke123', name: '김소녕 목사', role: 'admin' },
-      { id: 'reodrino', pw: '232735a', name: '조희용 관리자', role: 'admin' }
-    ];
-    window.ADMIN_ACCOUNTS = accounts;
+  // 관리자 계정 확인
+  var admin = null;
+  for (var i = 0; i < ADMIN_ACCOUNTS.length; i++) {
+    if (ADMIN_ACCOUNTS[i].id === id && ADMIN_ACCOUNTS[i].pw === pw) {
+      admin = ADMIN_ACCOUNTS[i];
+      break;
+    }
   }
   
-  console.log('ADMIN_ACCOUNTS:', accounts);
-  
-  const admin = accounts.find(a => a.id === id && a.pw === pw);
   if (admin) {
-    console.log('✅ 관리자 로그인 성공:', admin.name);
     loginSuccess(admin);
     return;
   }
   
-  console.log('❌ 로그인 실패 - 일치하는 계정 없음');
-  if (errDiv) {
-    errDiv.textContent = '아이디 또는 비밀번호가 일치하지 않습니다';
-    errDiv.style.display = 'block';
+  // 일반 회원 확인
+  var user = null;
+  for (var i = 0; i < approvedUsers.length; i++) {
+    if (approvedUsers[i].id === id && approvedUsers[i].pw === pw) {
+      user = approvedUsers[i];
+      break;
+    }
   }
+  
+  if (user) {
+    loginSuccess(user);
+    return;
+  }
+  
+  errDiv.textContent = '아이디 또는 비밀번호가 일치하지 않습니다';
+  errDiv.style.display = 'block';
 }
 
 
@@ -352,48 +339,50 @@ function doSignup() {
 
 
 // 로그인 성공 처리 (수정됨 - forceRefreshData 제거)
-async function loginSuccess(acc) {
-  console.log('loginSuccess 실행:', acc.name);  // 디버깅용
-  
+function loginSuccess(acc) {
   currentUser = {
-    id: acc.id, name: acc.name, role: acc.role || 'member',
-    email: acc.email, phone: acc.phone, birth: acc.birth
+    id: acc.id,
+    name: acc.name,
+    role: acc.role || 'member',
+    email: acc.email || '',
+    phone: acc.phone || '',
+    birth: acc.birth || ''
   };
-  window.currentUser = currentUser;  // ✅ 필수!
   
-  LS.save('logged', {
-    id: acc.id, ts: Date.now(), email: acc.email,
-    phone: acc.phone, birth: acc.birth, name: acc.name
-  });
+  // 로그인 정보 저장
+  if (typeof LS !== 'undefined') {
+    LS.save('logged', {
+      id: acc.id,
+      ts: Date.now(),
+      name: acc.name
+    });
+  }
   
+  // 로그인 화면 닫기
   document.getElementById('screen-login').style.display = 'none';
   
-  const roleText = roleLabel[currentUser.role] || '회원';
+  // 사용자 정보 표시
+  var roleText = (currentUser.role === 'admin') ? '관리자' : (currentUser.role === 'manager') ? '매니저' : '일반성도';
   document.getElementById('user-name-display').textContent = acc.name;
   document.getElementById('user-role-display').textContent = roleText;
-  document.getElementById('setting-user-info').textContent = acc.name + ' (' + roleText + ')';
+  if (document.getElementById('setting-user-info')) {
+    document.getElementById('setting-user-info').textContent = acc.name + ' (' + roleText + ')';
+  }
   
+  // 권한 적용
   if (typeof applyRole === 'function') {
     applyRole(currentUser.role);
   }
   
-  // ✅ forceRefreshData 제거
-  if(window.FB_READY && window.FB) {
-    await fbLoadAll();
-  }
+  // 홈 탭으로 이동
+  showTab(0);
   
-  currentTab = 0;
-  if (typeof showTab === 'function') {
-    showTab(0);
-  }
-  
-  if(typeof renderServiceView === 'function') renderServiceView();
-  if(typeof renderScheduleView === 'function') renderScheduleView();
-  if(typeof renderTodayVerse === 'function') renderTodayVerse();
-  
-  if(acc.role === 'manager') {
-    setTimeout(() => { if(typeof renderApprovalsAccord === 'function') renderApprovalsAccord(); }, 150);
-  }
+  // 데이터 새로고침
+  if (typeof renderServiceView === 'function') renderServiceView();
+  if (typeof renderScheduleView === 'function') renderScheduleView();
+  if (typeof renderTodayVerse === 'function') renderTodayVerse();
+  if (typeof renderMeditations === 'function') renderMeditations();
+  if (typeof renderPrayers === 'function') renderPrayers();
   
   showToast('✅ ' + acc.name + '님 환영합니다');
 }
@@ -401,15 +390,20 @@ async function loginSuccess(acc) {
 
 // 로그아웃
 function doLogout() {
-  if(!confirm('로그아웃하시겠습니까?')) return;
-  LS.del('logged');
-  currentUser = null;
-  window.currentUser = null;  // ✅ 추가!
-  switchAuthTab('login');
-  document.getElementById('screen-login').style.display = 'block';
-  if (typeof showTab === 'function') {
-    showTab(0);
+  if (!confirm('로그아웃하시겠습니까?')) return;
+  
+  if (typeof LS !== 'undefined') {
+    LS.del('logged');
   }
+  
+  currentUser = null;
+  
+  // 로그인 화면 표시
+  document.getElementById('screen-login').style.display = 'flex';
+  
+  // 홈 탭으로 이동
+  showTab(0);
+  
   showToast('로그아웃되었습니다');
 }
 

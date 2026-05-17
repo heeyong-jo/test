@@ -35,23 +35,23 @@ function closeModal(id) {
 function showTab(n) {
   n = Math.max(0, Math.min(TOTAL_TABS - 1, n));
   
-  // ✅ 초창기 버전처럼: 홈(0), 말씀(1), 교제(2)는 로그인 없이 접근 가능
-  if (n !== 0 && n !== 1 && n !== 2 && !currentUser && !window.currentUser) {
-    const loginScreen = document.getElementById('screen-login');
-    if (loginScreen) loginScreen.style.display = 'flex';
+  // 초창기 스타일: 관리자 탭(6)만 로그인 필요
+  if (n === 6 && !currentUser) {
+    document.getElementById('screen-login').style.display = 'flex';
     return;
   }
   
   currentTab = n;
   document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
+  
   for (let i = 0; i < TOTAL_TABS; i++) {
-    const page = document.getElementById('p' + i);
-    if (page) page.classList.toggle('show', i === n);
+    document.getElementById('p' + i).classList.toggle('show', i === n);
   }
 
 
   if (n !== 5) {
-    ['bibleScriptureView', 'bibleHymnView', 'bibleAppendixView'].forEach(id => {
+    const views = ['bibleScriptureView', 'bibleHymnView', 'bibleAppendixView'];
+    views.forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
     });

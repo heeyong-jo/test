@@ -8,7 +8,7 @@ let boardPostCache = {};
 
 // 전역으로 currentUser 참조 보장
 function getCurrentUser() {
-    return window.currentUser || currentUser;
+    return currentUser || window.currentUser;
 }
 
 

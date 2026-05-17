@@ -307,15 +307,18 @@ function loginSuccess(acc) {
   console.log('loginSuccess 실행:', acc.name);
   
   // 현재 사용자 설정
-  window.currentUser = {
-    id: acc.id,
-    name: acc.name,
-    role: acc.role || 'member',
-    email: acc.email || '',
-    phone: acc.phone || '',
-    birth: acc.birth || ''
-  };
-  
+
+
+currentUser = {
+  id: acc.id,
+  name: acc.name,
+  role: acc.role || 'member',
+  email: acc.email || '',
+  phone: acc.phone || '',
+  birth: acc.birth || ''
+};
+window.currentUser = currentUser;  
+ 
   // 로그인 정보 저장
   if (typeof LS !== 'undefined') {
     LS.save('logged', {
@@ -364,7 +367,8 @@ function doLogout() {
   
   if (typeof LS !== 'undefined') LS.del('logged');
   
-  window.currentUser = null;
+  currentUser = null;
+window.currentUser = null;  
   
   const loginScreen = document.getElementById('screen-login');
   if (loginScreen) loginScreen.style.display = 'flex';

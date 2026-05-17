@@ -1,4 +1,4 @@
-﻿// ==================== 설정 및 상수 ====================
+// ==================== 설정 및 상수 ====================
 
 
 // Firebase 설정
@@ -43,7 +43,7 @@ window.FB_READY = FB_READY;
 
 
 // Firebase 동기화 키 목록 (단일 정의)
-var FB_KEYS = ['notices', 'members', 'meditations', 'pendingUsers', 'approvedUsers', 
+const FB_KEYS = ['notices', 'members', 'meditations', 'pendingUsers', 'approvedUsers', 
                   'offerings', 'todayVerse', 'serviceList', 'scheduleList', 'posts', 'prayers'];
 
 

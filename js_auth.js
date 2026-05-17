@@ -13,18 +13,23 @@ const ADMIN_ACCOUNTS = [
 ];
 
 
-// 회원 데이터
-let pendingUsers = [];
-let approvedUsers = [];
-
-
-// 저장된 데이터 불러오기
-if (typeof LS !== 'undefined') {
+// 저장된 데이터 불러오기 (js_storage.js의 LS 객체 사용)
+if (typeof LS !== 'undefined' && typeof LS.load === 'function') {
   try {
-    pendingUsers = LS.load('pendingUsers', []);
-    approvedUsers = LS.load('approvedUsers', []);
-    console.log('회원 데이터 로드 완료');
-  } catch(e) {}
+    var loaded_pending = LS.load('pendingUsers', []);
+    var loaded_approved = LS.load('approvedUsers', []);
+    if (loaded_pending && Array.isArray(loaded_pending)) {
+      pendingUsers = loaded_pending;
+    }
+    if (loaded_approved && Array.isArray(loaded_approved)) {
+      approvedUsers = loaded_approved;
+    }
+    console.log('회원 데이터 로드 완료 - 대기:', pendingUsers.length, '승인:', approvedUsers.length);
+  } catch(e) {
+    console.error('회원 데이터 로드 실패:', e);
+  }
+} else {
+  console.warn('LS 객체 미정의 - localStorage 미사용');
 }
 
 
@@ -112,9 +117,15 @@ function doLogin() {
   }
   
   // 관리자 계정 확인
+  if (typeof ADMIN_ACCOUNTS === 'undefined') {
+    console.error('❌ ADMIN_ACCOUNTS 정의되지 않음');
+    errDiv.textContent = '시스템 오류: 계정 정보를 불러올 수 없습니다';
+    errDiv.style.display = 'block';
+    return;
+  }
   const admin = ADMIN_ACCOUNTS.find(a => a.id === id && a.pw === pw);
   if (admin) {
-    console.log('관리자 로그인 성공:', admin.name);
+    console.log('✅ 관리자 로그인 성공:', admin.name);
     loginSuccess(admin);
     return;
   }
@@ -157,15 +168,23 @@ function checkIdDuplicate(val) {
   
   clearTimeout(idCheckTimer);
   idCheckTimer = setTimeout(() => {
-    const taken = ADMIN_ACCOUNTS.find(a => a.id === val) || 
-                  pendingUsers.find(u => u.id === val) || 
-                  approvedUsers.find(u => u.id === val);
+    let taken = null;
+    
+    // ADMIN_ACCOUNTS 안전 체크
+    if (typeof ADMIN_ACCOUNTS !== 'undefined') {
+      taken = ADMIN_ACCOUNTS.find(a => a.id === val);
+    }
+    
+    if (!taken && Array.isArray(pendingUsers)) {
+      taken = pendingUsers.find(u => u.id === val);
+    }
+    if (!taken && Array.isArray(approvedUsers)) {
+      taken = approvedUsers.find(u => u.id === val);
+    }
+    
     if (taken) {
       msg.style.color = '#fca5a5';
       msg.textContent = '❌ 이미 사용 중인 아이디입니다';
-    } else {
-      msg.style.color = '#86efac';
-      msg.textContent = '✅ 사용 가능한 아이디입니다';
     }
   }, 400);
 }

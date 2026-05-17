@@ -30,13 +30,12 @@ window.addEventListener('load', () => {
     }
 
 
-    // ✅ 자동 로그인 체크 (7일 이내)
+    // ✅ 자동 로그인 체크
     let autoLoggedIn = false;
     
     if (typeof LS !== 'undefined') {
       const logged = LS.load('logged', null);
       if (logged && (Date.now() - logged.ts < 86400000 * 7)) {
-        // ADMIN_ACCOUNTS 찾기
         let accounts = null;
         if (typeof ADMIN_ACCOUNTS !== 'undefined') accounts = ADMIN_ACCOUNTS;
         else if (typeof window.ADMIN_ACCOUNTS !== 'undefined') accounts = window.ADMIN_ACCOUNTS;
@@ -53,23 +52,18 @@ window.addEventListener('load', () => {
       }
     }
     
-    // ✅ 자동 로그인 실패 시 로그인 화면 표시
+    // ✅ 자동 로그인 실패 시 로그인 화면 강제 표시
     if (!autoLoggedIn) {
       const loginScreen = document.getElementById('screen-login');
       if (loginScreen) {
         loginScreen.style.display = 'flex';
-        console.log('로그인 화면 표시됨');
+        console.log('✅ 로그인 화면 표시됨');
       } else {
-        console.error('screen-login 요소를 찾을 수 없습니다');
-      }
-      
-      // 홈 화면은 로그인 없이 일부 표시 가능 (예배 안내는 로그인 필요)
-      if (typeof showTab === 'function') {
-        showTab(0);
+        console.error('❌ screen-login 요소 없음');
       }
     }
     
-    // 기본 UI 렌더링 (로그인 후에도 다시 렌더링됨)
+    // 기본 UI 렌더링
     setTimeout(() => {
       if (typeof renderServiceView === 'function') renderServiceView();
       if (typeof renderScheduleView === 'function') renderScheduleView();

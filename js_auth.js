@@ -119,16 +119,15 @@ function doAuthSubmit() {
 
 // 로그인 처리 (안전하게 수정)
 function doLogin() {
-  console.log('doLogin 함수 실행 시작!');
-  alert('doLogin 실행됨');  // 디버깅용 알림
+  console.log('🔵 doLogin 함수 실행됨');
   
   const idInput = document.getElementById('li-id');
   const pwInput = document.getElementById('li-pw');
   const errDiv = document.getElementById('login-err');
   
   if (!idInput || !pwInput) {
-    console.error('입력 요소를 찾을 수 없음');
-    alert('로그인 폼을 찾을 수 없습니다');
+    console.error('❌ 입력 요소 없음');
+    alert('로그인 폼을 찾을 수 없습니다. 페이지를 새로고침해주세요.');
     return;
   }
   
@@ -144,33 +143,33 @@ function doLogin() {
       errDiv.textContent = '아이디와 비밀번호를 입력하세요';
       errDiv.style.display = 'block';
     }
-    alert('아이디와 비밀번호를 입력하세요');
     return;
   }
   
-  // ADMIN_ACCOUNTS 찾기
+  // ✅ ADMIN_ACCOUNTS 안전하게 찾기
   let accounts = null;
   if (typeof ADMIN_ACCOUNTS !== 'undefined') accounts = ADMIN_ACCOUNTS;
   else if (typeof window.ADMIN_ACCOUNTS !== 'undefined') accounts = window.ADMIN_ACCOUNTS;
   
   if (!accounts) {
+    console.warn('ADMIN_ACCOUNTS 없음, 직접 정의');
     accounts = [
       { id: 'hamkke', pw: 'hamkke123', name: '김소녕 목사', role: 'admin' },
       { id: 'reodrino', pw: '232735a', name: '조희용 관리자', role: 'admin' }
     ];
+    window.ADMIN_ACCOUNTS = accounts;
   }
   
-  console.log('계정 목록:', accounts);
+  console.log('ADMIN_ACCOUNTS:', accounts);
   
   const admin = accounts.find(a => a.id === id && a.pw === pw);
   if (admin) {
-    console.log('관리자 계정 찾음:', admin.name);
-    alert('관리자 로그인 성공!');
+    console.log('✅ 관리자 로그인 성공:', admin.name);
     loginSuccess(admin);
     return;
   }
   
-  alert('아이디 또는 비밀번호가 틀렸습니다');
+  console.log('❌ 로그인 실패 - 일치하는 계정 없음');
   if (errDiv) {
     errDiv.textContent = '아이디 또는 비밀번호가 일치하지 않습니다';
     errDiv.style.display = 'block';

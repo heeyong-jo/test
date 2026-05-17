@@ -32,20 +32,13 @@ function closeModal(id) {
   if (modal) modal.style.display = 'none';
 }
 // 탭 전환
-// 탭 전환
 function showTab(n) {
   n = Math.max(0, Math.min(TOTAL_TABS - 1, n));
   
-  // ✅ 로그인 없이 접근 가능한 탭: 0(홈), 1(말씀), 5(성경책) - 일부만 허용
-  // 관리자 탭(6)은 로그인 필수
-  const needLogin = [2, 3, 4, 6].includes(n);
-  
-  if (needLogin && !currentUser && !window.currentUser) {
+  // ✅ 초창기 버전처럼: 홈(0), 말씀(1), 교제(2)는 로그인 없이 접근 가능
+  if (n !== 0 && n !== 1 && n !== 2 && !currentUser && !window.currentUser) {
     const loginScreen = document.getElementById('screen-login');
-    if (loginScreen) {
-      loginScreen.style.display = 'flex';
-    }
-    // 현재 탭은 그대로 유지
+    if (loginScreen) loginScreen.style.display = 'flex';
     return;
   }
   
@@ -57,7 +50,6 @@ function showTab(n) {
   }
 
 
-  // 성경책 탭(p5) 처리
   if (n !== 5) {
     ['bibleScriptureView', 'bibleHymnView', 'bibleAppendixView'].forEach(id => {
       const el = document.getElementById(id);

@@ -446,89 +446,20 @@ textarea.input-field{resize:vertical;min-height:80px;}
   font-size: 10px;
   color: var(--text2);
 }
-/* 게시판 본문 스타일 수정 */
+/* 게시판 본문(전체 화면)을 헤더와 탭 아래로 */
 #board-content {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--bg);
-  overflow-y: auto;
-  padding: 90px 14px 100px 14px;
-  z-index: 5 !important;  /* 헤더(100)보다 낮게 */
+  z-index: 10 !important;    /* 기존 1500 → 10 (헤더 100, 모달 2000보다 낮게) */
+  padding-top: 70px !important;  /* 헤더+탭 높이 확보 */
 }
 
 
-/* 탭이 항상 위에 오도록 */
-.tabs {
-  position: relative;
-  z-index: 20;
-  background: white;
+/* 모달은 항상 최상위로 */
+.modal-overlay {
+  z-index: 2000 !important;
 }
-
-
-/* 헤더 */
-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-
-/* 게시물 아이템 스타일 */
+/* 게시물 목록 아이템의 최대 너비 제한 해제 */
 .board-post-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px;
-  cursor: pointer;
-  margin-bottom: 10px;
-  transition: all 0.2s;
-}
-
-
-.board-post-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-
-.board-post-thumb {
-  width: 60px;
-  height: 60px;
-  border-radius: 8px;
-  object-fit: cover;
-  background: var(--bg2);
-  flex-shrink: 0;
-}
-
-
-.board-post-info {
-  flex: 1;
-}
-
-
-.board-post-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 4px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-
-.board-post-meta {
-  font-size: 11px;
-  color: var(--text2);
+  max-width: 100% !important;
 }
 
 

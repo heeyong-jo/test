@@ -1,6 +1,11 @@
 ﻿// ==================== 예배 안내 및 시간표 ====================
 
 
+// 주일예배 & 기타예배 편집용 임시 데이터
+let sundayEditData = [];
+let otherEditData = [];
+
+
 // 1. 기본값 상수 정의
 const DEFAULT_SERVICE_LIST = [
   { emoji:'⛪', name:'주일 낮예배 1부',       sub:'매주 일요일',  time:'오전 8:00   3층 예루살렘성전' },
@@ -20,15 +25,9 @@ const DEFAULT_SERVICE_LIST = [
 ];
 
 
-// serviceList 초기화 (전역 변수 사용)
-if (typeof LS !== 'undefined') {
-  if (typeof window.serviceList !== 'undefined') {
-    window.serviceList = LS.load('serviceList', DEFAULT_SERVICE_LIST);
-  }
-  if (typeof window.prayers !== 'undefined') {
-    window.prayers = LS.load('prayers', []);
-  }
-}
+// serviceList 초기화
+serviceList = LS.load('serviceList', DEFAULT_SERVICE_LIST);
+prayers = LS.load('prayers', []);
 
 
 function renderServiceView() {
@@ -42,13 +41,7 @@ function renderSundayService() {
   if (!list) return;
 
 
-  // serviceList가 없으면 기본값 사용
-  let dataToRender = serviceList;
-  if (!dataToRender || dataToRender.length === 0) {
-    dataToRender = DEFAULT_SERVICE_LIST;
-  }
-
-
+  const dataToRender = (serviceList && serviceList.length > 0) ? serviceList : DEFAULT_SERVICE_LIST;
   const sunday = dataToRender.filter(s => s.sub && s.sub.includes('일요일'));
   if (sunday.length === 0) {
     list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text2);">등록된 주일 예배가 없습니다.</div>';
@@ -71,12 +64,7 @@ function renderOtherService() {
   if (!list) return;
 
 
-  let dataToRender = serviceList;
-  if (!dataToRender || dataToRender.length === 0) {
-    dataToRender = DEFAULT_SERVICE_LIST;
-  }
-
-
+  const dataToRender = (serviceList && serviceList.length > 0) ? serviceList : DEFAULT_SERVICE_LIST;
   const other = dataToRender.filter(s => !s.sub || !s.sub.includes('일요일'));
   
   if (other.length === 0) {
@@ -118,7 +106,7 @@ function toggleOtherServiceBody() {
 }
 
 
-// 예배 안내 수정 모드 토글
+// ==================== 주일예배 수정 ====================
 function toggleSundayEdit() {
   if (document.getElementById('sunday-service-edit').style.display === 'block') {
     cancelSundayEdit();
@@ -164,52 +152,79 @@ function addSundayServiceRow() {
 function saveSundayEdit() {
   const other = serviceList.filter(s => !s.sub || !s.sub.includes('일요일'));
   serviceList = [...sundayEditData, ...other];
+  LS.save('serviceList', serviceList);
   
-  // 🔥 Firebase에 직접 저장하고 완료 후 UI 갱신
   if (window.FB_READY && window.FB) {
-    firebase.database().ref('serviceList').set(serviceList)
-      .then(() => {
-        LS.save('serviceList', serviceList);
-        cancelSundayEdit();
-        renderServiceView();
-        showToast('✅ 주일 예배가 저장되었습니다');
-      })
-      .catch(err => {
-        console.error('저장 실패:', err);
-        showToast('❌ 저장 실패. 다시 시도해주세요.');
-      });
-  } else {
-    LS.save('serviceList', serviceList);
-    cancelSundayEdit();
-    renderServiceView();
-    showToast('✅ 주일 예배가 저장되었습니다');
+    firebase.database().ref('serviceList').set(serviceList).catch(() => {});
   }
+  
+  cancelSundayEdit();
+  renderServiceView();
+  showToast('✅ 주일 예배가 저장되었습니다');
+}
+
+
+function cancelSundayEdit() {
+  document.getElementById('sunday-service-view').style.display = 'block';
+  document.getElementById('sunday-service-edit').style.display = 'none';
+}
+
+
+// ==================== 기타예배 수정 ====================
+function toggleOtherEdit() {
+  if (document.getElementById('other-service-edit').style.display === 'block') {
+    cancelOtherEdit();
+    return;
+  }
+  otherEditData = JSON.parse(JSON.stringify(serviceList.filter(s => !s.sub || !s.sub.includes('일요일'))));
+  document.getElementById('other-service-view').style.display = 'none';
+  document.getElementById('other-service-edit').style.display = 'block';
+  renderOtherEditList();
+}
+
+
+function renderOtherEditList() {
+  const el = document.getElementById('other-service-list-edit');
+  if (!el) return;
+  el.innerHTML = otherEditData.map((s, i) => `
+    <div class="service-edit-row">
+      <div class="service-edit-name">
+        <div>${escapeHtml(s.emoji)} ${escapeHtml(s.name)}</div>
+        <div class="service-edit-sub">${escapeHtml(s.sub)}</div>
+      </div>
+      <input class="service-time-input" value="${s.time}" onchange="otherEditData[${i}].time=this.value">
+      <button class="service-del-btn" onclick="deleteOtherEditRow(${i})">삭제</button>
+    </div>
+  `).join('');
+}
+
+
+function deleteOtherEditRow(i) {
+  otherEditData.splice(i, 1);
+  renderOtherEditList();
+}
+
+
+function addOtherServiceRow() {
+  const name = prompt('예배 이름', '');
+  if (!name) return;
+  otherEditData.push({ emoji: '🔥', name, sub: '매주 금요일', time: '저녁 8:00' });
+  renderOtherEditList();
 }
 
 
 function saveOtherEdit() {
   const sunday = serviceList.filter(s => s.sub && s.sub.includes('일요일'));
   serviceList = [...sunday, ...otherEditData];
+  LS.save('serviceList', serviceList);
   
-  // 🔥 Firebase에 직접 저장하고 완료 후 UI 갱신
   if (window.FB_READY && window.FB) {
-    firebase.database().ref('serviceList').set(serviceList)
-      .then(() => {
-        LS.save('serviceList', serviceList);
-        cancelOtherEdit();
-        renderServiceView();
-        showToast('✅ 기타 예배가 저장되었습니다');
-      })
-      .catch(err => {
-        console.error('저장 실패:', err);
-        showToast('❌ 저장 실패. 다시 시도해주세요.');
-      });
-  } else {
-    LS.save('serviceList', serviceList);
-    cancelOtherEdit();
-    renderServiceView();
-    showToast('✅ 기타 예배가 저장되었습니다');
+    firebase.database().ref('serviceList').set(serviceList).catch(() => {});
   }
+  
+  cancelOtherEdit();
+  renderServiceView();
+  showToast('✅ 기타 예배가 저장되었습니다');
 }
 
 
@@ -219,12 +234,12 @@ function cancelOtherEdit() {
 }
 
 
-// 예배 시간표 (안내 탭)
+// ==================== 예배 시간표 ====================
 function renderScheduleView() {
   const el = document.getElementById('schedule-list-view');
   if (!el) return;
   
-  if (typeof firebase === 'undefined' || !firebase.apps.length) {
+  if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) {
     el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">시간표를 불러올 수 없습니다.</div>';
     return;
   }
@@ -233,14 +248,12 @@ function renderScheduleView() {
     .then(snap => {
       const raw = snap.val();
       const data = raw ? (Array.isArray(raw) ? raw : Object.values(raw)) : [];
-      if (typeof scheduleList !== 'undefined') {
-        scheduleList = data.length > 0 ? data : [];
-      }
-      if (data.length === 0) {
+      scheduleList = data.length > 0 ? data : [];
+      if (scheduleList.length === 0) {
         el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">등록된 시간표가 없습니다.</div>';
         return;
       }
-      el.innerHTML = data.map(s => `
+      el.innerHTML = scheduleList.map(s => `
         <div class="service-row">
           <div>
             <div class="service-name">${escapeHtml(s.emoji)} ${escapeHtml(s.name)}</div>
@@ -250,8 +263,7 @@ function renderScheduleView() {
         </div>
       `).join('');
     })
-    .catch(err => {
-      console.error('scheduleList 로드 실패:', err);
+    .catch(() => {
       el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">시간표를 불러올 수 없습니다.</div>';
     });
 }
@@ -263,7 +275,6 @@ function toggleScheduleEdit() {
     cancelScheduleEdit();
     return;
   }
-  if (typeof scheduleEditData === 'undefined') var scheduleEditData = [];
   scheduleEditData = JSON.parse(JSON.stringify(scheduleList || []));
   document.getElementById('schedule-view').style.display = 'none';
   document.getElementById('schedule-edit').style.display = 'block';
@@ -276,7 +287,6 @@ function toggleScheduleEdit() {
 function renderScheduleEditList() {
   const el = document.getElementById('schedule-list-edit');
   if (!el) return;
-  if (typeof scheduleEditData === 'undefined') return;
   el.innerHTML = scheduleEditData.map((s, i) => `
     <div class="service-edit-row">
       <div class="service-edit-name">
@@ -291,22 +301,12 @@ function renderScheduleEditList() {
 
 
 function deleteScheduleRow(i) {
-  if (typeof scheduleEditData !== 'undefined') {
-    scheduleEditData.splice(i, 1);
-    renderScheduleEditList();
-  }
+  scheduleEditData.splice(i, 1);
+  renderScheduleEditList();
 }
 
 
 function addScheduleRow() {
-  const emojiInput = document.getElementById('new-sch-emoji');
-  const nameInput = document.getElementById('new-sch-name');
-  const subInput = document.getElementById('new-sch-sub');
-  const timeInput = document.getElementById('new-sch-time');
-  if (emojiInput) emojiInput.value = '✨';
-  if (nameInput) nameInput.value = '';
-  if (subInput) subInput.value = '';
-  if (timeInput) timeInput.value = '';
   const modal = document.getElementById('modal-add-schedule');
   if (modal) modal.style.display = 'flex';
 }
@@ -318,7 +318,6 @@ function confirmAddSchedule() {
   const sub = document.getElementById('new-sch-sub')?.value.trim();
   const time = document.getElementById('new-sch-time')?.value.trim();
   if (!name || !time) { showToast('이름과 시간을 입력하세요'); return; }
-  if (typeof scheduleEditData === 'undefined') var scheduleEditData = [];
   scheduleEditData.push({ emoji, name, sub, time });
   closeModal('modal-add-schedule');
   renderScheduleEditList();
@@ -326,20 +325,13 @@ function confirmAddSchedule() {
 
 
 function saveScheduleEdit() {
-  if (typeof scheduleList !== 'undefined') {
-    scheduleList = JSON.parse(JSON.stringify(scheduleEditData || []));
+  scheduleList = JSON.parse(JSON.stringify(scheduleEditData));
+  LS.save('scheduleList', scheduleList);
+  
+  if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
+    firebase.database().ref('scheduleList').set(scheduleList).catch(() => {});
   }
-  if (typeof firebase !== 'undefined' && firebase.apps.length) {
-    firebase.database().ref('scheduleList').set(scheduleList || [])
-      .then(() => console.log('scheduleList 저장 성공'))
-      .catch(err => { console.error('시간표 저장 실패:', err); showToast('저장 오류'); });
-  }
-  try {
-    localStorage.setItem('ch2_scheduleList', JSON.stringify(scheduleList || []));
-  } catch(e) {}
-  if (typeof LS !== 'undefined') {
-    LS.save('scheduleList', scheduleList || []);
-  }
+  
   document.getElementById('schedule-view').style.display = 'block';
   document.getElementById('schedule-edit').style.display = 'none';
   const btn = document.getElementById('schedule-edit-btn');

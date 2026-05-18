@@ -2,11 +2,10 @@
 let currentBoardCategory = '일반성도';
 let currentPostId = null;
 let currentBoardPage = 1;
-const POSTS_PER_PAGE = 10; // 3에서 10으로 변경 (너무 적음)
+const POSTS_PER_PAGE = 10;
 let boardPostCache = {};
 
 
-// 전역으로 currentUser 참조 보장
 function getCurrentUser() {
     return currentUser || window.currentUser;
 }
@@ -42,13 +41,7 @@ function openBoardCategory() {
   if (!list || !content) return;
   
   list.style.display = 'none';
-  list.style.visibility = 'hidden';
-  list.style.pointerEvents = 'none';
-
-
   content.style.display = 'block';
-  content.style.visibility = 'visible';
-  content.style.pointerEvents = 'auto';
   content.scrollTop = 0;
   
   window.scrollTo(0, 0);
@@ -66,13 +59,7 @@ function showBoardCategoryList() {
   if (!list || !content) return;
   
   content.style.display = 'none';
-  content.style.visibility = 'hidden';
-  content.style.pointerEvents = 'none';
-
-
   list.style.display = 'flex';
-  list.style.visibility = 'visible';
-  list.style.pointerEvents = 'auto';
 }
 
 
@@ -134,7 +121,6 @@ function getCategoryLabel(cat) {
 }
 
 
-// 수정된 loadPosts 함수
 function loadPosts() {
   console.log('loadPosts 실행, 카테고리:', currentBoardCategory);
   
@@ -143,28 +129,24 @@ function loadPosts() {
     return;
   }
   
-  // ✅ boards/${category}/posts 경로에서 읽기
   const postsRef = firebase.database().ref(`boards/${currentBoardCategory}/posts`);
   postsRef.once('value', snap => {
     const data = snap.val();
+    let filteredPosts = [];
+    
     if (data) {
       const fbPosts = Object.values(data).sort((a, b) => (b.createdAt || b.timestamp) - (a.createdAt || a.timestamp));
       window.posts = fbPosts;
-      boardPostCache[currentBoardCategory] = fbPosts;
-    } else {
-      boardPostCache[currentBoardCategory] = [];
+      filteredPosts = fbPosts;
     }
+    
+    boardPostCache[currentBoardCategory] = filteredPosts;
     renderPostsPage();
   }).catch(err => {
     console.error('Firebase posts 로드 실패:', err);
     boardPostCache[currentBoardCategory] = [];
     renderPostsPage();
   });
-}
-else {
-    boardPostCache[currentBoardCategory] = filteredPosts;
-    renderPostsPage();
-  }
 }
 
 
@@ -220,7 +202,6 @@ function changeBoardPage(page) {
 }
 
 
-// 수정된 openBoardWrite 함수
 function openBoardWrite() {
   const user = getCurrentUser();
   
@@ -235,7 +216,6 @@ function openBoardWrite() {
     return;
   }
   
-  // 입력 필드 초기화
   const titleInput = document.getElementById('board-write-title');
   const contentInput = document.getElementById('board-write-content');
   const previewDiv = document.getElementById('board-photo-preview');
@@ -296,7 +276,6 @@ function boardPhotoPreview(input) {
 }
 
 
-// 수정된 submitBoardPost 함수
 async function submitBoardPost() {
   console.log('submitBoardPost 시작');
   
@@ -358,12 +337,10 @@ async function submitBoardPost() {
 
 
   try {
-    // ✅ boards/${category}/posts 경로에 저장
     const postsRef = firebase.database().ref(`boards/${currentBoardCategory}/posts`);
     const newPostRef = postsRef.push();
     await newPostRef.set(newPost);
     
-    // 로컬 posts 배열 업데이트
     if (!window.posts) window.posts = [];
     window.posts.unshift(newPost);
     
@@ -395,13 +372,11 @@ function openBoardDetail(postId) {
   
   currentPostId = postId;
   
-  // posts 배열에서 찾기
   let post = null;
   if (window.posts) {
     post = window.posts.find(p => p.id === postId);
   }
   
-  // Firebase에서 직접 가져오기
   const fetchPost = post ? Promise.resolve(post) : 
     firebase.database().ref(`posts/${postId}`).once('value').then(snap => snap.val());
   
@@ -515,7 +490,6 @@ function submitBoardComment() {
 }
 
 
-// resizeStaffImage 함수 (js_staff.js에 없을 경우 대비)
 function resizeStaffImage(file, maxW = 400, maxH = 480, quality = 0.85) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -569,7 +543,6 @@ function updateBoardCommentArea() {
 }
 
 
-// 초기화
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', function() {
     initBoard();
@@ -581,7 +554,6 @@ if (document.readyState === 'loading') {
 }
 
 
-// showToast 함수가 없을 경우 대비
 if (typeof showToast !== 'function') {
   window.showToast = function(msg) {
     alert(msg);

@@ -134,37 +134,34 @@ function getCategoryLabel(cat) {
 }
 
 
-// 수정된 loadPosts 함수 - posts 배열 직접 사용
+// 수정된 loadPosts 함수
 function loadPosts() {
   console.log('loadPosts 실행, 카테고리:', currentBoardCategory);
   
-  // 전역 posts 배열 사용 (js_storage.js에서 관리)
-  if (typeof window.posts === 'undefined') {
-    window.posts = [];
+  if (typeof firebase === 'undefined' || !firebase.apps.length) {
+    console.warn('Firebase 미연결');
+    return;
   }
   
-  let filteredPosts = window.posts.filter(p => p.category === currentBoardCategory);
-  
-  // Firebase에서도 실시간으로 가져오기
-  if (typeof firebase !== 'undefined' && firebase.apps.length) {
-    firebase.database().ref('posts').once('value', snap => {
-      const data = snap.val();
-      if (data) {
-        const fbPosts = Object.values(data).sort((a, b) => (b.createdAt || b.timestamp) - (a.createdAt || a.timestamp));
-        window.posts = fbPosts;
-        filteredPosts = window.posts.filter(p => p.category === currentBoardCategory);
-        boardPostCache[currentBoardCategory] = filteredPosts;
-        renderPostsPage();
-      } else {
-        boardPostCache[currentBoardCategory] = filteredPosts;
-        renderPostsPage();
-      }
-    }).catch(err => {
-      console.error('Firebase posts 로드 실패:', err);
-      boardPostCache[currentBoardCategory] = filteredPosts;
-      renderPostsPage();
-    });
-  } else {
+  // ✅ boards/${category}/posts 경로에서 읽기
+  const postsRef = firebase.database().ref(`boards/${currentBoardCategory}/posts`);
+  postsRef.once('value', snap => {
+    const data = snap.val();
+    if (data) {
+      const fbPosts = Object.values(data).sort((a, b) => (b.createdAt || b.timestamp) - (a.createdAt || a.timestamp));
+      window.posts = fbPosts;
+      boardPostCache[currentBoardCategory] = fbPosts;
+    } else {
+      boardPostCache[currentBoardCategory] = [];
+    }
+    renderPostsPage();
+  }).catch(err => {
+    console.error('Firebase posts 로드 실패:', err);
+    boardPostCache[currentBoardCategory] = [];
+    renderPostsPage();
+  });
+}
+else {
     boardPostCache[currentBoardCategory] = filteredPosts;
     renderPostsPage();
   }
@@ -299,7 +296,7 @@ function boardPhotoPreview(input) {
 }
 
 
-// 수정된 submitBoardPost 함수 (가장 중요)
+// 수정된 submitBoardPost 함수
 async function submitBoardPost() {
   console.log('submitBoardPost 시작');
   
@@ -361,8 +358,8 @@ async function submitBoardPost() {
 
 
   try {
-    // Firebase에 저장
-    const postsRef = firebase.database().ref('posts');
+    // ✅ boards/${category}/posts 경로에 저장
+    const postsRef = firebase.database().ref(`boards/${currentBoardCategory}/posts`);
     const newPostRef = postsRef.push();
     await newPostRef.set(newPost);
     
@@ -370,7 +367,6 @@ async function submitBoardPost() {
     if (!window.posts) window.posts = [];
     window.posts.unshift(newPost);
     
-    // localStorage에 저장
     if (typeof LS !== 'undefined') {
       LS.save('posts', window.posts);
     }
@@ -378,14 +374,12 @@ async function submitBoardPost() {
     showToast('✅ 게시물이 등록되었습니다.');
     closeBoardWrite();
     
-    // 입력 필드 초기화
     if (titleInput) titleInput.value = '';
     if (contentInput) contentInput.value = '';
     const previewDiv = document.getElementById('board-photo-preview');
     if (previewDiv) previewDiv.innerHTML = '';
     window._boardResizedPhotos = null;
     
-    // 게시물 목록 새로고침
     currentBoardPage = 1;
     loadPosts();
     

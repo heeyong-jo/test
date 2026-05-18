@@ -117,9 +117,11 @@ case 'scheduleList':
   }
   if (typeof renderScheduleView === 'function') renderScheduleView();
   break;
- renderBoardPosts();
-      break;
-    case 'prayers':
+case 'posts':
+  posts = arr || [];
+  if (typeof renderBoardPosts === 'function') renderBoardPosts();
+  break;
+case 'prayers':
       prayers = arr || [];  // prayers 업데이트
       if (typeof renderPrayers === 'function') renderPrayers();
       break;

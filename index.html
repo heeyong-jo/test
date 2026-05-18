@@ -1033,6 +1033,14 @@
 window.addEventListener('DOMContentLoaded', function() {
   console.log('DOMContentLoaded - 초기화 시작');
   
+  // ✅ 교회 정보 로드 추가
+  setTimeout(function() {
+    if (typeof loadChurchInfo === 'function') {
+      loadChurchInfo();
+      console.log('교회 정보 로드 요청됨');
+    }
+  }, 500);
+  
   // 스플래시 숨김
   setTimeout(function() {
     var splash = document.getElementById('splash');

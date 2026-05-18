@@ -28,12 +28,13 @@ const DEFAULT_SERVICE_LIST = [
 
 
 // serviceList 초기화 (전역 변수 사용)
-if (typeof serviceList === 'undefined') {
-  var serviceList = [];
-}
 if (typeof LS !== 'undefined') {
-  serviceList = LS.load('serviceList', DEFAULT_SERVICE_LIST);
-  prayers = LS.load('prayers', []);
+  if (typeof window.serviceList !== 'undefined') {
+    window.serviceList = LS.load('serviceList', DEFAULT_SERVICE_LIST);
+  }
+  if (typeof window.prayers !== 'undefined') {
+    window.prayers = LS.load('prayers', []);
+  }
 }
 
 

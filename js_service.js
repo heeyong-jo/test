@@ -1,11 +1,4 @@
 ﻿// ==================== 예배 안내 및 시간표 ====================
-// 주일예배 & 기타예배 편집용 임시 데이터 (중복 선언 제거!)
-// serviceList, prayers, scheduleList는 js_storage.js에서 이미 선언됨
-// 여기서는 sundayEditData, otherEditData만 관리
-
-
-let sundayEditData = [];
-let otherEditData = [];
 
 
 // 1. 기본값 상수 정의

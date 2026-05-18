@@ -1,28 +1,27 @@
 ﻿// ==================== 앱 초기화 ====================
 
 
-
-
-// Firebase 초기화 (전역 FB 객체는 config.js에서 이미 정의됨)
 window.addEventListener('load', () => {
-  // 1. Firebase 데이터 로드 (로컬 또는 실시간)
+  // 1. Firebase 데이터 로드
   setTimeout(async () => {
     if (window.FB_READY && window.FB) {
       await fbLoadAll();
       fbSync();
     } else {
       console.log('로컬 모드: localStorage 데이터만 사용합니다');
-      FB_KEYS.forEach(key => {
-        try {
-          const data = localStorage.getItem('ch2_' + key);
-          if (data) fbUpdateUI(key, JSON.parse(data));
-        } catch(e) {}
-      });
+      if (typeof FB_KEYS !== 'undefined') {
+        FB_KEYS.forEach(key => {
+          try {
+            const data = localStorage.getItem('ch2_' + key);
+            if (data) fbUpdateUI(key, JSON.parse(data));
+          } catch(e) {}
+        });
+      }
     }
   }, 300);
 
 
-  // 2. 스플래시 제거 및 초기 렌더링, 자동 로그인 처리
+  // 2. 스플래시 제거 및 초기 화면 표시
   setTimeout(() => {
     const splash = document.getElementById('splash');
     if (splash) {
@@ -31,35 +30,53 @@ window.addEventListener('load', () => {
     }
 
 
-
-
-    // 기본 UI 렌더링
-    if (typeof renderServiceView === 'function') renderServiceView();
-    if (typeof renderScheduleView === 'function') renderScheduleView();
-    if (typeof renderTodayVerse === 'function') renderTodayVerse();
-    if (typeof renderPosts === 'function') renderPosts();
-    if (typeof loadStaff === 'function') loadStaff();
-
-
-
-
-    // 자동 로그인 체크 (7일 이내)
-    const logged = LS.load('logged', null);
-    if (logged && (Date.now() - logged.ts < 86400000 * 7)) {
-      const admin = ADMIN_ACCOUNTS.find(a => a.id === logged.id);
-      const member = approvedUsers.find(u => u.id === logged.id);
-      const acc = admin || member;
-      if (acc) {
-        loginSuccess(acc);
-        return;
+    // ✅ 자동 로그인 체크 (7일 이내)
+    let autoLoggedIn = false;
+    
+    if (typeof LS !== 'undefined') {
+      const logged = LS.load('logged', null);
+      if (logged && (Date.now() - logged.ts < 86400000 * 7)) {
+        // ADMIN_ACCOUNTS 찾기
+        let accounts = null;
+        if (typeof ADMIN_ACCOUNTS !== 'undefined') accounts = ADMIN_ACCOUNTS;
+        else if (typeof window.ADMIN_ACCOUNTS !== 'undefined') accounts = window.ADMIN_ACCOUNTS;
+        
+        if (accounts) {
+          const admin = accounts.find(a => a.id === logged.id);
+          const member = (typeof approvedUsers !== 'undefined') ? approvedUsers.find(u => u.id === logged.id) : null;
+          const acc = admin || member;
+          if (acc && typeof loginSuccess === 'function') {
+            loginSuccess(acc);
+            autoLoggedIn = true;
+          }
+        }
       }
     }
-
-
-
-
-    // 로그인 화면 표시
-    showTab(0);
+    
+    // ✅ 자동 로그인 실패 시 로그인 화면 표시
+    if (!autoLoggedIn) {
+      const loginScreen = document.getElementById('screen-login');
+      if (loginScreen) {
+        loginScreen.style.display = 'flex';
+        console.log('로그인 화면 표시됨');
+      } else {
+        console.error('screen-login 요소를 찾을 수 없습니다');
+      }
+      
+      // 홈 화면은 로그인 없이 일부 표시 가능 (예배 안내는 로그인 필요)
+      if (typeof showTab === 'function') {
+        showTab(0);
+      }
+    }
+    
+    // 기본 UI 렌더링 (로그인 후에도 다시 렌더링됨)
+    setTimeout(() => {
+      if (typeof renderServiceView === 'function') renderServiceView();
+      if (typeof renderScheduleView === 'function') renderScheduleView();
+      if (typeof renderTodayVerse === 'function') renderTodayVerse();
+      if (typeof renderPosts === 'function') renderPosts();
+    }, 200);
+    
   }, 1000);
 });
 
@@ -69,7 +86,6 @@ function updateBoardWriteBtn() {
   const wrap = document.getElementById('board-write-btn-wrap');
   if (!wrap) return;
   const role = currentUser && currentUser.role;
-  // admin 또는 manager만 표시
   wrap.style.display = (role === 'admin' || role === 'manager') ? 'block' : 'none';
 }
 
@@ -77,22 +93,20 @@ function updateBoardWriteBtn() {
 // 댓글 입력창: 로그인 유저 전체 허용
 function updateBoardCommentArea() {
   const inputWrap = document.getElementById('board-comment-input-wrap');
-  const loginMsg  = document.getElementById('board-comment-login-msg');
+  const loginMsg = document.getElementById('board-comment-login-msg');
   if (!inputWrap || !loginMsg) return;
   if (currentUser) {
     inputWrap.style.display = 'block';
-    loginMsg.style.display  = 'none';
+    loginMsg.style.display = 'none';
   } else {
     inputWrap.style.display = 'none';
-    loginMsg.style.display  = 'block';
+    loginMsg.style.display = 'block';
   }
 }
 
 
 // ── 교회 정보 (인사말/연혁) Firebase 연동 ──────────────────────
 const defaultGreeting = `"인생은 만남입니다.\n\n우리는 부모와의 만남에서 인생의 지침을 배우고...\n하나님은 오늘도 당신을 기다리고 계십니다.\n하나님은 당신을 사랑하십니다."`;
-
-
 
 
 const defaultHistory = [
@@ -102,38 +116,35 @@ const defaultHistory = [
 ];
 
 
-
-
-let currentEditMode = ''; // 'greeting' | 'history'
-
-
+let currentEditMode = '';
 
 
 function loadChurchInfo() {
+  if (typeof firebase === 'undefined') return;
   firebase.database().ref('churchInfo').once('value', snap => {
     if (snap.exists()) {
       const d = snap.val();
-      renderGreeting(d.greeting || defaultGreeting);
-      renderHistory(d.history || defaultHistory);
+      if (typeof renderGreeting === 'function') renderGreeting(d.greeting || defaultGreeting);
+      if (typeof renderHistory === 'function') renderHistory(d.history || defaultHistory);
     } else {
-      renderGreeting(defaultGreeting);
-      renderHistory(defaultHistory);
+      if (typeof renderGreeting === 'function') renderGreeting(defaultGreeting);
+      if (typeof renderHistory === 'function') renderHistory(defaultHistory);
     }
-    // 관리자 버튼 표시
     if (typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'admin') {
-      document.getElementById('greeting-edit-btn').style.display = 'inline-block';
-      document.getElementById('history-edit-btn').style.display = 'inline-block';
+      const greetingBtn = document.getElementById('greeting-edit-btn');
+      const historyBtn = document.getElementById('history-edit-btn');
+      if (greetingBtn) greetingBtn.style.display = 'inline-block';
+      if (historyBtn) historyBtn.style.display = 'inline-block';
     }
   });
 }
 
 
-
-
 function renderGreeting(text) {
-  document.getElementById('greeting-content').innerHTML = 
-    `<div style="background:linear-gradient(135deg,#f9f2f9,#f5eaf5);border-radius:16px;padding:18px;">
-       <div style="font-size:14px;color:var(--text2);line-height:1.8;white-space:pre-wrap;">${text}</div>
+  const el = document.getElementById('greeting-content');
+  if (!el) return;
+  el.innerHTML = `<div style="background:linear-gradient(135deg,#f9f2f9,#f5eaf5);border-radius:16px;padding:18px;">
+       <div style="font-size:14px;color:var(--text2);line-height:1.8;white-space:pre-wrap;">${escapeHtml(text)}</div>
        <div style="text-align:right;margin-top:8px;">
          <div style="font-weight:800;color:var(--purple);">김명서 목사</div>
          <div style="font-size:11px;color:var(--text2);">가좌제일교회 담임</div>
@@ -142,65 +153,77 @@ function renderGreeting(text) {
 }
 
 
-
-
 function renderHistory(arr) {
+  const el = document.getElementById('history-content');
+  if (!el) return;
   let html = '';
   arr.forEach(item => {
     html += `
       <div style="border-left:3px solid var(--purple);padding-left:14px;margin-bottom:12px;">
-        <div style="font-weight:800;color:var(--purple);margin-bottom:4px;">${item.year}</div>
-        <div style="font-size:13px;color:var(--text2);">${item.content}</div>
+        <div style="font-weight:800;color:var(--purple);margin-bottom:4px;">${escapeHtml(item.year)}</div>
+        <div style="font-size:13px;color:var(--text2);">${escapeHtml(item.content)}</div>
       </div>`;
   });
-  document.getElementById('history-content').innerHTML = html;
+  el.innerHTML = html;
 }
-
-
 
 
 function openEditGreeting() {
   currentEditMode = 'greeting';
-  document.getElementById('churchinfo-modal-title').textContent = '✏️ 인사말 수정';
-  document.getElementById('greeting-edit-area').style.display = 'block';
-  document.getElementById('history-edit-area').style.display = 'none';
-  // 현재 인사말 텍스트 불러오기
-  firebase.database().ref('churchInfo/greeting').once('value', snap => {
-    document.getElementById('edit-greeting-text').value = snap.val() || defaultGreeting;
-  });
-  document.getElementById('modal-edit-churchinfo').style.display = 'flex';
+  const titleEl = document.getElementById('churchinfo-modal-title');
+  if (titleEl) titleEl.textContent = '✏️ 인사말 수정';
+  const greetingArea = document.getElementById('greeting-edit-area');
+  const historyArea = document.getElementById('history-edit-area');
+  if (greetingArea) greetingArea.style.display = 'block';
+  if (historyArea) historyArea.style.display = 'none';
+  if (typeof firebase !== 'undefined') {
+    firebase.database().ref('churchInfo/greeting').once('value', snap => {
+      const textarea = document.getElementById('edit-greeting-text');
+      if (textarea) textarea.value = snap.val() || defaultGreeting;
+    });
+  }
+  const modal = document.getElementById('modal-edit-churchinfo');
+  if (modal) modal.style.display = 'flex';
 }
-
-
 
 
 function openEditHistory() {
   currentEditMode = 'history';
-  document.getElementById('churchinfo-modal-title').textContent = '📜 연혁 수정';
-  document.getElementById('greeting-edit-area').style.display = 'none';
-  document.getElementById('history-edit-area').style.display = 'block';
-  firebase.database().ref('churchInfo/history').once('value', snap => {
-    let arr = snap.val() || defaultHistory;
-    let text = arr.map(item => `${item.year}: ${item.content}`).join('\n');
-    document.getElementById('edit-history-text').value = text;
-  });
-  document.getElementById('modal-edit-churchinfo').style.display = 'flex';
+  const titleEl = document.getElementById('churchinfo-modal-title');
+  if (titleEl) titleEl.textContent = '📜 연혁 수정';
+  const greetingArea = document.getElementById('greeting-edit-area');
+  const historyArea = document.getElementById('history-edit-area');
+  if (greetingArea) greetingArea.style.display = 'none';
+  if (historyArea) historyArea.style.display = 'block';
+  if (typeof firebase !== 'undefined') {
+    firebase.database().ref('churchInfo/history').once('value', snap => {
+      let arr = snap.val() || defaultHistory;
+      let text = arr.map(item => `${item.year}: ${item.content}`).join('\n');
+      const textarea = document.getElementById('edit-history-text');
+      if (textarea) textarea.value = text;
+    });
+  }
+  const modal = document.getElementById('modal-edit-churchinfo');
+  if (modal) modal.style.display = 'flex';
 }
-
-
 
 
 function saveChurchInfo() {
   if (currentEditMode === 'greeting') {
-    const text = document.getElementById('edit-greeting-text').value.trim();
-    firebase.database().ref('churchInfo/greeting').set(text)
-      .then(() => {
-        renderGreeting(text);
-        closeModal('modal-edit-churchinfo');
-        showToast('인사말이 저장되었습니다.');
-      });
+    const textarea = document.getElementById('edit-greeting-text');
+    const text = textarea ? textarea.value.trim() : '';
+    if (typeof firebase !== 'undefined') {
+      firebase.database().ref('churchInfo/greeting').set(text)
+        .then(() => {
+          renderGreeting(text);
+          closeModal('modal-edit-churchinfo');
+          if (typeof showToast === 'function') showToast('인사말이 저장되었습니다.');
+        })
+        .catch(e => console.error('저장 오류:', e));
+    }
   } else if (currentEditMode === 'history') {
-    const raw = document.getElementById('edit-history-text').value.trim();
+    const textarea = document.getElementById('edit-history-text');
+    const raw = textarea ? textarea.value.trim() : '';
     const arr = raw.split('\n').map(line => {
       const idx = line.indexOf(':');
       if (idx === -1) return null;
@@ -209,36 +232,52 @@ function saveChurchInfo() {
         content: line.slice(idx+1).trim()
       };
     }).filter(Boolean);
-    firebase.database().ref('churchInfo/history').set(arr)
-      .then(() => {
-        renderHistory(arr);
-        closeModal('modal-edit-churchinfo');
-        showToast('연혁이 저장되었습니다.');
-      });
+    if (typeof firebase !== 'undefined') {
+      firebase.database().ref('churchInfo/history').set(arr)
+        .then(() => {
+          renderHistory(arr);
+          closeModal('modal-edit-churchinfo');
+          if (typeof showToast === 'function') showToast('연혁이 저장되었습니다.');
+        })
+        .catch(e => console.error('저장 오류:', e));
+    }
   }
 }
+
+
 function showPrivacyPolicy() {
-  document.getElementById('modal-privacy').style.display = 'flex';
+  const modal = document.getElementById('modal-privacy');
+  if (modal) modal.style.display = 'flex';
 }
+
+
 // ── 성경 읽기 기능 ──
-const ALL_BOOKS = [...OT_BOOKS, ...NT_BOOKS];
+const ALL_BOOKS = (typeof OT_BOOKS !== 'undefined' && typeof NT_BOOKS !== 'undefined') 
+  ? [...OT_BOOKS, ...NT_BOOKS] 
+  : [];
+
+
+// 또는 함수 내에서 동적으로 가져오기
+function getBookByIndex(index) {
+  const books = [...OT_BOOKS, ...NT_BOOKS];
+  return books[index];
+}
 const TOTAL_BIBLE_CHAPTERS = 1189;
 
 
 let bibleReadingState = {
-  bookIndex: 0,    // ALL_BOOKS 인덱스
+  bookIndex: 0,
   chapter: 1,
   todayPagesRead: 0,
   lastReadDate: ''
 };
 
 
-// ── 읽기 화면 열기 ──
 async function openBibleReading() {
   if (!currentUser) { alert('로그인이 필요합니다.'); return; }
+  if (typeof firebase === 'undefined') { alert('데이터베이스 연결 오류'); return; }
 
 
-  // Firestore에서 사용자 데이터 불러오기
   const userRef = firebase.database().ref(`bibleReading/${currentUser.id}`);
   const snap = await userRef.once('value');
   const data = snap.val() || {};
@@ -246,12 +285,10 @@ async function openBibleReading() {
 
   const today = new Date().toISOString().slice(0, 10);
   
-  // 오늘 읽은 장 수
   bibleReadingState.todayPagesRead = data.history && data.history[today] ? data.history[today] : 0;
   bibleReadingState.lastReadDate = today;
 
 
-  // 마지막 읽은 위치가 있으면 이어서, 없으면 창세기 1장부터
   if (data.currentBookIndex !== undefined && data.currentChapter !== undefined) {
     bibleReadingState.bookIndex = data.currentBookIndex;
     bibleReadingState.chapter = data.currentChapter;
@@ -265,26 +302,33 @@ async function openBibleReading() {
     alert('오늘은 이미 10장을 모두 읽으셨습니다!');
     return;
   }
-  document.getElementById('bible-reader-home').style.display = 'none';
-  document.getElementById('bible-reader-screen').style.display = 'block';
+  
+  const readerHome = document.getElementById('bible-reader-home');
+  const readerScreen = document.getElementById('bible-reader-screen');
+  if (readerHome) readerHome.style.display = 'none';
+  if (readerScreen) readerScreen.style.display = 'block';
 
 
-  document.getElementById('bible-reading-today-count').textContent = 
-    `오늘 ${bibleReadingState.todayPagesRead} / 10 장`;
+  const todayCount = document.getElementById('bible-reading-today-count');
+  if (todayCount) todayCount.textContent = `오늘 ${bibleReadingState.todayPagesRead} / 10 장`;
 
 
   loadBibleChapterContent();
 }
 
 
-// ── 현재 장 내용 로드 ──
 async function loadBibleChapterContent() {
+  if (ALL_BOOKS.length === 0) {
+    console.error('성경 데이터가 없습니다. OT_BOOKS, NT_BOOKS 확인 필요');
+    return;
+  }
   const book = ALL_BOOKS[bibleReadingState.bookIndex];
-  document.getElementById('bible-reading-title').textContent = 
-    `📖 ${book.name} ${bibleReadingState.chapter}장`;
+  const titleEl = document.getElementById('bible-reading-title');
+  if (titleEl) titleEl.textContent = `📖 ${book.name} ${bibleReadingState.chapter}장`;
 
 
   const contentDiv = document.getElementById('bible-reading-content');
+  if (!contentDiv) return;
   contentDiv.innerHTML = '<div style="text-align:center; padding:40px;">불러오는 중...</div>';
 
 
@@ -292,7 +336,6 @@ async function loadBibleChapterContent() {
     const res = await fetch(`${BIBLE_CDN}/${book.file}`);
     const data = await res.json();
     
-    // 책 데이터 찾기 (name 또는 abbr로)
     const bookData = data[book.name] || data[book.abbr] || Object.values(data)[0];
     const verses = bookData[bibleReadingState.chapter];
     
@@ -306,17 +349,17 @@ async function loadBibleChapterContent() {
     Object.entries(verses).forEach(([num, text]) => {
       html += `<div style="display:flex; gap:10px; padding:6px 0; border-bottom:1px solid var(--border);">
         <span style="font-weight:700; color:var(--purple); min-width:28px;">${num}</span>
-        <span>${text}</span>
+        <span>${escapeHtml(text)}</span>
       </div>`;
     });
     contentDiv.innerHTML = html;
   } catch (e) {
+    console.error('성경 로드 오류:', e);
     contentDiv.innerHTML = '<div style="text-align:center; padding:40px; color:var(--red);">오류가 발생했습니다</div>';
   }
 }
 
 
-// ── 현재 장 읽기 완료 ──
 async function completeCurrentChapter() {
   if (bibleReadingState.todayPagesRead >= 10) {
     alert('오늘은 이미 10장을 모두 읽으셨습니다!');
@@ -324,7 +367,7 @@ async function completeCurrentChapter() {
   }
 
 
-  if (!currentUser) return;
+  if (!currentUser || typeof firebase === 'undefined') return;
 
 
   bibleReadingState.todayPagesRead++;
@@ -356,8 +399,8 @@ async function completeCurrentChapter() {
   });
 
 
-  document.getElementById('bible-reading-today-count').textContent = 
-    `오늘 ${bibleReadingState.todayPagesRead} / 10 장`;
+  const todayCount = document.getElementById('bible-reading-today-count');
+  if (todayCount) todayCount.textContent = `오늘 ${bibleReadingState.todayPagesRead} / 10 장`;
 
 
   if (bibleReadingState.todayPagesRead >= 10) {
@@ -367,17 +410,14 @@ async function completeCurrentChapter() {
   }
 
 
-  // 다음 장으로 이동
   const book = ALL_BOOKS[bibleReadingState.bookIndex];
   if (bibleReadingState.chapter < book.chapters) {
     bibleReadingState.chapter++;
   } else {
-    // 다음 책으로
     if (bibleReadingState.bookIndex < ALL_BOOKS.length - 1) {
       bibleReadingState.bookIndex++;
       bibleReadingState.chapter = 1;
     } else {
-      // 완독! 다시 창세기 1장으로
       alert('🎉 성경 1독을 완료하셨습니다! 축하드립니다!');
       bibleReadingState.bookIndex = 0;
       bibleReadingState.chapter = 1;
@@ -385,7 +425,6 @@ async function completeCurrentChapter() {
   }
 
 
-  // 마지막 읽은 위치 저장
   await userRef.update({
     currentBookIndex: bibleReadingState.bookIndex,
     currentChapter: bibleReadingState.chapter
@@ -396,27 +435,27 @@ async function completeCurrentChapter() {
 }
 
 
-// ── 읽기 화면 닫기 ──
 function closeBibleReading() {
-  document.getElementById('bible-reader-screen').style.display = 'none';
-  document.getElementById('bible-reader-home').style.display = 'block';
+  const readerScreen = document.getElementById('bible-reader-screen');
+  const readerHome = document.getElementById('bible-reader-home');
+  if (readerScreen) readerScreen.style.display = 'none';
+  if (readerHome) readerHome.style.display = 'block';
 }
 
 
-// ── 오늘 읽기 상태 로드 (p3 화면용) ──
 function loadBibleStatus() {
-  if (!currentUser) return;
+  if (!currentUser || typeof firebase === 'undefined') return;
   const today = new Date().toISOString().slice(0, 10);
   firebase.database().ref(`bibleReading/${currentUser.id}/history/${today}`).once('value', snap => {
     const pages = snap.val() || 0;
-    document.getElementById('bible-reading-today-status').textContent = 
-      `📌 오늘 읽은 장: ${pages} / 10`;
+    const statusEl = document.getElementById('bible-reading-today-status');
+    if (statusEl) statusEl.textContent = `📌 오늘 읽은 장: ${pages} / 10`;
   });
 }
 
 
-// ── 완독자 명예의 전당 ──
 function loadBibleHallOfFame() {
+  if (typeof firebase === 'undefined') return;
   firebase.database().ref('bibleReading').orderByChild('completions').limitToLast(10).once('value', snap => {
     const users = [];
     snap.forEach(child => users.push(child.val()));
@@ -432,6 +471,7 @@ function loadBibleHallOfFame() {
           </div>`;
       }
     });
-    document.getElementById('bible-hall-of-fame').innerHTML = html || '<div style="text-align:center; padding:20px;">아직 완독자가 없습니다.</div>';
+    const fameEl = document.getElementById('bible-hall-of-fame');
+    if (fameEl) fameEl.innerHTML = html || '<div style="text-align:center; padding:20px;">아직 완독자가 없습니다.</div>';
   });
 }

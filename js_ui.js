@@ -35,17 +35,43 @@ function closeModal(id) {
 function showTab(n) {
   n = Math.max(0, Math.min(TOTAL_TABS - 1, n));
   
-  // 초창기 스타일: 관리자 탭(6)만 로그인 필요
-  if (n === 6 && !currentUser) {
-    document.getElementById('screen-login').style.display = 'flex';
+  // 관리자 탭 로그인 체크
+  if (n === 6 && !currentUser && !window.currentUser) {
+    const loginScreen = document.getElementById('screen-login');
+    if (loginScreen) loginScreen.style.display = 'flex';
     return;
   }
+  
+  // ✅ 게시판 화면 정리 (p2에서 나갈 때)
+  if (currentTab === 2 && n !== 2) {
+    const boardContent = document.getElementById('board-content');
+    const boardList = document.getElementById('board-category-list');
+    if (boardContent) boardContent.style.display = 'none';
+    if (boardList) boardList.style.display = 'flex';
+  }
+  
+  // ✅ 성경읽기 화면 정리 (p3에서 나갈 때)
+  if (currentTab === 3 && n !== 3) {
+    const readerScreen = document.getElementById('bible-reader-screen');
+    const readerHome = document.getElementById('bible-reader-home');
+    if (readerScreen) readerScreen.style.display = 'none';
+    if (readerHome) readerHome.style.display = 'block';
+  }
+  
+  // ✅ 게시물 작성 모달 닫기
+  const boardWriteModal = document.getElementById('board-write-overlay');
+  if (boardWriteModal) boardWriteModal.style.display = 'none';
+  
+  // ✅ 게시물 상세 모달 닫기
+  const boardDetailModal = document.getElementById('board-detail-overlay');
+  if (boardDetailModal) boardDetailModal.style.display = 'none';
   
   currentTab = n;
   document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
   
   for (let i = 0; i < TOTAL_TABS; i++) {
-    document.getElementById('p' + i).classList.toggle('show', i === n);
+    const page = document.getElementById('p' + i);
+    if (page) page.classList.toggle('show', i === n);
   }
 
 
@@ -104,52 +130,93 @@ function afterTab(n) {
 }
 
 
-// 스와이프 제스처 (터치 슬라이드)
+// ==================== 스와이프 제스처 (간소화된 버전) ====================
 (function() {
-  const el = document.getElementById('swipe-container');
-  if (!el) return;
-  let startX = 0, startY = 0, dragging = false, locked = false, dragDir = 0;
-  let curEl = null, nxtEl = null;
-  const W = () => window.innerWidth;
+  const container = document.getElementById('swipe-container');
+  if (!container) return;
   
-  function getPage(n) { return document.getElementById('p' + n); }
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchStartTime = 0;
+  let isSwiping = false;
   
-  function getNext(dir) {
-    let idx = currentTab + dir;
-    while (idx >= 0 && idx < TOTAL_TABS) {
-      const t = document.getElementById('tab' + idx);
-      if (t && t.style.display !== 'none') return idx;
-      idx += dir;
+  container.addEventListener('touchstart', function(e) {
+    // 성경책 탭(p5)에서는 스와이프 비활성화
+    if (currentTab === 5) return;
+    
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    touchStartTime = Date.now();
+    isSwiping = false;
+  }, { passive: true });
+  
+  container.addEventListener('touchmove', function(e) {
+    if (currentTab === 5) return;
+    
+    const deltaX = Math.abs(e.touches[0].clientX - touchStartX);
+    const deltaY = Math.abs(e.touches[0].clientY - touchStartY);
+    
+    // 수평 스와이프 감지 시 기본 스크롤 방지
+    if (deltaX > 10 && deltaX > deltaY && !isSwiping) {
+      isSwiping = true;
+      e.preventDefault();
     }
-    return -1;
-  }
+  }, { passive: false });
   
-  function prepareNext(dir) {
-    const ni = getNext(dir);
-    if (ni < 0) return null;
-    const nxt = getPage(ni);
-    const top = curEl ? curEl.getBoundingClientRect().top : 60;
-    nxt.style.cssText = `display:block !important;position:fixed;top:${top}px;left:0;width:100%;z-index:10;transform:translateX(${dir > 0 ? W() : -W()}px);overflow-y:hidden;max-height:calc(100dvh - ${top}px);will-change:transform;`;
-    return nxt;
-  }
-  
-  function cleanup(finalIdx) {
-    const f = getPage(finalIdx);
-    f.style.cssText = '';
-    f.classList.add('show');
-    requestAnimationFrame(() => {
-      for (let i = 0; i < TOTAL_TABS; i++) {
-        if (i === finalIdx) continue;
-        const p = getPage(i);
-        p.style.cssText = '';
-        p.classList.remove('show');
+  container.addEventListener('touchend', function(e) {
+    if (currentTab === 5) return;
+    if (!isSwiping) return;
+    
+    const endX = e.changedTouches[0].clientX;
+    const deltaX = endX - touchStartX;
+    const deltaTime = Date.now() - touchStartTime;
+    
+    // 빠른 스와이프: 50px 이상, 300ms 이내
+    if (Math.abs(deltaX) > 50 && deltaTime < 300) {
+      if (deltaX > 0 && currentTab > 0) {
+        // 오른쪽으로 스와이프 = 이전 탭
+        switchToTab(currentTab - 1);
+      } else if (deltaX < 0 && currentTab < TOTAL_TABS - 1) {
+        // 왼쪽으로 스와이프 = 다음 탭
+        switchToTab(currentTab + 1);
       }
-      curEl = null;
-      nxtEl = null;
-      dragDir = 0;
-      afterTab(finalIdx);
-    });
+    }
+    
+    isSwiping = false;
+  }, { passive: true });
+  
+  // 탭 전환 함수 (애니메이션 없이 즉시 전환)
+  function switchToTab(newIndex) {
+    // 관리자 탭 접근 제한
+    if (newIndex === 6 && !currentUser && !window.currentUser) {
+      const loginScreen = document.getElementById('screen-login');
+      if (loginScreen) loginScreen.style.display = 'flex';
+      return;
+    }
+    
+    // 현재 탭에서 벗어날 때 게시판/성경읽기 화면 정리
+    if (currentTab === 2) {
+      // 게시판 화면 정리
+      const boardContent = document.getElementById('board-content');
+      if (boardContent && boardContent.style.display === 'block') {
+        showBoardCategoryList();
+      }
+    }
+    
+    if (currentTab === 3) {
+      // 성경읽기 화면 정리
+      const readerScreen = document.getElementById('bible-reader-screen');
+      const readerHome = document.getElementById('bible-reader-home');
+      if (readerScreen && readerScreen.style.display === 'block') {
+        if (readerScreen) readerScreen.style.display = 'none';
+        if (readerHome) readerHome.style.display = 'block';
+      }
+    }
+    
+    // 탭 전환
+    showTab(newIndex);
   }
+})();
   
   el.addEventListener('touchstart', e => {
     if (currentTab === 5 && currentBibleSection) { locked = true; return; }

@@ -34,55 +34,43 @@ function closeModal(id) {
 // 탭 전환
 function showTab(n) {
   n = Math.max(0, Math.min(TOTAL_TABS - 1, n));
-  
-  // 관리자 탭 로그인 체크
-  if (n === 6 && !currentUser && !window.currentUser) {
-    const loginScreen = document.getElementById('screen-login');
-    if (loginScreen) loginScreen.style.display = 'flex';
+  if (n !== 0 && !currentUser) {
+    document.getElementById('screen-login').style.display = 'flex';
     return;
   }
-  
-  // ✅ 게시판 화면 정리 (p2에서 나갈 때)
-  if (currentTab === 2 && n !== 2) {
-    const boardContent = document.getElementById('board-content');
-    const boardList = document.getElementById('board-category-list');
-    if (boardContent) boardContent.style.display = 'none';
-    if (boardList) boardList.style.display = 'flex';
-  }
-  
-  // ✅ 성경읽기 화면 정리 (p3에서 나갈 때)
-  if (currentTab === 3 && n !== 3) {
-    const readerScreen = document.getElementById('bible-reader-screen');
-    const readerHome = document.getElementById('bible-reader-home');
-    if (readerScreen) readerScreen.style.display = 'none';
-    if (readerHome) readerHome.style.display = 'block';
-  }
-  
-  // ✅ 게시물 작성 모달 닫기
-  const boardWriteModal = document.getElementById('board-write-overlay');
-  if (boardWriteModal) boardWriteModal.style.display = 'none';
-  
-  // ✅ 게시물 상세 모달 닫기
-  const boardDetailModal = document.getElementById('board-detail-overlay');
-  if (boardDetailModal) boardDetailModal.style.display = 'none';
-  
   currentTab = n;
   document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
-  
   for (let i = 0; i < TOTAL_TABS; i++) {
-    const page = document.getElementById('p' + i);
-    if (page) page.classList.toggle('show', i === n);
+    document.getElementById('p' + i).classList.toggle('show', i === n);
   }
 
 
+  // 🔥 성경책 탭(p5)을 떠날 때 모든 하위 뷰 강제 숨김
   if (n !== 5) {
-    const views = ['bibleScriptureView', 'bibleHymnView', 'bibleAppendixView'];
-    views.forEach(id => {
+    ['bibleScriptureView', 'bibleHymnView', 'bibleAppendixView'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
     });
     const main = document.getElementById('bibleMain');
     if (main) main.style.display = 'flex';
+  }
+
+
+  // 🔥 성경읽기(p3)를 떠날 때 읽기 화면 정리
+  if (n !== 3) {
+    const readerScreen = document.getElementById('bible-reader-screen');
+    const readerHome = document.getElementById('bible-reader-home');
+    if (readerScreen) readerScreen.style.display = 'none';
+    if (readerHome) readerHome.style.display = 'block';
+  }
+
+
+  // 🔥 게시판(p2)를 떠날 때 게시판 본문 숨김
+  if (n !== 2) {
+    const boardContent = document.getElementById('board-content');
+    const boardCategory = document.getElementById('board-category-list');
+    if (boardContent) boardContent.style.display = 'none';
+    if (boardCategory) boardCategory.style.display = 'block';
   }
 
 

@@ -168,14 +168,7 @@ function afterTab(n) {
     if (!dragging && !locked) {
       if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
       if (Math.abs(dy) > Math.abs(dx) * 1.8) { locked = true; curEl = null; return; }
-      if (currentTab === 0 && !currentUser && dx > 30) {
-        e.preventDefault();
-        document.getElementById('screen-login').style.display = 'flex';
-        dragging = false;
-        locked = true;
-        return;
-      }
-      dragging = true;
+            dragging = true;
       dragDir = dx > 0 ? -1 : 1;
       if (curEl) {
         const r = curEl.getBoundingClientRect();

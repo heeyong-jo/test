@@ -1,16 +1,26 @@
 ﻿// ==================== 기도제목 ====================
 
 
-// prayers 배열을 안전하게 참조하는 함수
+// prayers 배열을 안전하게 참조 (전역 변수 사용)
 function getPrayers() {
+  // 전역 prayers 변수 우선 사용 (js_storage.js에서 정의)
+  if (typeof prayers !== 'undefined') {
+    return prayers;
+  }
   return window.prayers || [];
 }
 
 
 function setPrayers(newPrayers) {
-  window.prayers = newPrayers;
+  // 전역 prayers 변수에 저장
+  if (typeof prayers !== 'undefined') {
+    window.prayers = newPrayers;
+    prayers = newPrayers;
+  } else {
+    window.prayers = newPrayers;
+  }
   if (typeof LS !== 'undefined') {
-    LS.save('prayers', window.prayers);
+    LS.save('prayers', newPrayers);
   }
 }
 
@@ -25,7 +35,14 @@ function renderPrayers() {
     return;
   }
   
-  const safePrayers = window.prayers || [];
+  // ✅ 전역 prayers 변수 우선 사용
+  let safePrayers = [];
+  if (typeof prayers !== 'undefined' && Array.isArray(prayers)) {
+    safePrayers = prayers;
+  } else if (window.prayers && Array.isArray(window.prayers)) {
+    safePrayers = window.prayers;
+  }
+  
   console.log('기도제목 개수:', safePrayers.length);
   
   if (!safePrayers.length) {
@@ -33,7 +50,8 @@ function renderPrayers() {
     return;
   }
   
-  const user = window.currentUser;
+  // ✅ currentUser는 전역 변수 사용
+  const user = (typeof currentUser !== 'undefined') ? currentUser : window.currentUser;
   const canDelete = user && (user.role === 'admin' || user.role === 'manager');
   
   el.innerHTML = safePrayers.map(p => `
@@ -61,7 +79,8 @@ function renderPrayers() {
 
 // 기도제목 작성 모달 열기
 function openAddPrayer() {
-  const user = window.currentUser;
+  // ✅ currentUser는 전역 변수 사용
+  const user = (typeof currentUser !== 'undefined') ? currentUser : window.currentUser;
   if (!user) { 
     showToast('로그인이 필요합니다'); 
     document.getElementById('screen-login').style.display = 'flex';
@@ -81,7 +100,8 @@ function openAddPrayer() {
 
 // 기도제목 등록
 function submitPrayer() {
-  const user = window.currentUser;
+  // ✅ currentUser는 전역 변수 사용
+  const user = (typeof currentUser !== 'undefined') ? currentUser : window.currentUser;
   if (!user) {
     showToast('로그인이 필요합니다');
     return;
@@ -104,11 +124,17 @@ function submitPrayer() {
     createdAt: Date.now()
   };
   
-  if (!window.prayers) window.prayers = [];
-  window.prayers.unshift(newPrayer);
+  // ✅ 전역 prayers 변수에 저장
+  if (typeof prayers === 'undefined') {
+    var prayers = [];
+  }
+  prayers.unshift(newPrayer);
+  
+  // window.prayers도 동기화
+  window.prayers = prayers;
   
   if (typeof LS !== 'undefined') {
-    LS.save('prayers', window.prayers);
+    LS.save('prayers', prayers);
   }
   
   renderPrayers();
@@ -119,13 +145,21 @@ function submitPrayer() {
 
 // 좋아요 토글
 function togglePrayerLike(id) {
-  if (!window.prayers) return;
-  const p = window.prayers.find(p => p.id === id);
+  // ✅ 전역 prayers 변수 사용
+  let prayersArray = (typeof prayers !== 'undefined') ? prayers : window.prayers;
+  if (!prayersArray) return;
+  
+  const p = prayersArray.find(p => p.id === id);
   if (!p) return;
   p.likes = (p.likes || 0) + 1;
   
+  if (typeof prayers !== 'undefined') {
+    prayers = prayersArray;
+  }
+  window.prayers = prayersArray;
+  
   if (typeof LS !== 'undefined') {
-    LS.save('prayers', window.prayers);
+    LS.save('prayers', prayersArray);
   }
   renderPrayers();
 }
@@ -133,13 +167,21 @@ function togglePrayerLike(id) {
 
 // 기도하기 (댓글 수 증가)
 function prayForThis(id) {
-  if (!window.prayers) return;
-  const p = window.prayers.find(p => p.id === id);
+  // ✅ 전역 prayers 변수 사용
+  let prayersArray = (typeof prayers !== 'undefined') ? prayers : window.prayers;
+  if (!prayersArray) return;
+  
+  const p = prayersArray.find(p => p.id === id);
   if (!p) return;
   p.comments = (p.comments || 0) + 1;
   
+  if (typeof prayers !== 'undefined') {
+    prayers = prayersArray;
+  }
+  window.prayers = prayersArray;
+  
   if (typeof LS !== 'undefined') {
-    LS.save('prayers', window.prayers);
+    LS.save('prayers', prayersArray);
   }
   renderPrayers();
   showToast('🤲 기도해주셨습니다');
@@ -150,11 +192,19 @@ function prayForThis(id) {
 function deletePrayer(id) {
   if (!confirm('삭제하시겠습니까?')) return;
   
-  if (!window.prayers) return;
-  window.prayers = window.prayers.filter(p => p.id !== id);
+  // ✅ 전역 prayers 변수 사용
+  let prayersArray = (typeof prayers !== 'undefined') ? prayers : window.prayers;
+  if (!prayersArray) return;
+  
+  prayersArray = prayersArray.filter(p => p.id !== id);
+  
+  if (typeof prayers !== 'undefined') {
+    prayers = prayersArray;
+  }
+  window.prayers = prayersArray;
   
   if (typeof LS !== 'undefined') {
-    LS.save('prayers', window.prayers);
+    LS.save('prayers', prayersArray);
   }
   renderPrayers();
   showToast('🗑 삭제되었습니다');

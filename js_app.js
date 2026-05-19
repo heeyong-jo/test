@@ -224,6 +224,40 @@ window.addEventListener('DOMContentLoaded', function() {
     }
   }, 400);
 });
-
-
+    
+  // ✅ 섬기는 분들 데이터 초기 로드
+  setTimeout(function() {
+    if (typeof loadStaff === 'function') {
+      loadStaff();
+      console.log('섬기는 분들 초기 로드');
+    }
+  }, 600);
+  
 console.log('✅ js_app.js 로드 완료');
+
+
+window.addEventListener('load', function()
+}
+
+
+function loadBibleHallOfFame() {
+  if (typeof firebase === 'undefined') return;
+  firebase.database().ref('bibleReading').orderByChild('completions').limitToLast(10).once('value', snap => {
+    const users = [];
+    snap.forEach(child => users.push(child.val()));
+    users.reverse();
+    
+    let html = '';
+    users.forEach((u, i) => {
+      if (u.completions > 0) {
+        html += `
+          <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">
+            <span>🏅 ${i+1}. ${escapeHtml(u.name)}</span>
+            <span style="font-weight:bold; color:var(--purple);">${u.completions}회 완독</span>
+          </div>`;
+      }
+    });
+    const fameEl = document.getElementById('bible-hall-of-fame');
+    if (fameEl) fameEl.innerHTML = html || '<div style="text-align:center; padding:20px;">아직 완독자가 없습니다.</div>';
+  });
+}

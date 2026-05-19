@@ -1,187 +1,168 @@
 ﻿// ==================== 앱 초기화 ====================
 
 
-console.log('js_app.js 로드 시작');
+// ── 교회 정보 (인사말/연혁) Firebase 연동 ──────────────────────
+const defaultGreeting = `"인생은 만남입니다.\n\n우리는 부모와의 만남에서 인생의 지침을 배우고...\n하나님은 오늘도 당신을 기다리고 계십니다.\n하나님은 당신을 사랑하십니다."`;
 
 
-// 앱 초기화
-function initApp() {
-  console.log('initApp 실행');
-  
-  // Firebase 동기화 시작
-  if (typeof fbSync === 'function') {
-    console.log('fbSync 실행');
-    fbSync();
-  }
-  
-  // 예배 안내 데이터 초기화
-  if (typeof initServiceData === 'function') {
-    console.log('initServiceData 실행');
-    initServiceData();
-  }
-  
-  // 로그인 상태 확인
-  checkLoginStatus();
-  
-  // 탭 초기화
-  showTab(0);
-  
-  console.log('✅ 앱 초기화 완료');
-}
+const defaultHistory = [
+  { year: "1972년 1월 23일", content: "가좌제일교회 창립" },
+  { year: "2019년 1월", content: "새 성전으로 이전" },
+  { year: "2026년 현재", content: "대한예수교 장로회 통합측 소속 교회" }
+];
 
 
-// 로그인 상태 확인
-function checkLoginStatus() {
-  console.log('checkLoginStatus 실행');
-  
-  if (typeof LS === 'undefined') {
-    console.warn('LS 객체 미정의');
-    return;
-  }
-  
-  const logged = LS.load('logged', null);
-  
-  if (logged && logged.id) {
-    console.log('저장된 로그인 정보 발견:', logged.id);
-    
-    // 관리자 계정 확인
-    if (typeof ADMIN_ACCOUNTS !== 'undefined') {
-      const admin = ADMIN_ACCOUNTS.find(a => a.id === logged.id);
-      if (admin) {
-        console.log('관리자로 자동 로그인:', admin.name);
-        loginSuccess(admin);
-        return;
-      }
-    }
-    
-    // 일반 회원 확인
-    if (Array.isArray(approvedUsers)) {
-      const user = approvedUsers.find(u => u.id === logged.id);
-      if (user) {
-        console.log('회원으로 자동 로그인:', user.name);
-        loginSuccess(user);
-        return;
-      }
-    }
-  }
-  
-  // 로그인 화면 표시
-  const loginScreen = document.getElementById('screen-login');
-  if (loginScreen) {
-    loginScreen.style.display = 'flex';
-  }
-}
+let currentEditMode = '';
 
 
-// 탭 표시
-function showTab(tabIndex) {
-  console.log('showTab 실행 - 탭 인덱스:', tabIndex);
-  
-  // 모든 탭 숨기기
-  const pages = document.querySelectorAll('.page');
-  pages.forEach(page => {
-    page.style.display = 'none';
-  });
-  
-  // 해당 탭 표시
-  const pageIds = ['p0', 'p1', 'p2', 'p3', 'p4', 'p5'];
-  if (pageIds[tabIndex]) {
-    const page = document.getElementById(pageIds[tabIndex]);
-    if (page) {
-      page.style.display = 'block';
-      console.log('탭 ' + tabIndex + ' 표시됨');
-      
-      // 탭별 초기화 로직
-      switch(tabIndex) {
-        case 0: // 홈
-          if (typeof renderServiceView === 'function') {
-            renderServiceView();
-          }
-          break;
-        case 2: // 말씀
-          if (typeof renderTodayVerse === 'function') {
-            renderTodayVerse();
-          }
-          break;
-        case 3: // 성경 읽기
-          console.log('성경 읽기 탭 진입');
-          break;
-        case 4: // 기도
-          if (typeof renderPrayerList === 'function') {
-            renderPrayerList();
-          }
-          break;
-      }
-    }
-  }
-  
-  // 활성 탭 버튼 스타일 업데이트
-  const tabs = document.querySelectorAll('.tab');
-  tabs.forEach((tab, index) => {
-    if (index === tabIndex) {
-      tab.style.background = 'rgba(255,255,255,0.15)';
-      tab.style.color = 'white';
+function loadChurchInfo() {
+  if (typeof firebase === 'undefined') return;
+  firebase.database().ref('churchInfo').once('value', snap => {
+    if (snap.exists()) {
+      const d = snap.val();
+      if (typeof renderGreeting === 'function') renderGreeting(d.greeting || defaultGreeting);
+      if (typeof renderHistory === 'function') renderHistory(d.history || defaultHistory);
     } else {
-      tab.style.background = 'transparent';
-      tab.style.color = 'rgba(255,255,255,0.6)';
+      if (typeof renderGreeting === 'function') renderGreeting(defaultGreeting);
+      if (typeof renderHistory === 'function') renderHistory(defaultHistory);
+    }
+    if (typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'admin') {
+      const greetingBtn = document.getElementById('greeting-edit-btn');
+      const historyBtn = document.getElementById('history-edit-btn');
+      if (greetingBtn) greetingBtn.style.display = 'inline-block';
+      if (historyBtn) historyBtn.style.display = 'inline-block';
     }
   });
 }
 
 
-// 토스트 메시지 (이미 js_ui.js에 정의되어 있음)
-// 여기서는 참고만
+function renderGreeting(text) {
+  const el = document.getElementById('greeting-content');
+  if (!el) return;
+  el.innerHTML = `<div style="background:linear-gradient(135deg,#f9f2f9,#f5eaf5);border-radius:16px;padding:18px;">
+       <div style="font-size:14px;color:var(--text2);line-height:1.8;white-space:pre-wrap;">${escapeHtml(text)}</div>
+       <div style="text-align:right;margin-top:8px;">
+         <div style="font-weight:800;color:var(--purple);">김명서 목사</div>
+         <div style="font-size:11px;color:var(--text2);">가좌제일교회 담임</div>
+       </div>
+     </div>`;
+}
 
 
-// 모달 열기
-function openModal(modalId) {
-  const modal = document.getElementById(modalId);
-  if (modal) {
-    modal.style.display = 'flex';
-    console.log('모달 열기:', modalId);
+function renderHistory(arr) {
+  const el = document.getElementById('history-content');
+  if (!el) return;
+  let html = '';
+  arr.forEach(item => {
+    html += `
+      <div style="border-left:3px solid var(--purple);padding-left:14px;margin-bottom:12px;">
+        <div style="font-weight:800;color:var(--purple);margin-bottom:4px;">${escapeHtml(item.year)}</div>
+        <div style="font-size:13px;color:var(--text2);">${escapeHtml(item.content)}</div>
+      </div>`;
+  });
+  el.innerHTML = html;
+}
+
+
+function openEditGreeting() {
+  currentEditMode = 'greeting';
+  const titleEl = document.getElementById('churchinfo-modal-title');
+  if (titleEl) titleEl.textContent = '✏️ 인사말 수정';
+  const greetingArea = document.getElementById('greeting-edit-area');
+  const historyArea = document.getElementById('history-edit-area');
+  if (greetingArea) greetingArea.style.display = 'block';
+  if (historyArea) historyArea.style.display = 'none';
+  if (typeof firebase !== 'undefined') {
+    firebase.database().ref('churchInfo/greeting').once('value', snap => {
+      const textarea = document.getElementById('edit-greeting-text');
+      if (textarea) textarea.value = snap.val() || defaultGreeting;
+    });
+  }
+  const modal = document.getElementById('modal-edit-churchinfo');
+  if (modal) modal.style.display = 'flex';
+}
+
+
+function openEditHistory() {
+  currentEditMode = 'history';
+  const titleEl = document.getElementById('churchinfo-modal-title');
+  if (titleEl) titleEl.textContent = '📜 연혁 수정';
+  const greetingArea = document.getElementById('greeting-edit-area');
+  const historyArea = document.getElementById('history-edit-area');
+  if (greetingArea) greetingArea.style.display = 'none';
+  if (historyArea) historyArea.style.display = 'block';
+  if (typeof firebase !== 'undefined') {
+    firebase.database().ref('churchInfo/history').once('value', snap => {
+      let arr = snap.val() || defaultHistory;
+      let text = arr.map(item => `${item.year}: ${item.content}`).join('\n');
+      const textarea = document.getElementById('edit-history-text');
+      if (textarea) textarea.value = text;
+    });
+  }
+  const modal = document.getElementById('modal-edit-churchinfo');
+  if (modal) modal.style.display = 'flex';
+}
+
+
+function saveChurchInfo() {
+  if (currentEditMode === 'greeting') {
+    const textarea = document.getElementById('edit-greeting-text');
+    const text = textarea ? textarea.value.trim() : '';
+    if (typeof firebase !== 'undefined') {
+      firebase.database().ref('churchInfo/greeting').set(text)
+        .then(() => {
+          renderGreeting(text);
+          closeModal('modal-edit-churchinfo');
+          if (typeof showToast === 'function') showToast('인사말이 저장되었습니다.');
+        })
+        .catch(e => console.error('저장 오류:', e));
+    }
+  } else if (currentEditMode === 'history') {
+    const textarea = document.getElementById('edit-history-text');
+    const raw = textarea ? textarea.value.trim() : '';
+    const arr = raw.split('\n').map(line => {
+      const idx = line.indexOf(':');
+      if (idx === -1) return null;
+      return {
+        year: line.slice(0, idx).trim(),
+        content: line.slice(idx+1).trim()
+      };
+    }).filter(Boolean);
+    if (typeof firebase !== 'undefined') {
+      firebase.database().ref('churchInfo/history').set(arr)
+        .then(() => {
+          renderHistory(arr);
+          closeModal('modal-edit-churchinfo');
+          if (typeof showToast === 'function') showToast('연혁이 저장되었습니다.');
+        })
+        .catch(e => console.error('저장 오류:', e));
+    }
   }
 }
 
 
-// 모달 닫기
-function closeModal(modalId) {
-  const modal = document.getElementById(modalId);
-  if (modal) {
-    modal.style.display = 'none';
-    console.log('모달 닫기:', modalId);
-  }
+window.addEventListener('load', function()
 }
 
 
-// 모달 배경 클릭 시 닫기
-document.addEventListener('click', function(event) {
-  if (event.target.classList && event.target.classList.contains('modal')) {
-    event.target.style.display = 'none';
-  }
-});
-
-
-// 페이지 로드 완료 시 초기화
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('DOMContentLoaded 이벤트 발생');
-  
-  // 약간의 지연을 둔 후 초기화 (모든 스크립트가 로드되도록)
-  setTimeout(() => {
-    initApp();
-  }, 500);
-});
-
-
-// 또는 window load 이벤트로도 처리
-window.addEventListener('load', function() {
-  console.log('window load 이벤트 발생');
-  
-  // 앱이 이미 초기화되었으면 스킵
-  if (typeof appInitialized === 'undefined') {
-    initApp();
-    window.appInitialized = true;
-  }
-});
-
-
-console.log('✅ js_app.js 로드 완료');
+function loadBibleHallOfFame() {
+  if (typeof firebase === 'undefined') return;
+  firebase.database().ref('bibleReading').orderByChild('completions').limitToLast(10).once('value', snap => {
+    const users = [];
+    snap.forEach(child => users.push(child.val()));
+    users.reverse();
+    
+    let html = '';
+    users.forEach((u, i) => {
+      if (u.completions > 0) {
+        html += `
+          <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">
+            <span>🏅 ${i+1}. ${escapeHtml(u.name)}</span>
+            <span style="font-weight:bold; color:var(--purple);">${u.completions}회 완독</span>
+          </div>`;
+      }
+    });
+    const fameEl = document.getElementById('bible-hall-of-fame');
+    if (fameEl) fameEl.innerHTML = html || '<div style="text-align:center; padding:20px;">아직 완독자가 없습니다.</div>';
+  });
+}

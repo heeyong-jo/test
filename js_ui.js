@@ -1,4 +1,4 @@
-﻿// ==================== UI 관련 ====================
+﻿// ==================== UI 관련 (탭, 스와이프, 시계, 토스트, 모달) ====================
 let toastTimer = null;
 let currentTab = 0;
 const TOTAL_TABS = 7;
@@ -40,6 +40,19 @@ function showTab(n) {
   for (let i = 0; i < TOTAL_TABS; i++) {
     document.getElementById('p' + i).classList.toggle('show', i === n);
   }
+
+
+  // 성경책 탭(p5)을 떠날 때 모든 하위 뷰 강제 숨김
+  if (n !== 5) {
+    ['bibleScriptureView', 'bibleHymnView', 'bibleAppendixView'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+    const main = document.getElementById('bibleMain');
+    if (main) main.style.display = 'flex';
+  }
+
+
   afterTab(n);
 }
 
@@ -54,15 +67,35 @@ function afterTab(n) {
     if (typeof renderTodayVerse === 'function') renderTodayVerse();
   }
   if (n === 2) {
+    // ✅ 게시물 탭 - 카테고리 목록 표시
     if (typeof initBoard === 'function') initBoard();
+    // 게시판 목록 화면 표시 (처음에는 카테고리 목록만)
+    const list = document.getElementById('board-category-list');
+    const content = document.getElementById('board-content');
+    if (list) {
+      list.style.display = 'flex';
+      list.style.visibility = 'visible';
+      list.style.pointerEvents = 'auto';
+    }
+    if (content) {
+      content.style.display = 'none';
+      content.style.visibility = 'hidden';
+      content.style.pointerEvents = 'none';
+    }
   }
   if (n === 3) {
     if (typeof loadBibleStatus === 'function') loadBibleStatus();
     if (typeof loadBibleHallOfFame === 'function') loadBibleHallOfFame();
-  }
+  }  
   if (n === 4) {
     if (typeof renderServiceView === 'function') renderServiceView();
     if (typeof renderScheduleView === 'function') renderScheduleView();
+    
+    // ✅ 섬기는 분들 데이터 로드 추가
+    if (typeof loadStaff === 'function') {
+      loadStaff();
+      console.log('섬기는 분들 데이터 로드 요청');
+    }
   }
   if (n === 5 && typeof initBible === 'function') {
     initBible();
@@ -76,6 +109,7 @@ function afterTab(n) {
 }
 
 
+// ==================== 스와이프 ====================
 (function() {
   const container = document.getElementById('swipe-container');
   if (!container) return;
@@ -132,11 +166,11 @@ function applyRole(role) {
   const isAdmin = role === 'admin';
   const isAdminOrManager = role === 'admin' || role === 'manager';
   document.querySelectorAll('.admin-only').forEach(el => {
-    if (isAdmin) { el.classList.add('visible'); el.setAttribute('style', 'display:block !important'); }
-    else { el.classList.remove('visible'); el.setAttribute('style', 'display:none !important'); }
+    if (isAdmin) { el.setAttribute('style', 'display:block !important'); }
+    else { el.setAttribute('style', 'display:none !important'); }
   });
   document.querySelectorAll('.admin-manager-only').forEach(el => {
-    if (isAdminOrManager) { el.classList.add('visible'); el.setAttribute('style', 'display:block !important'); }
-    else { el.classList.remove('visible'); el.setAttribute('style', 'display:none !important'); }
+    if (isAdminOrManager) { el.setAttribute('style', 'display:block !important'); }
+    else { el.setAttribute('style', 'display:none !important'); }
   });
 }

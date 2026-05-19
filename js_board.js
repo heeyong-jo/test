@@ -12,8 +12,6 @@ function getCurrentUser() {
 
 
 function initBoard() {
-  console.log('initBoard 실행');
-  
   const btns = document.querySelectorAll('#board-category-list .board-cat-btn');
   btns.forEach(b => {
     const clone = b.cloneNode(true);
@@ -122,8 +120,6 @@ function getCategoryLabel(cat) {
 
 
 function loadPosts() {
-  console.log('loadPosts 실행, 카테고리:', currentBoardCategory);
-  
   if (typeof firebase === 'undefined' || !firebase.apps.length) {
     console.warn('Firebase 미연결');
     return;
@@ -225,7 +221,6 @@ function openBoardWrite() {
   if (previewDiv) previewDiv.innerHTML = '';
   
   window._boardResizedPhotos = null;
-  window.currentPostImageData = null;
   
   const modal = document.getElementById('board-write-overlay');
   if (modal) modal.style.display = 'flex';
@@ -277,8 +272,6 @@ function boardPhotoPreview(input) {
 
 
 async function submitBoardPost() {
-  console.log('submitBoardPost 시작');
-  
   if (typeof firebase === 'undefined' || !firebase.apps.length) {
     showToast('서버 연결에 실패했습니다.');
     return;
@@ -303,15 +296,8 @@ async function submitBoardPost() {
   const title = titleInput ? titleInput.value.trim() : '';
   const content = contentInput ? contentInput.value.trim() : '';
   
-  if (!title) {
-    showToast('제목을 입력하세요.');
-    return;
-  }
-  
-  if (!content) {
-    showToast('내용을 입력하세요.');
-    return;
-  }
+  if (!title) { showToast('제목을 입력하세요.'); return; }
+  if (!content) { showToast('내용을 입력하세요.'); return; }
 
 
   let photos = [];
@@ -465,10 +451,7 @@ function submitBoardComment() {
   const commentInput = document.getElementById('board-comment-input');
   const text = commentInput ? commentInput.value.trim() : '';
   
-  if (!text) {
-    showToast('댓글 내용을 입력하세요.');
-    return;
-  }
+  if (!text) { showToast('댓글 내용을 입력하세요.'); return; }
   
   const comment = {
     text: text,
@@ -555,7 +538,5 @@ if (document.readyState === 'loading') {
 
 
 if (typeof showToast !== 'function') {
-  window.showToast = function(msg) {
-    alert(msg);
-  };
+  window.showToast = function(msg) { alert(msg); };
 }

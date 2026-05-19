@@ -266,3 +266,74 @@ function cancelOtherEdit() {
 
 
 console.log('✅ js_service.js 로드 완료');
+
+
+// ==================== 섬기는 분들 (Members) ====================
+
+
+function renderMembers() {
+  const container = document.getElementById('members-list');
+  if (!container) return;
+  
+  if (!Array.isArray(members) || members.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">등록된 분들이 없습니다</div>';
+    return;
+  }
+  
+  let html = '';
+  members.forEach(member => {
+    html += `
+      <div class="card" style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div>
+            <strong style="font-size:14px;">${member.name || '이름 미등록'}</strong>
+            <span style="font-size:12px;color:var(--text2);margin-left:8px;">${member.role || '역할 미지정'}</span>
+          </div>
+        </div>
+        ${member.phone ? `<div style="font-size:12px;color:var(--text2);">📱 ${member.phone}</div>` : ''}
+        ${member.duty ? `<div style="font-size:12px;color:var(--purple);margin-top:8px;">💼 ${member.duty}</div>` : ''}
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+}
+
+
+function addMember() {
+  if (!currentUser || currentUser.role !== 'admin') {
+    showToast('관리자만 추가할 수 있습니다');
+    return;
+  }
+  
+  const name = prompt('이름을 입력하세요:');
+  if (!name) return;
+  
+  const role = prompt('역할을 입력하세요 (예: 목사, 집사, 권사):');
+  const phone = prompt('전화번호를 입력하세요:');
+  const duty = prompt('담당 사항을 입력하세요:');
+  
+  const newMember = {
+    id: Date.now(),
+    name: name,
+    role: role || '미지정',
+    phone: phone || '',
+    duty: duty || '',
+    addedDate: new Date().toLocaleDateString('ko-KR')
+  };
+  
+  if (!Array.isArray(members)) members = [];
+  members.push(newMember);
+  
+  if (typeof LS !== 'undefined') {
+    LS.save('members', members);
+  }
+  
+  if (window.FB_READY && typeof firebase !== 'undefined') {
+    firebase.database().ref('members').set(members)
+      .catch(err => console.error('members 저장 실패:', err));
+  }
+  
+  renderMembers();
+  showToast('✅ 새로운 분이 추가되었습니다');
+}

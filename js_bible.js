@@ -1,6 +1,19 @@
 ﻿// ==================== 성경 초기화 ====================
 let bibleReadingFontSize = 15;  
 let appendixFontSize = 14;
+let fontSize = 15;
+let currentBook = null;
+let currentBookInfo = null;
+let currentChapter = 1;
+let currentBibleSection = null;
+
+
+// 찬송가 관련 변수
+let hymnTitles = {};
+let hymnTitlesLoaded = false;
+let currentHymnNo = 1;
+let currentHymnRange = 0;
+let hymnSearchQuery = '';
 
 
 function applyAppendixFont() {
@@ -93,6 +106,7 @@ async function loadChapter(chapter) {
       vc.innerHTML = `<div style="text-align:center;padding:40px;color:#b91c1c;">📖 ${currentBookInfo.name} ${currentChapter}장 데이터가 없습니다</div>`;
     }
   } catch (e) {
+    console.error('성경 로드 오류:', e);
     vc.innerHTML = `<div style="text-align:center;padding:40px;color:#b91c1c;">⚠️ 성경 데이터를 불러올 수 없습니다</div>`;
   }
 }
@@ -116,7 +130,7 @@ function nextChapter() { if (currentChapter < currentBookInfo.chapters) loadChap
 function changeFontSize(d) { fontSize = Math.min(24, Math.max(12, fontSize + d)); if (currentBook) loadChapter(currentChapter); }
 
 
-// 찬송가 관련 함수들...
+// 찬송가 관련 함수들
 async function loadHymnTitles() {
   if (hymnTitlesLoaded) return;
   try {
@@ -196,24 +210,20 @@ function toggleAppendix(key) {
   });
   if (!isOpen) { el.style.display = 'block'; applyAppendixFont(); }
 }
-    
-    // 🔥 부록 내용을 화면 상단으로 스크롤
-    setTimeout(() => {
-      const header = document.getElementById('bibleAppendixView');
-      if (header) {
-        header.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100);
+
+
+function changeBibleReadingFontSize(delta) {
+  bibleReadingFontSize = Math.min(24, Math.max(12, bibleReadingFontSize + delta));
+  const content = document.getElementById('bible-reading-content');
+  if (content) {
+    content.style.fontSize = bibleReadingFontSize + 'px';
   }
 }
 
 
+console.log('✅ js_bible.js 로드 완료');
 
 
-function changeAppendixFont(delta) {
-  appendixFontSize = Math.min(22, Math.max(11, appendixFontSize + delta));
-  applyAppendixFont();
-}
 // ==================== 성경읽기(통독) 폰트 조절 ====================
 function changeBibleReadingFontSize(delta) {
   bibleReadingFontSize = Math.min(24, Math.max(12, bibleReadingFontSize + delta));

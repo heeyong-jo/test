@@ -668,3 +668,260 @@ textarea.input-field{resize:vertical;min-height:80px;}
   color: var(--text);
   font-size: 13px;
 }
+/* ── 섬기는 분들 전체 그룹 ── */
+.sf-group {
+  margin-bottom: 24px;
+}
+
+
+/* 그룹 헤더 (변경 없음) */
+.sf-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--purple);
+  background: linear-gradient(135deg, #f5ede0, #ede0ce);
+  border-radius: 10px;
+  padding: 8px 14px;
+  margin-bottom: 12px;
+}
+
+
+/* ── 담임목사 이외의 그룹: 2열 그리드 ── */
+.sf-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;   /* 가로로 두 명 */
+  gap: 14px;
+}
+
+
+/* 일반 멤버 카드: 세로 배치 + 중앙 정렬 */
+.sf-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border: 1px solid var(--border);
+}
+
+
+/* ── 사진 컨테이너: 정사각형(120x120), 둥근 사각형 ── */
+.sf-photo-wrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 4px;           /* ★ 원형 대신 사각형 */
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #f0eaf8;
+  margin-bottom: 10px;
+}
+
+
+/* 사진 이미지 */
+.sf-photo-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+/* 사진 없을 때 플레이스홀더 */
+.sf-photo-ph {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 38px;
+  color: #c9b8e8;
+}
+
+
+/* 사진 위 카메라 버튼 */
+.sf-cam-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: rgba(61,15,82,0.75);
+  color: #fff;
+  font-size: 13px;
+  padding: 3px 6px;
+  cursor: pointer;
+  border-radius: 6px 0 0 0;
+  line-height: 1;
+}
+
+
+/* ── 카드 본문(이름, 역할) ── */
+.sf-card-body {
+  width: 100%;
+}
+
+
+.sf-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+
+/* 역할 리스트 */
+.sf-roles {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+
+.sf-roles li {
+  font-size: 11px;
+  color: var(--text2);
+  padding-left: 10px;
+  position: relative;
+  text-align: left;
+}
+
+
+.sf-roles li::before {
+  content: "■";
+  position: absolute;
+  left: 0;
+  color: var(--purple);
+  font-size: 7px;
+  top: 3px;
+}
+
+
+/* ── 담임목사 특별 카드 (1열 전체) ── */
+.sf-pastor-card {
+  background: linear-gradient(145deg, #fdf5e8, #f5e8d5);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  border: 1px solid var(--border);
+}
+.sf-pastor-top {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+
+.sf-pastor-info {
+  flex: 1;
+}
+
+
+.sf-pastor-name {
+  font-size: 17px;
+  font-weight: 900;
+  color: var(--purple);
+  margin-bottom: 6px;
+}
+
+
+/* 담임목사 사진은 조금 더 크게 (130x130 사각형) */
+.sf-photo-wrap--lg {
+  width: 140px;
+  height: 140px;
+  border-radius: 6px;   /* 사각형 유지 */
+}
+
+
+/* 저서 목록 */
+.sf-books-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--purple);
+  margin-bottom: 6px;
+}
+
+
+.sf-books {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+
+.sf-book {
+  font-size: 11.5px;
+  color: var(--text2);
+  line-height: 1.5;
+  padding: 5px 10px;
+  background: rgba(255,255,255,.7);
+  border-radius: 8px;
+  border-left: 3px solid var(--purple);
+}
+
+
+/* 수정/삭제 버튼 */
+.sf-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+
+.sf-actions button {
+  font-size: 11px;
+  padding: 3px 8px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  background: var(--purple);
+  color: #fff;
+}
+
+
+.sf-actions .sf-del {
+  background: #e53e3e;
+}
+
+
+/* 추가 버튼 */
+.sf-btn-add {
+  background: var(--purple);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.sf-actions {
+  position: relative;
+  z-index: 1;
+}
+/* ── 게시판 페이지네이션 ── */
+.board-page-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text2);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.board-page-btn.active {
+  background: var(--purple);
+  color: white;
+  border-color: var(--purple);
+}
+.board-page-btn:hover:not(.active) {
+  background: var(--bg2);
+}

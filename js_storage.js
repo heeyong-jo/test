@@ -16,7 +16,7 @@ let todayVerse = null;
 let posts = [];
 
 
-// 로컬 스토리지 관리 객체 (LS)
+// 로컬 스토리지 관리 객체
 const STORAGE_PREFIX = 'ch2_';
 
 
@@ -27,8 +27,6 @@ const LS = {
     } catch(e) { 
       console.warn('LS 저장 실패:', e); 
     }
-    
-    // Firebase와도 동시 저장
     if (FB_KEYS && FB_KEYS.includes(k) && window.FB_READY) {
       try { 
         firebase.database().ref(k).set(v);
@@ -49,6 +47,9 @@ const LS = {
     try { 
       localStorage.removeItem(STORAGE_PREFIX + k); 
     } catch(e) {}
+    if (FB_KEYS && FB_KEYS.includes(k) && window.FB_READY) {
+      try { firebase.database().ref(k).remove(); } catch(e) {}
+    }
   }
 };
 
@@ -82,20 +83,35 @@ function fbUpdateUI(key, data) {
   switch(key) {
     case 'pendingUsers': pendingUsers = arr || []; break;
     case 'approvedUsers': approvedUsers = arr || []; break;
-    case 'notices': notices = arr || []; if (typeof renderNotices === 'function') renderNotices(); break;
+    case 'notices': 
+      notices = arr || []; 
+      if (typeof renderHomeNotices === 'function') renderHomeNotices(); 
+      break;
     case 'members': members = arr || []; break;
-    case 'meditations': meditations = arr || []; break;
+    case 'meditations': 
+      meditations = arr || []; 
+      if (typeof renderMeditations === 'function') renderMeditations(); 
+      break;
     case 'offerings': offerings = arr || []; break;
-    case 'todayVerse': todayVerse = arr ? arr[0] : null; if (typeof renderTodayVerse === 'function') renderTodayVerse(); break;
-    case 'serviceList': serviceList = arr || []; if (typeof renderServiceView === 'function') renderServiceView(); break;
-    case 'scheduleList': scheduleList = arr || []; if (typeof renderScheduleView === 'function') renderScheduleView(); break;
+    case 'todayVerse': 
+      todayVerse = arr ? arr[0] : null; 
+      if (typeof renderTodayVerse === 'function') renderTodayVerse(); 
+      break;
+    case 'serviceList': 
+      serviceList = arr || []; 
+      if (typeof renderServiceView === 'function') renderServiceView(); 
+      break;
+    case 'scheduleList': 
+      scheduleList = arr || []; 
+      if (typeof renderScheduleView === 'function') renderScheduleView(); 
+      break;
     case 'posts': posts = arr || []; break;
-    case 'prayers': prayers = arr || []; break;
+    case 'prayers': 
+      prayers = arr || []; 
+      if (typeof renderPrayers === 'function') renderPrayers(); 
+      break;
   }
 }
-
-
-console.log('✅ js_storage.js 로드 완료');
 
 
 // 모든 데이터 로드
@@ -120,3 +136,6 @@ async function fbLoadAll() {
     console.error('fbLoadAll 오류:', e);
   }
 }
+
+
+console.log('✅ js_storage.js 로드 완료');

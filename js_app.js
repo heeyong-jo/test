@@ -1,7 +1,7 @@
 ﻿// ==================== 앱 초기화 ====================
 
 
-// ── 교회 정보 (인사말/연혁) Firebase 연동 ──────────────────────
+// 교회 정보 데이터
 const defaultGreeting = `"인생은 만남입니다.\n\n우리는 부모와의 만남에서 인생의 지침을 배우고...\n하나님은 오늘도 당신을 기다리고 계십니다.\n하나님은 당신을 사랑하십니다."`;
 
 
@@ -15,6 +15,7 @@ const defaultHistory = [
 let currentEditMode = '';
 
 
+// 교회 정보 로드
 function loadChurchInfo() {
   if (typeof firebase === 'undefined') return;
   firebase.database().ref('churchInfo').once('value', snap => {
@@ -32,7 +33,7 @@ function loadChurchInfo() {
       if (greetingBtn) greetingBtn.style.display = 'inline-block';
       if (historyBtn) historyBtn.style.display = 'inline-block';
     }
-  });
+  }).catch(err => console.error('교회 정보 로드 실패:', err));
 }
 
 
@@ -141,10 +142,7 @@ function saveChurchInfo() {
 }
 
 
-window.addEventListener('load', function()
-}
-
-
+// 완독자 명예의 전당
 function loadBibleHallOfFame() {
   if (typeof firebase === 'undefined') return;
   firebase.database().ref('bibleReading').orderByChild('completions').limitToLast(10).once('value', snap => {
@@ -166,3 +164,66 @@ function loadBibleHallOfFame() {
     if (fameEl) fameEl.innerHTML = html || '<div style="text-align:center; padding:20px;">아직 완독자가 없습니다.</div>';
   });
 }
+
+
+// 페이지 로드 완료 후 초기화
+window.addEventListener('DOMContentLoaded', function() {
+  console.log('DOMContentLoaded - 초기화 시작');
+  
+  // 스플래시 숨김
+  setTimeout(function() {
+    var splash = document.getElementById('splash');
+    if (splash) {
+      splash.style.opacity = '0';
+      setTimeout(function() {
+        if (splash) splash.style.display = 'none';
+      }, 500);
+    }
+  }, 1500);
+  
+  // 교회 정보 로드
+  setTimeout(function() {
+    if (typeof loadChurchInfo === 'function') {
+      loadChurchInfo();
+      console.log('교회 정보 로드 요청됨');
+    }
+  }, 500);
+  
+  // 예배 데이터 초기화
+  if (typeof initServiceData === 'function') {
+    initServiceData();
+  } else if (typeof renderServiceView === 'function') {
+    if (typeof serviceList !== 'undefined' && (!serviceList || serviceList.length === 0)) {
+      if (typeof DEFAULT_SERVICE_LIST !== 'undefined') {
+        serviceList = JSON.parse(JSON.stringify(DEFAULT_SERVICE_LIST));
+        console.log('serviceList 기본값 설정 완료');
+      }
+    }
+    renderServiceView();
+  }
+  
+  // 공지사항 렌더링
+  if (typeof renderHomeNotices === 'function') {
+    renderHomeNotices();
+  }
+  
+  // 기도제목 렌더링
+  setTimeout(function() {
+    if (typeof renderPrayers === 'function') {
+      renderPrayers();
+    }
+  }, 300);
+  
+  // 말씀 렌더링
+  setTimeout(function() {
+    if (typeof renderTodayVerse === 'function') {
+      renderTodayVerse();
+    }
+    if (typeof renderMeditations === 'function') {
+      renderMeditations();
+    }
+  }, 400);
+});
+
+
+console.log('✅ js_app.js 로드 완료');

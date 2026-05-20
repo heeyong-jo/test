@@ -1,50 +1,34 @@
-﻿// ==================== 설정 및 상수 ====================
-
-
-// Firebase 설정
+﻿// Firebase 설정
 const firebaseConfig = {
-  apiKey: "AIzaSyDLn693_LIAnQWyWDzpLjPukJ2joYpndPw",
-  authDomain: "gajwajeil-add45.firebaseapp.com",
-  databaseURL: "https://gajwajeil-add45-default-rtdb.firebaseio.com",
-  projectId: "gajwajeil-add45",
-  storageBucket: "gajwajeil-add45.firebasestorage.app",
-  messagingSenderId: "725343965690",
-  appId: "1:725343965690:web:553d8916ad406c4daed443"
+  apiKey: "AIzaSyBNv-XnTxVhM1dAG_UQ7N6WZnY0_LkXYZ8",
+  authDomain: "hamkke-church.firebaseapp.com",
+  databaseURL: "https://hamkke-church-default-rtdb.firebaseio.com",
+  projectId: "hamkke-church",
+  storageBucket: "hamkke-church.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcdefghij1234567"
 };
 
 
-// 관리자 계정
-const ADMIN_ACCOUNTS = [
-  { id: 'gajwajeil', pw: 'gajwajeil123', name: '김명서 담임목사', role: 'admin', email: 'pastor@hamkke.church', phone: '032-581-4048', birth: '1955-03-29' },
-  { id: 'reodrino', pw: '232735a', name: '조희용 관리자', role: 'admin', email: 'reodrino@gmail.com', phone: '010-9797-1408', birth: '1981-08-27' }
-];
-
-
-// Firebase 초기화 (단순화 - 복잡한 래퍼 제거)
+// Firebase 초기화
 let FB_READY = false;
-
-
 try {
-  if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-    FB_READY = true;
-    console.log('✅ Firebase 연결 성공');
-  } else if (firebase && firebase.apps.length) {
-    FB_READY = true;
-    console.log('✅ Firebase 이미 연결됨');
-  }
+  firebase.initializeApp(firebaseConfig);
+  FB_READY = true;
+  window.FB_READY = FB_READY;
+  console.log('✅ Firebase 연결 성공');
 } catch(e) {
-  console.error('❌ Firebase 연결 오류:', e);
-  FB_READY = false;
+  console.error('Firebase 초기화 실패:', e);
 }
 
 
-window.FB_READY = FB_READY;
+// Firebase 키 목록
+const FB_KEYS = ['notices', 'members', 'meditations', 'pendingUsers', 
+                 'approvedUsers', 'offerings', 'todayVerse', 'serviceList', 
+                 'scheduleList', 'posts', 'prayers'];
 
 
-// Firebase 동기화 키 목록 (단일 정의)
-var FB_KEYS = ['notices', 'members', 'meditations', 'pendingUsers', 'approvedUsers', 
-                  'offerings', 'todayVerse', 'serviceList', 'scheduleList', 'posts', 'prayers'];
+// 관리자 계정 (ADMIN_ACCOUNTS는 js_auth.js에서 정의)
 
 
 // 성경 CDN

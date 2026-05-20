@@ -67,33 +67,35 @@ function afterTab(n) {
     if (typeof renderMeditations === 'function') renderMeditations();
     if (typeof renderTodayVerse === 'function') renderTodayVerse();
   }
-  if (n === 2) {
-    console.log('📋 게시물 탭 열림');
-    
-    if (typeof initBoard === 'function') {
-      initBoard();
-    }
-    
-    const list = document.getElementById('board-category-list');
-    const content = document.getElementById('board-content');
-    
-    if (list) {
-      list.style.display = 'flex';
-      list.style.visibility = 'visible';
-      list.style.pointerEvents = 'auto';
-    }
-    if (content) {
-      content.style.display = 'none';
-      content.style.visibility = 'hidden';
-    }
-    
-    setTimeout(function() {
-      const firstCat = document.querySelector('#board-category-list .board-cat-btn');
-      if (firstCat && !firstCat.hasAttribute('data-bound')) {
-        firstCat.click();
-      }
-    }, 100);
+    if (n === 2) {
+  console.log('📋 게시물 탭 열림');
+  
+  // 게시판 초기화
+  if (typeof initBoard === 'function') {
+    initBoard();
   }
+  
+  // 카테고리 목록 표시
+  const list = document.getElementById('board-category-list');
+  const content = document.getElementById('board-content');
+  
+  if (list) {
+    list.style.display = 'flex';
+    list.style.visibility = 'visible';
+    list.style.pointerEvents = 'auto';
+  }
+  if (content) {
+    content.style.display = 'none';
+    content.style.visibility = 'hidden';
+  }
+  
+    // setTimeout(function() {
+  //   const firstCat = document.querySelector('#board-category-list .board-cat-btn');
+  //   if (firstCat && !firstCat.hasAttribute('data-bound')) {
+  //     firstCat.click();
+  //   }
+  // }, 100);
+}
   if (n === 3) {
     if (typeof loadBibleStatus === 'function') loadBibleStatus();
     if (typeof loadBibleHallOfFame === 'function') loadBibleHallOfFame();

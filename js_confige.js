@@ -1,22 +1,27 @@
-﻿// Firebase 설정
+﻿// ==================== Firebase 설정 ====================
 const firebaseConfig = {
-  apiKey: "AIzaSyBNv-XnTxVhM1dAG_UQ7N6WZnY0_LkXYZ8",
-  authDomain: "hamkke-church.firebaseapp.com",
-  databaseURL: "https://hamkke-church-default-rtdb.firebaseio.com",
-  projectId: "hamkke-church",
-  storageBucket: "hamkke-church.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdefghij1234567"
+  apiKey: "AIzaSyDLn693_LIAnQWyWDzpLjPukJ2joYpndPw",
+  authDomain: "gajwajeil-add45.firebaseapp.com",
+  databaseURL: "https://gajwajeil-add45-default-rtdb.firebaseio.com",
+  projectId: "gajwajeil-add45",
+  storageBucket: "gajwajeil-add45.firebasestorage.app",
+  messagingSenderId: "725343965690",
+  appId: "1:725343965690:web:553d8916ad406c4daed443"
 };
 
 
-// Firebase 초기화
+// Firebase 초기화 (기존 방식에 맞게 수정)
 let FB_READY = false;
 try {
-  firebase.initializeApp(firebaseConfig);
-  FB_READY = true;
-  window.FB_READY = FB_READY;
-  console.log('✅ Firebase 연결 성공');
+  // 기존 코드와 호환되도록 기존 방식으로 초기화
+  if (typeof firebase !== 'undefined' && firebase.initializeApp) {
+    firebase.initializeApp(firebaseConfig);
+    FB_READY = true;
+    window.FB_READY = FB_READY;
+    console.log('✅ Firebase 연결 성공 (gajwajeil-add45)');
+  } else {
+    console.error('Firebase SDK가 로드되지 않음');
+  }
 } catch(e) {
   console.error('Firebase 초기화 실패:', e);
 }
@@ -26,9 +31,6 @@ try {
 const FB_KEYS = ['notices', 'members', 'meditations', 'pendingUsers', 
                  'approvedUsers', 'offerings', 'todayVerse', 'serviceList', 
                  'scheduleList', 'posts', 'prayers'];
-
-
-// 관리자 계정 (ADMIN_ACCOUNTS는 js_auth.js에서 정의)
 
 
 // 성경 CDN

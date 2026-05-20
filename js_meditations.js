@@ -252,3 +252,264 @@ function subscribeMeditations() {
     }
   });
 }
+// ==================== 말씀 등록 기능 (추가) ====================
+
+
+// 단계 표시
+function showVerseStep(step) {
+  const step1 = document.getElementById('vstep1');
+  const step2 = document.getElementById('vstep2');
+  const step3 = document.getElementById('vstep3');
+  const bookDiv = document.getElementById('vstep-book');
+  const chapterDiv = document.getElementById('vstep-chapter');
+  const verseDiv = document.getElementById('vstep-verse');
+  
+  if (!step1 || !step2 || !step3 || !bookDiv || !chapterDiv || !verseDiv) return;
+  
+  [step1, step2, step3].forEach(s => {
+    if (s) { s.style.background = 'var(--bg2)'; s.style.color = 'var(--text2)'; }
+  });
+  
+  if (step === 'book') {
+    if (step1) { step1.style.background = 'var(--purple)'; step1.style.color = 'white'; }
+    bookDiv.style.display = 'block';
+    chapterDiv.style.display = 'none';
+    verseDiv.style.display = 'none';
+  } else if (step === 'chapter') {
+    if (step2) { step2.style.background = 'var(--purple)'; step2.style.color = 'white'; }
+    bookDiv.style.display = 'none';
+    chapterDiv.style.display = 'block';
+    verseDiv.style.display = 'none';
+  } else if (step === 'verse') {
+    if (step3) { step3.style.background = 'var(--purple)'; step3.style.color = 'white'; }
+    bookDiv.style.display = 'none';
+    chapterDiv.style.display = 'none';
+    verseDiv.style.display = 'block';
+  }
+}
+
+
+// 책 목록 로드
+function loadBooksForSelector() {
+  const otDiv = document.getElementById('vs-ot-books');
+  const ntDiv = document.getElementById('vs-nt-books');
+  
+  if (!otDiv || !ntDiv) return;
+  
+  const btnStyle = 'background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;';
+  
+  if (typeof OT_BOOKS !== 'undefined') {
+    otDiv.innerHTML = OT_BOOKS.map(b => 
+      `<div style="${btnStyle}" onclick="selectBookForVerse('${b.name}')">${b.abbr}<div style="font-size:9px;color:var(--text2);">${b.chapters}장</div></div>`
+    ).join('');
+  }
+  
+  if (typeof NT_BOOKS !== 'undefined') {
+    ntDiv.innerHTML = NT_BOOKS.map(b => 
+      `<div style="${btnStyle}" onclick="selectBookForVerse('${b.name}')">${b.abbr}<div style="font-size:9px;color:var(--text2);">${b.chapters}장</div></div>`
+    ).join('');
+  }
+}
+
+
+let selectedBookInfo = null;
+let selectedChapter = 1;
+
+
+// 책 선택
+function selectBookForVerse(bookName) {
+  if (typeof OT_BOOKS !== 'undefined') {
+    selectedBookInfo = OT_BOOKS.find(b => b.name === bookName) || 
+                       (typeof NT_BOOKS !== 'undefined' ? NT_BOOKS.find(b => b.name === bookName) : null);
+  }
+  if (!selectedBookInfo) return;
+  
+  const bookSelectedEl = document.getElementById('vs-book-selected');
+  if (bookSelectedEl) bookSelectedEl.innerHTML = `${selectedBookInfo.emoji || '📖'} ${selectedBookInfo.name}`;
+  
+  const container = document.getElementById('vs-chapters');
+  if (container) {
+    let html = '';
+    for (let i = 1; i <= selectedBookInfo.chapters; i++) {
+      html += `<button onclick="selectChapterForVerse(${i})" style="width:55px;height:55px;border-radius:12px;background:var(--bg);border:1.5px solid var(--border);font-size:14px;font-weight:600;cursor:pointer;">${i}</button>`;
+    }
+    container.innerHTML = html;
+  }
+  
+  showVerseStep('chapter');
+}
+
+
+// 장 선택
+function selectChapterForVerse(chapter) {
+  selectedChapter = chapter;
+  const chapterSelectedEl = document.getElementById('vs-chapter-selected');
+  if (chapterSelectedEl) chapterSelectedEl.innerHTML = `${selectedBookInfo.name} ${chapter}장`;
+  
+  const fromSelect = document.getElementById('vs-from');
+  const toSelect = document.getElementById('vs-to');
+  
+  if (fromSelect && toSelect && selectedBookInfo) {
+    let maxVerses = 150;
+    
+    (async () => {
+      try {
+        const BIBLE_CDN = 'https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@main';
+        const res = await fetch(`${BIBLE_CDN}/${selectedBookInfo.file}`);
+        const data = await res.json();
+        let bookData = data;
+        for (const key of [selectedBookInfo.name, selectedBookInfo.abbr]) {
+          if (data[key] && data[key][chapter]) {
+            bookData = data[key];
+            break;
+          }
+        }
+        if (bookData && bookData[chapter]) {
+          maxVerses = Object.keys(bookData[chapter]).length;
+        }
+      } catch(e) {}
+      
+      let options = '';
+      for (let i = 1; i <= maxVerses; i++) {
+        options += `<option value="${i}">${i}절</option>`;
+      }
+      fromSelect.innerHTML = options;
+      toSelect.innerHTML = options;
+      if (toSelect) toSelect.value = Math.min(maxVerses, 5);
+      
+      updateVersePreview();
+    })();
+  }
+  
+  if (fromSelect) fromSelect.onchange = () => updateVersePreview();
+  if (toSelect) toSelect.onchange = () => updateVersePreview();
+  
+  showVerseStep('verse');
+}
+
+
+// 말씀 미리보기
+async function updateVersePreview() {
+  const from = parseInt(document.getElementById('vs-from')?.value || 1);
+  const to = parseInt(document.getElementById('vs-to')?.value || 1);
+  const previewDiv = document.getElementById('vs-preview');
+  
+  if (!previewDiv || !selectedBookInfo) return;
+  
+  previewDiv.innerHTML = '<div style="text-align:center;">로딩 중...</div>';
+  
+  try {
+    const BIBLE_CDN = 'https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@main';
+    const res = await fetch(`${BIBLE_CDN}/${selectedBookInfo.file}`);
+    const data = await res.json();
+    let bookData = data;
+    for (const key of [selectedBookInfo.name, selectedBookInfo.abbr]) {
+      if (data[key] && data[key][selectedChapter]) {
+        bookData = data[key];
+        break;
+      }
+    }
+    
+    if (bookData && bookData[selectedChapter]) {
+      const verses = bookData[selectedChapter];
+      let text = '';
+      for (let i = from; i <= to && verses[i]; i++) {
+        text += verses[i] + ' ';
+      }
+      previewDiv.innerHTML = `<div style="font-size:13px;line-height:1.7;">${escapeHtml(text.trim())}</div>`;
+    } else {
+      previewDiv.innerHTML = '<div style="color:red;">말씀을 불러올 수 없습니다</div>';
+    }
+  } catch(e) {
+    previewDiv.innerHTML = '<div style="color:red;">오류가 발생했습니다</div>';
+  }
+}
+
+
+// 오늘의 말씀으로 등록
+async function applyTodayVerse() {
+  const from = parseInt(document.getElementById('vs-from')?.value || 1);
+  const to = parseInt(document.getElementById('vs-to')?.value || 1);
+  
+  if (!selectedBookInfo || !selectedChapter) {
+    showToast('책과 장을 선택해주세요');
+    return;
+  }
+  
+  let ref = `${selectedBookInfo.name} ${selectedChapter}장`;
+  if (from === to) {
+    ref += ` ${from}절`;
+  } else {
+    ref += ` ${from}-${to}절`;
+  }
+  
+  let verseText = '';
+  
+  try {
+    const BIBLE_CDN = 'https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@main';
+    const res = await fetch(`${BIBLE_CDN}/${selectedBookInfo.file}`);
+    const data = await res.json();
+    let bookData = data;
+    for (const key of [selectedBookInfo.name, selectedBookInfo.abbr]) {
+      if (data[key] && data[key][selectedChapter]) {
+        bookData = data[key];
+        break;
+      }
+    }
+    
+    if (bookData && bookData[selectedChapter]) {
+      const verses = bookData[selectedChapter];
+      const texts = [];
+      for (let i = from; i <= to && verses[i]; i++) {
+        texts.push(verses[i]);
+      }
+      verseText = texts.join(' ');
+    }
+    
+    if (!verseText) {
+      showToast('말씀을 불러올 수 없습니다');
+      return;
+    }
+    
+    const todayVerseData = { ref: ref, text: verseText };
+    
+    if (typeof LS !== 'undefined') LS.save('todayVerse', todayVerseData);
+    
+    if (window.FB_READY && typeof firebase !== 'undefined') {
+      await firebase.database().ref('todayVerse').set(todayVerseData);
+    }
+    
+    updateVerseUI(todayVerseData);
+    closeVerseSelector();
+    showToast(`✅ 오늘의 말씀이 등록되었습니다: ${ref}`);
+    
+  } catch(e) {
+    console.error('말씀 등록 오류:', e);
+    showToast('말씀 등록 중 오류가 발생했습니다');
+  }
+}
+
+
+// 뒤로가기
+function vsGoBack(step) {
+  if (step === 'book') {
+    showVerseStep('book');
+  } else if (step === 'chapter') {
+    showVerseStep('chapter');
+  }
+}
+
+
+// openVerseSelector 수정 (초기화 추가)
+const originalOpenVerseSelector = openVerseSelector;
+window.openVerseSelector = function() {
+  const modal = document.getElementById('modal-verse-selector');
+  if (modal) {
+    // 초기화
+    selectedBookInfo = null;
+    selectedChapter = 1;
+    showVerseStep('book');
+    loadBooksForSelector();
+    modal.style.display = 'flex';
+  }
+};

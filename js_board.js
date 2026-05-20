@@ -40,42 +40,43 @@ function initBoard() {
 
 // ✅ 수정: 게시판 열기
 function openBoardCategory() {
+  console.log('📂 openBoardCategory 실행 - 카테고리:', currentBoardCategory);
+  
   const list = document.getElementById('board-category-list');
   const content = document.getElementById('board-content');
   const titleEl = document.getElementById('board-category-title');
   
-  if (!list || !content) return;
+  if (!list || !content) {
+    console.error('❌ 게시판 요소 없음 - list:', list, 'content:', content);
+    return;
+  }
   
+  // 화면 전환
   list.style.display = 'none';
   content.style.display = 'block';
   content.scrollTop = 0;
   
-  // 카테고리 타이틀 설정
+  // 타이틀 설정
   if (titleEl) {
     titleEl.textContent = getCategoryLabel(currentBoardCategory);
+    console.log('📌 타이틀 설정:', titleEl.textContent);
   }
   
-  loadBoardManager();
-  loadPosts();  // 게시글 로드
+  // 글쓰기 버튼 표시 여부
   updateBoardWriteBtn();
-}
-
-
-// ✅ 수정: 게시글 로드 (경로 통일)
-function loadPosts() {
-  console.log('loadPosts 실행, 카테고리:', currentBoardCategory);
   
+  // 담당자 정보 로드
+  loadBoardManager();
+  
+  // ✅ 게시글 로드 (여기가 핵심!)
+  console.log('🔄 게시글 로드 시작...');
+  loadPosts();
+  
+  // postListDiv 확인
   const postListDiv = document.getElementById('board-post-list');
-  if (!postListDiv) return;
-  
-  postListDiv.innerHTML = '<div style="text-align:center;padding:40px;"><div class="splash-spinner" style="width:24px;height:24px;"></div><div>로딩 중...</div></div>';
-  
-  if (typeof firebase === 'undefined' || !firebase.apps.length) {
-    console.warn('Firebase 미연결');
-    postListDiv.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2);">서버 연결에 실패했습니다.</div>';
-    return;
-  }
-  
+  console.log('📋 board-post-list 요소:', postListDiv);
+}
+    
   // ✅ 통일된 경로 사용: boards/{category}/posts
   const postsRef = firebase.database().ref(`boards/${currentBoardCategory}/posts`);
   postsRef.once('value')
@@ -102,6 +103,8 @@ function loadPosts() {
       renderPostsPage();
     });
 }
+
+
 
 
 // ✅ 수정: 게시글 렌더링
@@ -281,4 +284,65 @@ function renderPagination(totalPages) {
 function changeBoardPage(page) { 
   currentBoardPage = page; 
   renderPostsPage(); 
+}
+// ==================== 게시판 초기화 강제 실행 (추가) ====================
+
+
+// DOM 로드 후 강제 초기화
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🔧 게시판 강제 초기화 실행');
+  
+  // 카테고리 버튼에 클릭 이벤트 강제 바인딩
+  function bindCategoryEvents() {
+    const btns = document.querySelectorAll('#board-category-list .board-cat-btn');
+    console.log('📌 카테고리 버튼 개수:', btns.length);
+    
+    btns.forEach((btn, idx) => {
+      // 중복 바인딩 방지
+      if (btn.hasAttribute('data-bound')) return;
+      
+      btn.setAttribute('data-bound', 'true');
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        console.log('🖱️ 카테고리 클릭됨:', this.dataset.cat);
+        
+        // 활성화 스타일
+        document.querySelectorAll('#board-category-list .board-cat-btn')
+          .forEach(x => x.classList.remove('active'));
+        this.classList.add('active');
+        
+        // 전역 변수 설정
+        currentBoardCategory = this.dataset.cat;
+        currentBoardPage = 1;
+        
+        // 게시판 열기
+        openBoardCategory();
+      });
+    });
+  }
+  
+  // 초기 바인딩
+  bindCategoryEvents();
+  
+  // 동적 렌더링 대비 (setTimeout으로 재시도)
+  setTimeout(bindCategoryEvents, 500);
+  setTimeout(bindCategoryEvents, 1000);
+});
+
+
+// openBoardCategory 함수가 제대로 정의되었는지 확인
+if (typeof openBoardCategory !== 'function') {
+  console.error('❌ openBoardCategory 함수가 없습니다!');
+} else {
+  console.log('✅ openBoardCategory 함수 있음');
+}
+
+
+// loadPosts 함수 디버깅
+if (typeof loadPosts !== 'function') {
+  console.error('❌ loadPosts 함수가 없습니다!');
+} else {
+  console.log('✅ loadPosts 함수 있음');
 }

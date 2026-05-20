@@ -326,39 +326,19 @@
 
 
 <!-- ══════════════════════ p2: 게시물 ══════════════════════ -->
-<!-- ══════════════════════ p2: 게시물 ══════════════════════ -->
 <div id="p2" class="page">
-  <!-- 카테고리 목록 (세로) -->
-  <div id="board-category-list" class="board-tab-col">
-    <button class="board-cat-btn active" data-cat="일반성도">
-      📌 일반성도
-      <span class="board-tab-sub">&nbsp;</span>
-    </button>
-    <button class="board-cat-btn" data-cat="꿈지락">
-      🐣 꿈지락
-      <span class="board-tab-sub">0~4세</span>
-    </button>
-    <button class="board-cat-btn" data-cat="꿈트리">
-      🌱 꿈트리
-      <span class="board-tab-sub">5~7세</span>
-    </button>
-    <button class="board-cat-btn" data-cat="꿈마루">
-      📚 꿈마루
-      <span class="board-tab-sub">초등</span>
-    </button>
-    <button class="board-cat-btn" data-cat="꿈하나">
-      🔥 꿈하나
-      <span class="board-tab-sub">청소년</span>
-    </button>
-    <button class="board-cat-btn" data-cat="새이플러스">
-      ✝️ 새이플러스
-      <span class="board-tab-sub">청년부</span>
-    </button>
+  <!-- 카테고리 목록 -->
+  <div id="board-category-list" class="board-tab-col">    <button class="board-cat-btn active" data-cat="일반성도">📌 일반성도<span class="board-tab-sub">&nbsp;</span></button>
+    <button class="board-cat-btn" data-cat="꿈지락">🐣 꿈지락<span class="board-tab-sub">0~4세</span></button>
+    <button class="board-cat-btn" data-cat="꿈트리">🌱 꿈트리<span class="board-tab-sub">5~7세</span></button>
+    <button class="board-cat-btn" data-cat="꿈마루">📚 꿈마루<span class="board-tab-sub">초등</span></button>
+    <button class="board-cat-btn" data-cat="꿈하나">🔥 꿈하나<span class="board-tab-sub">청소년</span></button>
+    <button class="board-cat-btn" data-cat="새이플러스">✝️ 새이플러스<span class="board-tab-sub">청년부</span></button>
   </div>
 
 
   <!-- 게시판 본문 -->
-  <div id="board-content" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); overflow-y:auto; padding: 90px 14px 100px 14px; z-index:10;">
+  <div id="board-content" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); overflow-y:auto; padding: 90px 14px 100px 14px;">
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
       <button id="board-back-btn" style="background:var(--bg2); border:1.5px solid var(--border); border-radius:8px; padding:5px 12px; cursor:pointer; color:var(--text); font-weight:600;" onclick="showBoardCategoryList()">← 목록</button>
       <div id="board-category-title" style="font-size:16px; font-weight:800; color:var(--text); flex:1;"></div>
@@ -374,8 +354,8 @@
     </div>
     <div id="board-post-list"></div>
     <div id="board-pagination" style="display:flex; justify-content:center; gap:6px; margin-top:16px; flex-wrap:wrap;"></div>
-  </div>
-</div>
+  </div> <!-- ✅ board-content 닫는 태그 -->
+</div> <!-- ✅ p2 닫는 태그 -->
 
 
 <!-- ==================== p3: 성경읽기 (p2 밖으로 나와야 함) ==================== -->

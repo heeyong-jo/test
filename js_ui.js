@@ -38,7 +38,8 @@ function showTab(n) {
   currentTab = n;
   document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
   for (let i = 0; i < TOTAL_TABS; i++) {
-    document.getElementById('p' + i).classList.toggle('show', i === n);
+    const page = document.getElementById('p' + i);
+    if (page) page.classList.toggle('show', i === n);
   }
 
 
@@ -67,35 +68,32 @@ function afterTab(n) {
     if (typeof renderTodayVerse === 'function') renderTodayVerse();
   }
   if (n === 2) {
-  console.log('📋 게시물 탭 열림');
-  
-  // 게시판 초기화
-  if (typeof initBoard === 'function') {
-    initBoard();
-  }
-  
-  // 카테고리 목록 표시
-  const list = document.getElementById('board-category-list');
-  const content = document.getElementById('board-content');
-  
-  if (list) {
-    list.style.display = 'flex';
-    list.style.visibility = 'visible';
-    list.style.pointerEvents = 'auto';
-  }
-  if (content) {
-    content.style.display = 'none';
-    content.style.visibility = 'hidden';
-  }
-  
-  // ✅ 강제로 첫 번째 카테고리 선택 (선택사항)
-  setTimeout(function() {
-    const firstCat = document.querySelector('#board-category-list .board-cat-btn');
-    if (firstCat && !firstCat.hasAttribute('data-bound')) {
-      firstCat.click();
+    console.log('📋 게시물 탭 열림');
+    
+    if (typeof initBoard === 'function') {
+      initBoard();
     }
-  }, 100);
-}
+    
+    const list = document.getElementById('board-category-list');
+    const content = document.getElementById('board-content');
+    
+    if (list) {
+      list.style.display = 'flex';
+      list.style.visibility = 'visible';
+      list.style.pointerEvents = 'auto';
+    }
+    if (content) {
+      content.style.display = 'none';
+      content.style.visibility = 'hidden';
+    }
+    
+    setTimeout(function() {
+      const firstCat = document.querySelector('#board-category-list .board-cat-btn');
+      if (firstCat && !firstCat.hasAttribute('data-bound')) {
+        firstCat.click();
+      }
+    }, 100);
+  }
   if (n === 3) {
     if (typeof loadBibleStatus === 'function') loadBibleStatus();
     if (typeof loadBibleHallOfFame === 'function') loadBibleHallOfFame();
@@ -103,8 +101,6 @@ function afterTab(n) {
   if (n === 4) {
     if (typeof renderServiceView === 'function') renderServiceView();
     if (typeof renderScheduleView === 'function') renderScheduleView();
-    
-    // ✅ 섬기는 분들 데이터 로드 추가
     if (typeof loadStaff === 'function') {
       loadStaff();
       console.log('섬기는 분들 데이터 로드 요청');
@@ -186,48 +182,4 @@ function applyRole(role) {
     if (isAdminOrManager) { el.setAttribute('style', 'display:block !important'); }
     else { el.setAttribute('style', 'display:none !important'); }
   });
-// ==================== 말씀 등록 함수 ====================
-
-
-function openVerseSelector() {
-  const modal = document.getElementById('modal-verse-selector');
-  if (modal) {
-    modal.style.display = 'flex';
-  }
-}
-
-
-function selectVerse() {
-  const book = document.getElementById('verse-book-select').value;
-  const chapter = document.getElementById('verse-chapter-input').value;
-  const verse = document.getElementById('verse-verse-input').value;
-  
-  if (!book || !chapter || !verse) {
-    showToast('모든 항목을 입력하세요');
-    return;
-  }
-  
-  // todayVerse에 저장
-  todayVerse = {
-    book: book,
-    chapter: parseInt(chapter),
-    verse: parseInt(verse),
-    text: '말씀 내용'
-  };
-  
-  if (typeof LS !== 'undefined') {
-    LS.save('todayVerse', todayVerse);
-  }
-  
-  if (window.FB_READY && typeof firebase !== 'undefined') {
-    firebase.database().ref('todayVerse').set(todayVerse)
-      .catch(err => console.error('말씀 저장 실패:', err));
-  }
-  
-  closeModal('modal-verse-selector');
-  showToast('✅ 말씀이 등록되었습니다');
-  
-  if (typeof renderTodayVerse === 'function') {
-    renderTodayVerse();
-  }
 }

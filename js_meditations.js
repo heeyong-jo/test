@@ -502,14 +502,98 @@ function vsGoBack(step) {
 
 // openVerseSelector 수정 (초기화 추가)
 const originalOpenVerseSelector = openVerseSelector;
+// ==================== 말씀 등록 모달 (최종 확정판) ====================
+
+
+// 기존 함수를 완전히 덮어쓰기
 window.openVerseSelector = function() {
+  console.log('🔧 openVerseSelector 실행됨 (모바일)');
+  
+  // 관리자 권한 체크
+  if (!currentUser) {
+    alert('로그인이 필요합니다.');
+    document.getElementById('screen-login').style.display = 'flex';
+    return;
+  }
+  
+  if (currentUser.role !== 'admin' && currentUser.role !== 'manager') {
+    alert('관리자 또는 매니저만 말씀을 등록할 수 있습니다.\n현재 권한: ' + (currentUser.role || '일반성도'));
+    return;
+  }
+  
   const modal = document.getElementById('modal-verse-selector');
-  if (modal) {
-    // 초기화
-    selectedBookInfo = null;
-    selectedChapter = 1;
-    showVerseStep('book');
+  if (!modal) {
+    alert('말씀 선택기 모달을 찾을 수 없습니다.');
+    return;
+  }
+  
+  // 초기화
+  selectedBookInfo = null;
+  selectedChapter = 1;
+  
+  // UI 초기화
+  const vstepBook = document.getElementById('vstep-book');
+  const vstepChapter = document.getElementById('vstep-chapter');
+  const vstepVerse = document.getElementById('vstep-verse');
+  
+  if (vstepBook) vstepBook.style.display = 'block';
+  if (vstepChapter) vstepChapter.style.display = 'none';
+  if (vstepVerse) vstepVerse.style.display = 'none';
+  
+  // 단계 스타일 초기화
+  const step1 = document.getElementById('vstep1');
+  const step2 = document.getElementById('vstep2');
+  const step3 = document.getElementById('vstep3');
+  
+  if (step1) { step1.style.background = 'var(--purple)'; step1.style.color = 'white'; }
+  if (step2) { step2.style.background = 'var(--bg2)'; step2.style.color = 'var(--text2)'; }
+  if (step3) { step3.style.background = 'var(--bg2)'; step3.style.color = 'var(--text2)'; }
+  
+  // 책 목록 로드
+  loadBooksForSelector();
+  
+  // 모달 표시
+  modal.style.display = 'flex';
+  
+  alert('말씀 등록 모달이 열렸습니다.\n책을 선택해주세요.');
+};
+
+
+// 닫기 함수도 재정의
+window.closeVerseSelector = function() {
+  const modal = document.getElementById('modal-verse-selector');
+  if (modal) modal.style.display = 'none';
+};
+
+
+// 뒤로가기 함수 재정의
+window.vsGoBack = function(step) {
+  if (step === 'book') {
+    const vstepBook = document.getElementById('vstep-book');
+    const vstepChapter = document.getElementById('vstep-chapter');
+    const vstepVerse = document.getElementById('vstep-verse');
+    
+    const step1 = document.getElementById('vstep1');
+    const step2 = document.getElementById('vstep2');
+    
+    if (vstepBook) vstepBook.style.display = 'block';
+    if (vstepChapter) vstepChapter.style.display = 'none';
+    if (vstepVerse) vstepVerse.style.display = 'none';
+    
+    if (step1) { step1.style.background = 'var(--purple)'; step1.style.color = 'white'; }
+    if (step2) { step2.style.background = 'var(--bg2)'; step2.style.color = 'var(--text2)'; }
+    
     loadBooksForSelector();
-    modal.style.display = 'flex';
+  } else if (step === 'chapter') {
+    const vstepChapter = document.getElementById('vstep-chapter');
+    const vstepVerse = document.getElementById('vstep-verse');
+    const step2 = document.getElementById('vstep2');
+    const step3 = document.getElementById('vstep3');
+    
+    if (vstepChapter) vstepChapter.style.display = 'block';
+    if (vstepVerse) vstepVerse.style.display = 'none';
+    
+    if (step2) { step2.style.background = 'var(--purple)'; step2.style.color = 'white'; }
+    if (step3) { step3.style.background = 'var(--bg2)'; step3.style.color = 'var(--text2)'; }
   }
 };

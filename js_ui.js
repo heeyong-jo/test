@@ -13,14 +13,12 @@ setInterval(tick, 1000);
 tick();
 
 
-// ✅ 강화된 showToast
-
-
+// ✅ 강화된 showToast (toastTimer 재선언 제거)
 function showToast(msg) {
   const t = document.getElementById('toast');
   if (!t) {
     console.warn('Toast 요소를 찾을 수 없음:', msg);
-    alert(msg);  // fallback
+    alert(msg);
     return;
   }
   t.textContent = msg;
@@ -43,7 +41,7 @@ function closeModal(id) {
 }
 
 
-// ✅ 강화된 escapeHtml (기존 유지)
+// ✅ escapeHtml 함수 중복 (한 번만 정의)
 function escapeHtml(str) {
   if (!str) return '';
   return str
@@ -58,7 +56,8 @@ function escapeHtml(str) {
 function showTab(n) {
   n = Math.max(0, Math.min(TOTAL_TABS - 1, n));
   if (n !== 0 && !currentUser) {
-    document.getElementById('screen-login').style.display = 'flex';
+    const loginScreen = document.getElementById('screen-login');
+    if (loginScreen) loginScreen.style.display = 'flex';
     return;
   }
   currentTab = n;
@@ -148,7 +147,6 @@ function afterTab(n) {
     const deltaY = Math.abs(e.touches[0].clientY - touchStartY);
     if (deltaX > 10 && deltaX > deltaY && !isSwiping) {
       isSwiping = true;
-      // ✅ 입력창/스크롤 영역에서는 preventDefault 하지 않음
       const target = e.target;
       const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
       const isScrollable = target.scrollWidth > target.clientWidth;
@@ -172,18 +170,6 @@ function afterTab(n) {
     isSwiping = false;
   }, { passive: true });
 })();
-
-
-// ✅ 강화된 escapeHtml (따옴표 포함)
-function escapeHtml(str) {
-  if (!str) return '';
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
 
 
 function applyRole(role) {

@@ -43,7 +43,6 @@ function showTab(n) {
   }
 
 
-  // 성경책 탭(p5)을 떠날 때 모든 하위 뷰 강제 숨김
   if (n !== 5) {
     ['bibleScriptureView', 'bibleHymnView', 'bibleAppendixView'].forEach(id => {
       const el = document.getElementById(id);
@@ -67,35 +66,21 @@ function afterTab(n) {
     if (typeof renderMeditations === 'function') renderMeditations();
     if (typeof renderTodayVerse === 'function') renderTodayVerse();
   }
-    if (n === 2) {
-  console.log('📋 게시물 탭 열림');
-  
-  // 게시판 초기화
-  if (typeof initBoard === 'function') {
-    initBoard();
+  if (n === 2) {
+    console.log('📋 게시물 탭 열림');
+    if (typeof initBoard === 'function') initBoard();
+    const list = document.getElementById('board-category-list');
+    const content = document.getElementById('board-content');
+    if (list) {
+      list.style.display = 'flex';
+      list.style.visibility = 'visible';
+      list.style.pointerEvents = 'auto';
+    }
+    if (content) {
+      content.style.display = 'none';
+      content.style.visibility = 'hidden';
+    }
   }
-  
-  // 카테고리 목록 표시
-  const list = document.getElementById('board-category-list');
-  const content = document.getElementById('board-content');
-  
-  if (list) {
-    list.style.display = 'flex';
-    list.style.visibility = 'visible';
-    list.style.pointerEvents = 'auto';
-  }
-  if (content) {
-    content.style.display = 'none';
-    content.style.visibility = 'hidden';
-  }
-  
-    // setTimeout(function() {
-  //   const firstCat = document.querySelector('#board-category-list .board-cat-btn');
-  //   if (firstCat && !firstCat.hasAttribute('data-bound')) {
-  //     firstCat.click();
-  //   }
-  // }, 100);
-}
   if (n === 3) {
     if (typeof loadBibleStatus === 'function') loadBibleStatus();
     if (typeof loadBibleHallOfFame === 'function') loadBibleHallOfFame();
@@ -103,14 +88,9 @@ function afterTab(n) {
   if (n === 4) {
     if (typeof renderServiceView === 'function') renderServiceView();
     if (typeof renderScheduleView === 'function') renderScheduleView();
-    if (typeof loadStaff === 'function') {
-      loadStaff();
-      console.log('섬기는 분들 데이터 로드 요청');
-    }
+    if (typeof loadStaff === 'function') loadStaff();
   }
-  if (n === 5 && typeof initBible === 'function') {
-    initBible();
-  }
+  if (n === 5 && typeof initBible === 'function') initBible();
   if (n === 6) {
     if (currentUser && currentUser.role === 'admin') {
       if (typeof renderMembersAccord === 'function') renderMembersAccord();
@@ -142,7 +122,13 @@ function afterTab(n) {
     const deltaY = Math.abs(e.touches[0].clientY - touchStartY);
     if (deltaX > 10 && deltaX > deltaY && !isSwiping) {
       isSwiping = true;
-      e.preventDefault();
+      // ✅ 입력창/스크롤 영역에서는 preventDefault 하지 않음
+      const target = e.target;
+      const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+      const isScrollable = target.scrollWidth > target.clientWidth;
+      if (!isInput && !isScrollable) {
+        e.preventDefault();
+      }
     }
   }, { passive: false });
 
@@ -162,14 +148,15 @@ function afterTab(n) {
 })();
 
 
+// ✅ 강화된 escapeHtml (따옴표 포함)
 function escapeHtml(str) {
   if (!str) return '';
-  return str.replace(/[&<>]/g, function(m) {
-    if (m === '&') return '&amp;';
-    if (m === '<') return '&lt;';
-    if (m === '>') return '&gt;';
-    return m;
-  });
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 
@@ -177,11 +164,11 @@ function applyRole(role) {
   const isAdmin = role === 'admin';
   const isAdminOrManager = role === 'admin' || role === 'manager';
   document.querySelectorAll('.admin-only').forEach(el => {
-    if (isAdmin) { el.setAttribute('style', 'display:block !important'); }
-    else { el.setAttribute('style', 'display:none !important'); }
+    if (isAdmin) el.setAttribute('style', 'display:block !important');
+    else el.setAttribute('style', 'display:none !important');
   });
   document.querySelectorAll('.admin-manager-only').forEach(el => {
-    if (isAdminOrManager) { el.setAttribute('style', 'display:block !important'); }
-    else { el.setAttribute('style', 'display:none !important'); }
+    if (isAdminOrManager) el.setAttribute('style', 'display:block !important');
+    else el.setAttribute('style', 'display:none !important');
   });
 }

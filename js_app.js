@@ -1,6 +1,19 @@
 ﻿// ==================== 앱 초기화 ====================
+
+
+// ✅ 지연 평가 함수 (js_confige.js보다 먼저 로드되어도 안전)
+function getAllBooks() {
+  if (typeof OT_BOOKS !== 'undefined' && typeof NT_BOOKS !== 'undefined') {
+    return [...OT_BOOKS, ...NT_BOOKS];
+  }
+  return [];
+}
+
+
+const TOTAL_BIBLE_CHAPTERS = 1189;
+
+
 window.addEventListener('load', function() {
-  // 스플래시 제거
   setTimeout(function() {
     var splash = document.getElementById('splash');
     if (splash) {
@@ -9,7 +22,6 @@ window.addEventListener('load', function() {
     }
   }, 1500);
   
-  // 기본 데이터 로드
   setTimeout(function() {
     if (typeof renderServiceView === 'function') renderServiceView();
     if (typeof renderScheduleView === 'function') renderScheduleView();
@@ -21,28 +33,8 @@ window.addEventListener('load', function() {
 });
 
 
-// 글쓰기 버튼: 매니저 이상만 표시
-function updateBoardWriteBtn() {
-  const wrap = document.getElementById('board-write-btn-wrap');
-  if (!wrap) return;
-  const role = currentUser && currentUser.role;
-  wrap.style.display = (role === 'admin' || role === 'manager') ? 'block' : 'none';
-}
-
-
-// 댓글 입력창: 로그인 유저 전체 허용
-function updateBoardCommentArea() {
-  const inputWrap = document.getElementById('board-comment-input-wrap');
-  const loginMsg = document.getElementById('board-comment-login-msg');
-  if (!inputWrap || !loginMsg) return;
-  if (currentUser) {
-    inputWrap.style.display = 'block';
-    loginMsg.style.display = 'none';
-  } else {
-    inputWrap.style.display = 'none';
-    loginMsg.style.display = 'block';
-  }
-}
+// ✅ 게시판 관련 함수는 js_board.js에만 정의 (여기서 제거)
+// updateBoardWriteBtn, updateBoardCommentArea는 js_board.js 사용
 
 
 // ── 교회 정보 (인사말/연혁) Firebase 연동 ──────────────────────
@@ -70,7 +62,7 @@ function loadChurchInfo() {
       if (typeof renderGreeting === 'function') renderGreeting(defaultGreeting);
       if (typeof renderHistory === 'function') renderHistory(defaultHistory);
     }
-    if (typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'admin') {
+    if (currentUser && currentUser.role === 'admin') {
       const greetingBtn = document.getElementById('greeting-edit-btn');
       const historyBtn = document.getElementById('history-edit-btn');
       if (greetingBtn) greetingBtn.style.display = 'inline-block';
@@ -192,19 +184,6 @@ function showPrivacyPolicy() {
 
 
 // ── 성경 읽기 기능 ──
-const ALL_BOOKS = (typeof OT_BOOKS !== 'undefined' && typeof NT_BOOKS !== 'undefined') 
-  ? [...OT_BOOKS, ...NT_BOOKS] 
-  : [];
-
-
-// 또는 함수 내에서 동적으로 가져오기
-function getBookByIndex(index) {
-  const books = [...OT_BOOKS, ...NT_BOOKS];
-  return books[index];
-}
-const TOTAL_BIBLE_CHAPTERS = 1189;
-
-
 let bibleReadingState = {
   bookIndex: 0,
   chapter: 1,
@@ -224,7 +203,6 @@ async function openBibleReading() {
 
 
   const today = new Date().toISOString().slice(0, 10);
-  
   bibleReadingState.todayPagesRead = data.history && data.history[today] ? data.history[today] : 0;
   bibleReadingState.lastReadDate = today;
 
@@ -258,11 +236,12 @@ async function openBibleReading() {
 
 
 async function loadBibleChapterContent() {
-  if (ALL_BOOKS.length === 0) {
+  const books = getAllBooks();
+  if (books.length === 0) {
     console.error('성경 데이터가 없습니다. OT_BOOKS, NT_BOOKS 확인 필요');
     return;
   }
-  const book = ALL_BOOKS[bibleReadingState.bookIndex];
+  const book = books[bibleReadingState.bookIndex];
   const titleEl = document.getElementById('bible-reading-title');
   if (titleEl) titleEl.textContent = `📖 ${book.name} ${bibleReadingState.chapter}장`;
 
@@ -275,7 +254,6 @@ async function loadBibleChapterContent() {
   try {
     const res = await fetch(`${BIBLE_CDN}/${book.file}`);
     const data = await res.json();
-    
     const bookData = data[book.name] || data[book.abbr] || Object.values(data)[0];
     const verses = bookData[bibleReadingState.chapter];
     
@@ -300,6 +278,7 @@ async function loadBibleChapterContent() {
 }
 
 
+// ✅ 수정: 트랜잭션 안전성 확보
 async function completeCurrentChapter() {
   if (bibleReadingState.todayPagesRead >= 10) {
     alert('오늘은 이미 10장을 모두 읽으셨습니다!');
@@ -310,37 +289,41 @@ async function completeCurrentChapter() {
   if (!currentUser || typeof firebase === 'undefined') return;
 
 
-  bibleReadingState.todayPagesRead++;
   const today = new Date().toISOString().slice(0, 10);
-
-
   const userRef = firebase.database().ref(`bibleReading/${currentUser.id}`);
   
+  // ✅ 트랜잭션 결과 저장
+  let transactionResult = null;
+  
   await userRef.transaction((data) => {
-    if (!data) data = { 
-      name: currentUser.name, 
-      totalPages: 0, 
-      completions: 0, 
-      history: {},
-      currentBookIndex: 0,
-      currentChapter: 1
-    };
-
-
+    if (!data) data = { name: currentUser.name, totalPages: 0, completions: 0, history: {}, currentBookIndex: 0, currentChapter: 1 };
     if (!data.history) data.history = {};
-    data.history[today] = bibleReadingState.todayPagesRead;
+    
+    const todayCount = (data.history[today] || 0) + 1;
+    if (todayCount > 10) return; // abort
+    
+    data.history[today] = todayCount;
     
     let total = 0;
-    Object.values(data.history).forEach(p => total += p);
+    Object.values(data.history).forEach(v => total += v);
     data.totalPages = total;
     data.completions = Math.floor(total / TOTAL_BIBLE_CHAPTERS);
     
+    transactionResult = { todayCount, total, completions: data.completions };
     return data;
   });
-
-
-  const todayCount = document.getElementById('bible-reading-today-count');
-  if (todayCount) todayCount.textContent = `오늘 ${bibleReadingState.todayPagesRead} / 10 장`;
+  
+  // ✅ 트랜잭션이 abort되었는지 확인
+  if (!transactionResult) {
+    alert('오늘 10장을 모두 읽으셨습니다.');
+    return;
+  }
+  
+  // ✅ 트랜잭션 결과로 상태 업데이트
+  bibleReadingState.todayPagesRead = transactionResult.todayCount;
+  
+  const todayCountEl = document.getElementById('bible-reading-today-count');
+  if (todayCountEl) todayCountEl.textContent = `오늘 ${bibleReadingState.todayPagesRead} / 10 장`;
 
 
   if (bibleReadingState.todayPagesRead >= 10) {
@@ -350,11 +333,12 @@ async function completeCurrentChapter() {
   }
 
 
-  const book = ALL_BOOKS[bibleReadingState.bookIndex];
+  const books = getAllBooks();
+  const book = books[bibleReadingState.bookIndex];
   if (bibleReadingState.chapter < book.chapters) {
     bibleReadingState.chapter++;
   } else {
-    if (bibleReadingState.bookIndex < ALL_BOOKS.length - 1) {
+    if (bibleReadingState.bookIndex < books.length - 1) {
       bibleReadingState.bookIndex++;
       bibleReadingState.chapter = 1;
     } else {
@@ -365,7 +349,7 @@ async function completeCurrentChapter() {
   }
 
 
-  await userRef.update({
+  await firebase.database().ref(`bibleReading/${currentUser.id}`).update({
     currentBookIndex: bibleReadingState.bookIndex,
     currentChapter: bibleReadingState.chapter
   });
@@ -380,6 +364,14 @@ function closeBibleReading() {
   const readerHome = document.getElementById('bible-reader-home');
   if (readerScreen) readerScreen.style.display = 'none';
   if (readerHome) readerHome.style.display = 'block';
+  
+  // ✅ 현재 읽기 위치 DB에 저장
+  if (currentUser && typeof firebase !== 'undefined') {
+    firebase.database().ref(`bibleReading/${currentUser.id}`).update({
+      currentBookIndex: bibleReadingState.bookIndex,
+      currentChapter: bibleReadingState.chapter
+    }).catch(err => console.error('위치 저장 실패:', err));
+  }
 }
 
 
@@ -394,22 +386,25 @@ function loadBibleStatus() {
 }
 
 
+// ✅ 수정: 0회 완독자 제외
 function loadBibleHallOfFame() {
   if (typeof firebase === 'undefined') return;
-  firebase.database().ref('bibleReading').orderByChild('completions').limitToLast(10).once('value', snap => {
+  firebase.database().ref('bibleReading').orderByChild('completions').once('value', snap => {
     const users = [];
-    snap.forEach(child => users.push(child.val()));
-    users.reverse();
+    snap.forEach(child => {
+      const val = child.val();
+      if (val.completions > 0) users.push(val);
+    });
+    users.sort((a, b) => b.completions - a.completions);
+    const topUsers = users.slice(0, 10);
     
     let html = '';
-    users.forEach((u, i) => {
-      if (u.completions > 0) {
-        html += `
-          <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">
-            <span>🏅 ${i+1}. ${escapeHtml(u.name)}</span>
-            <span style="font-weight:bold; color:var(--purple);">${u.completions}회 완독</span>
-          </div>`;
-      }
+    topUsers.forEach((u, i) => {
+      html += `
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">
+          <span>🏅 ${i+1}. ${escapeHtml(u.name)}</span>
+          <span style="font-weight:bold; color:var(--purple);">${u.completions}회 완독</span>
+        </div>`;
     });
     const fameEl = document.getElementById('bible-hall-of-fame');
     if (fameEl) fameEl.innerHTML = html || '<div style="text-align:center; padding:20px;">아직 완독자가 없습니다.</div>';

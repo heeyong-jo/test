@@ -13,19 +13,46 @@ setInterval(tick, 1000);
 tick();
 
 
+// ✅ 강화된 showToast
+let toastTimer = null;
+
+
 function showToast(msg) {
   const t = document.getElementById('toast');
-  if (!t) return;
+  if (!t) {
+    console.warn('Toast 요소를 찾을 수 없음:', msg);
+    alert(msg);  // fallback
+    return;
+  }
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+  toastTimer = setTimeout(() => {
+    if (t) t.classList.remove('show');
+  }, 2200);
 }
 
 
+// ✅ 강화된 closeModal
 function closeModal(id) {
   const modal = document.getElementById(id);
-  if (modal) modal.style.display = 'none';
+  if (modal) {
+    modal.style.display = 'none';
+  } else {
+    console.warn(`Modal "${id}"를 찾을 수 없음`);
+  }
+}
+
+
+// ✅ 강화된 escapeHtml (기존 유지)
+function escapeHtml(str) {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 

@@ -1,4 +1,4 @@
-﻿// ==================== 말씀 묵상 & 오늘의 말씀 ====================
+﻿// ==================== 말씀 묵상 & 오늘의 말씀 (최종 수정 완료) ====================
 
 
 // ------------------- 1. 오늘의 말씀 렌더링 -------------------
@@ -21,7 +21,6 @@ function renderTodayVerse() {
   const el_body = document.getElementById('today-verse-body');
   if (el_text) el_text.textContent = todayVerse.text;
   if (el_ref) el_ref.textContent = todayVerse.ref;
-  // ✅ body가 없으면 text에서 따옴표 제거 후 표시
   if (el_body) el_body.textContent = todayVerse.body || todayVerse.text.replace(/^"|"$/g, '');
 }
 
@@ -56,7 +55,6 @@ const VerseTab = {
   maxVerses: 150,
 
 
-  // ✅ js_confige.js의 OT_BOOKS/NT_BOOKS 사용 (직접 정의하지 않음)
   ensureBibleData: function() {
     if (typeof OT_BOOKS === 'undefined' || typeof NT_BOOKS === 'undefined' ||
         OT_BOOKS.length === 0 || NT_BOOKS.length === 0) {
@@ -90,6 +88,7 @@ const VerseTab = {
   },
 
 
+  // ✅ 수정: JSON.stringify로 안전하게 escape
   loadBooks: function() {
     const otDiv = document.getElementById('vs-ot-books');
     const ntDiv = document.getElementById('vs-nt-books');
@@ -104,9 +103,8 @@ const VerseTab = {
     let otHtml = '';
     for (let i = 0; i < OT_BOOKS.length; i++) {
       const b = OT_BOOKS[i];
-      // ✅ JSON.stringify로 안전하게 escape
-const safeName = JSON.stringify(b.name).slice(1, -1);
-otHtml += `<div style="${btnStyle}" onclick="VerseTab.pickBook('${safeName}')" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+      const safeName = JSON.stringify(b.name).slice(1, -1);
+      otHtml += `<div style="${btnStyle}" onclick="VerseTab.pickBook('${safeName}')" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
         <div style="${titleStyle}">${b.abbr}</div>
         <div style="${subStyle}">${b.chapters}장</div>
       </div>`;
@@ -116,7 +114,7 @@ otHtml += `<div style="${btnStyle}" onclick="VerseTab.pickBook('${safeName}')" o
     let ntHtml = '';
     for (let i = 0; i < NT_BOOKS.length; i++) {
       const b = NT_BOOKS[i];
-      const safeName = b.name.replace(/'/g, "\\'");
+      const safeName = JSON.stringify(b.name).slice(1, -1);
       ntHtml += `<div style="${btnStyle}" onclick="VerseTab.pickBook('${safeName}')" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
         <div style="${titleStyle}">${b.abbr}</div>
         <div style="${subStyle}">${b.chapters}장</div>
@@ -147,84 +145,85 @@ otHtml += `<div style="${btnStyle}" onclick="VerseTab.pickBook('${safeName}')" o
   },
 
 
+  // ✅ 수정: fetch 완료 후 미리보기 호출
   pickChapter: function(chapter) {
-  this.selectedChapter = chapter;
-  const chapterSelectedEl = document.getElementById('vs-chapter-selected');
-  if (chapterSelectedEl) chapterSelectedEl.innerHTML = `📖 ${this.selectedBook.name} ${chapter}장`;
-  
-  const fromSelect = document.getElementById('vs-from');
-  const toSelect = document.getElementById('vs-to');
-  if (fromSelect && toSelect) {
-    fromSelect.innerHTML = '<option>로딩 중...</option>';
-    toSelect.innerHTML = '<option>로딩 중...</option>';
+    this.selectedChapter = chapter;
+    const chapterSelectedEl = document.getElementById('vs-chapter-selected');
+    if (chapterSelectedEl) chapterSelectedEl.innerHTML = `📖 ${this.selectedBook.name} ${chapter}장`;
     
-    const url = `https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@main/${this.selectedBook.file}`;
-    fetch(url)
-      .then(res => res.json())
-      .then(data => {
-        let bookData = data[this.selectedBook.name] || data[this.selectedBook.abbr];
-        if (bookData && bookData[chapter]) {
-          this.maxVerses = Object.keys(bookData[chapter]).length;
-        } else {
-          this.maxVerses = 150;
-        }
-        
-        let options = '';
-        for (let i = 1; i <= this.maxVerses; i++) {
-          options += `<option value="${i}">${i}절</option>`;
-        }
-        fromSelect.innerHTML = options;
-        toSelect.innerHTML = options;
-        toSelect.value = Math.min(5, this.maxVerses);
-        
-        // ✅ fetch 완료 후에만 호출
-        this.showStep('verse');
-        this.loadVersePreview();
-      })
-      .catch(() => {
-        let options = '';
-        for (let i = 1; i <= 150; i++) {
-          options += `<option value="${i}">${i}절</option>`;
-        }
-        fromSelect.innerHTML = options;
-        toSelect.innerHTML = options;
-        toSelect.value = 5;
-        
-        this.showStep('verse');
-        this.loadVersePreview();
-      });
-  } else {
-    this.showStep('verse');
-    this.loadVersePreview();
-  }
-},
+    const fromSelect = document.getElementById('vs-from');
+    const toSelect = document.getElementById('vs-to');
+    if (fromSelect && toSelect) {
+      fromSelect.innerHTML = '<option>로딩 중...</option>';
+      toSelect.innerHTML = '<option>로딩 중...</option>';
+      
+      const url = `https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@main/${this.selectedBook.file}`;
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          let bookData = data[this.selectedBook.name] || data[this.selectedBook.abbr];
+          if (bookData && bookData[chapter]) {
+            this.maxVerses = Object.keys(bookData[chapter]).length;
+          } else {
+            this.maxVerses = 150;
+          }
+          
+          let options = '';
+          for (let i = 1; i <= this.maxVerses; i++) {
+            options += `<option value="${i}">${i}절</option>`;
+          }
+          fromSelect.innerHTML = options;
+          toSelect.innerHTML = options;
+          toSelect.value = Math.min(5, this.maxVerses);
+          
+          this.showStep('verse');
+          this.loadVersePreview();
+        })
+        .catch(() => {
+          let options = '';
+          for (let i = 1; i <= 150; i++) {
+            options += `<option value="${i}">${i}절</option>`;
+          }
+          fromSelect.innerHTML = options;
+          toSelect.innerHTML = options;
+          toSelect.value = 5;
+          
+          this.showStep('verse');
+          this.loadVersePreview();
+        });
+    } else {
+      this.showStep('verse');
+      this.loadVersePreview();
+    }
+  },
 
 
+  // ✅ 수정: 로딩 중 상태 체크 및 NaN 방지
   loadVersePreview: function() {
-  const previewDiv = document.getElementById('vs-preview');
-  if (!previewDiv || !this.selectedBook) return;
-  
-  const fromInput = document.getElementById('vs-from');
-  const toInput = document.getElementById('vs-to');
-  
-  // ✅ "로딩 중..." 상태 체크
-  if (!fromInput || !toInput || fromInput.innerHTML === '<option>로딩 중...</option>') {
-    previewDiv.innerHTML = '<div style="text-align:center;padding:20px;">절 범위를 불러오는 중...</div>';
-    return;
-  }
-  
-  const from = parseInt(fromInput.value || 1);
-  const to = parseInt(toInput.value || 1);
-  
-  // ✅ 유효한 숫자인지 확인
-  if (isNaN(from) || isNaN(to)) {
-    previewDiv.innerHTML = '<div style="text-align:center;padding:20px;">절을 선택해주세요</div>';
-    return;
-  }
-  
-  const startVerse = Math.min(from, to);
-  const endVerse = Math.max(from, to);
-  
+    const previewDiv = document.getElementById('vs-preview');
+    if (!previewDiv || !this.selectedBook) return;
+    
+    const fromInput = document.getElementById('vs-from');
+    const toInput = document.getElementById('vs-to');
+    
+    if (!fromInput || !toInput || fromInput.innerHTML === '<option>로딩 중...</option>') {
+      previewDiv.innerHTML = '<div style="text-align:center;padding:20px;">절 범위를 불러오는 중...</div>';
+      return;
+    }
+    
+    const from = parseInt(fromInput.value || 1);
+    const to = parseInt(toInput.value || 1);
+    
+    if (isNaN(from) || isNaN(to)) {
+      previewDiv.innerHTML = '<div style="text-align:center;padding:20px;">절을 선택해주세요</div>';
+      return;
+    }
+    
+    const startVerse = Math.min(from, to);
+    const endVerse = Math.max(from, to);
+    
+    previewDiv.innerHTML = '<div style="text-align:center;padding:20px;">말씀을 불러오는 중...</div>';
+    
     const url = `https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@main/${this.selectedBook.file}`;
     
     fetch(url)
@@ -350,6 +349,7 @@ function loadMeditations() {
 }
 
 
+// ✅ 수정: 날짜 표기 개선 (어제/그저께 추가)
 function formatDisplayTime(createdAt) {
   if (!createdAt) return '방금 전';
   const date = new Date(createdAt);
@@ -399,16 +399,9 @@ function renderMeditations() {
   const totalPages = Math.ceil(meditations.length / MEDITATION_PER_PAGE);
   if (totalPages > 1) {
     let paginationHtml = '<div style="display:flex;justify-content:center;gap:8px;margin-top:16px;flex-wrap:wrap;">';
-    const maxButtons = 7;
-    let startPage = Math.max(1, meditationPage - 3);
-    let endPage = Math.min(totalPages, startPage + maxButtons - 1);
-    if (endPage - startPage < maxButtons - 1) startPage = Math.max(1, endPage - maxButtons + 1);
-    
-    if (startPage > 1) paginationHtml += `<button onclick="goToMeditationPage(1)">1</button>${startPage > 2 ? '<span>...</span>' : ''}`;
-    for (let i = startPage; i <= endPage; i++) {
+    for (let i = 1; i <= totalPages; i++) {
       paginationHtml += `<button onclick="goToMeditationPage(${i})" style="padding:6px 12px;border-radius:20px;background:${meditationPage === i ? 'var(--purple)' : 'var(--bg2)'};color:${meditationPage === i ? 'white' : 'var(--text)'};">${i}</button>`;
     }
-    if (endPage < totalPages) paginationHtml += `${endPage < totalPages - 1 ? '<span>...</span>' : ''}<button onclick="goToMeditationPage(${totalPages})">${totalPages}</button>`;
     paginationHtml += '</div>';
     container.innerHTML += paginationHtml;
   }

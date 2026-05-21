@@ -1045,78 +1045,80 @@
   });
 
 
-// 페이지 로드 후 초기화 (기존 코드 대체)
-window.addEventListener('DOMContentLoaded', function() {
-  console.log('DOMContentLoaded - 초기화 시작');
-  
-  // ✅ 교회 정보 로드 추가
-  setTimeout(function() {
-    if (typeof loadChurchInfo === 'function') {
-      loadChurchInfo();
-      console.log('교회 정보 로드 요청됨');
-    }
-  }, 500);
-  
-  // 스플래시 숨김
-  setTimeout(function() {
-    var splash = document.getElementById('splash');
-    if (splash) {
-      splash.style.opacity = '0';
-      setTimeout(function() {
-        if (splash) splash.style.display = 'none';
-      }, 500);
-    }
-  }, 1500);
-  
-  // 현재 로그인 상태 확인 (localStorage에서 복원)
-  try {
-    const logged = localStorage.getItem('ch2_logged');
-    if (logged) {
-      const userData = JSON.parse(logged);
-      // 실제 사용자 정보는 approvedUsers나 ADMIN_ACCOUNTS에서 찾아야 함
-      console.log('저장된 로그인 정보 있음:', userData);
-    }
-  } catch(e) {}
-  
-  // 예배 데이터 초기화 (가장 중요)
-  if (typeof initServiceData === 'function') {
-    initServiceData();
-  } else if (typeof renderServiceView === 'function') {
-    // initServiceData가 없으면 serviceList 직접 초기화
-    if (typeof serviceList !== 'undefined' && (!serviceList || serviceList.length === 0)) {
-      if (typeof DEFAULT_SERVICE_LIST !== 'undefined') {
-        serviceList = JSON.parse(JSON.stringify(DEFAULT_SERVICE_LIST));
-        console.log('serviceList 기본값 설정 완료');
+  // 페이지 로드 후 초기화
+  window.addEventListener('DOMContentLoaded', function() {
+    console.log('DOMContentLoaded - 초기화 시작');
+    
+    // 교회 정보 로드 추가
+    setTimeout(function() {
+      if (typeof loadChurchInfo === 'function') {
+        loadChurchInfo();
+        console.log('교회 정보 로드 요청됨');
       }
+    }, 500);
+    
+    // 스플래시 숨김
+    setTimeout(function() {
+      var splash = document.getElementById('splash');
+      if (splash) {
+        splash.style.opacity = '0';
+        setTimeout(function() {
+          if (splash) splash.style.display = 'none';
+        }, 500);
+      }
+    }, 1500);
+    
+    // 현재 로그인 상태 확인
+    try {
+      const logged = localStorage.getItem('ch2_logged');
+      if (logged) {
+        const userData = JSON.parse(logged);
+        console.log('저장된 로그인 정보 있음:', userData);
+      }
+    } catch(e) {}
+    
+    // 예배 데이터 초기화
+    if (typeof initServiceData === 'function') {
+      initServiceData();
+    } else if (typeof renderServiceView === 'function') {
+      if (typeof serviceList !== 'undefined' && (!serviceList || serviceList.length === 0)) {
+        if (typeof DEFAULT_SERVICE_LIST !== 'undefined') {
+          serviceList = JSON.parse(JSON.stringify(DEFAULT_SERVICE_LIST));
+          console.log('serviceList 기본값 설정 완료');
+        }
+      }
+      renderServiceView();
     }
-    renderServiceView();
-  }
-  
-  // 공지사항 렌더링
-  if (typeof loadNotices === 'function') {
-  loadNotices();  // Firebase에서 데이터 로드 후 내부에서 renderHomeNotices 호출
-  console.log('공지사항 Firebase 로드 요청됨');
-} else if (typeof renderHomeNotices === 'function') {
-  renderHomeNotices();
-}
-  
-  // 기도제목 렌더링
-  setTimeout(function() {
-    if (typeof renderPrayers === 'function') {
-      renderPrayers();
+    
+    // 공지사항 로드
+    if (typeof loadNotices === 'function') {
+      loadNotices();
+      console.log('공지사항 Firebase 로드 요청됨');
+    } else if (typeof renderHomeNotices === 'function') {
+      renderHomeNotices();
     }
-  }, 300);
-  
-  // 말씀 렌더링
-  setTimeout(function() {
-    if (typeof renderTodayVerse === 'function') {
-      renderTodayVerse();
-    }
-    if (typeof renderMeditations === 'function') {
-      renderMeditations();
-    }
-  }, 400);
-});
+    
+    // 기도제목 렌더링
+    setTimeout(function() {
+      if (typeof renderPrayers === 'function') {
+        renderPrayers();
+      }
+    }, 300);
+    
+    // ✅ 말씀 렌더링 (수정됨)
+    setTimeout(function() {
+      if (typeof renderTodayVerse === 'function') {
+        renderTodayVerse();
+      }
+      // loadMeditations 호출 (데이터 로드 후 renderMeditations 실행)
+      if (typeof loadMeditations === 'function') {
+        loadMeditations();
+        console.log('묵상 데이터 로드 요청됨');
+      } else if (typeof renderMeditations === 'function') {
+        renderMeditations();
+      }
+    }, 400);
+  });
 </script>
 <!-- 카카오 광고 스크립트 (필요시) -->
 <script type="text/javascript" src="//t1.kakaocdn.net/kas/static/ba.min.js" async></script>

@@ -14,7 +14,6 @@ tick();
 
 
 // ✅ 강화된 showToast
-let toastTimer = null;
 
 
 function showToast(msg) {

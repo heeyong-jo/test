@@ -1,7 +1,7 @@
 ﻿// ==================== 오늘의 말씀 렌더링 ====================
 
 
-// 전역 변수 (한 번만 선언)
+// 전역 변수 (var 사용으로 재선언 방지)
 var selectedBookInfo = null;
 var selectedChapter = 1;
 var meditations = [];
@@ -63,9 +63,10 @@ function updateVerseUI(todayVerse) {
 }
 
 
-// ==================== 말씀 등록 모달 (단계 표시) ====================
+// ==================== 말씀 등록 모달 (성경책 디자인) ====================
 
 
+// 단계 표시
 function showVerseStep(step) {
   var step1 = document.getElementById('vstep1');
   var step2 = document.getElementById('vstep2');
@@ -105,48 +106,78 @@ function showVerseStep(step) {
 }
 
 
-// 책 목록 로드
+// 성경책 스타일 책 목록 로드
 function loadBooksForSelector() {
+  console.log('loadBooksForSelector 실행');
+  
   var otDiv = document.getElementById('vs-ot-books');
   var ntDiv = document.getElementById('vs-nt-books');
   
-  if (!otDiv || !ntDiv) return;
-  
-  if (typeof OT_BOOKS !== 'undefined') {
-    var otHtml = '';
-    for (var i = 0; i < OT_BOOKS.length; i++) {
-      var b = OT_BOOKS[i];
-      otHtml += '<div style="background:linear-gradient(145deg,#fdf8f0,#f5e8d5);border:1.5px solid #c8b896;border-radius:16px;padding:12px 4px;text-align:center;cursor:pointer;margin:4px;" onclick="selectBookForVerse(\'' + b.name + '\')">' +
-        '<div style="font-size:16px;font-weight:800;color:#6b4f2e;">' + b.abbr + '</div>' +
-        '<div style="font-size:10px;color:#8a6e4e;">' + b.chapters + '장</div>' +
-        '</div>';
-    }
-    otDiv.innerHTML = otHtml;
+  if (!otDiv || !ntDiv) {
+    console.error('책 목록 컨테이너 없음');
+    return;
   }
   
-  if (typeof NT_BOOKS !== 'undefined') {
-    var ntHtml = '';
-    for (var i = 0; i < NT_BOOKS.length; i++) {
-      var b = NT_BOOKS[i];
-      ntHtml += '<div style="background:linear-gradient(145deg,#fdf8f0,#f5e8d5);border:1.5px solid #c8b896;border-radius:16px;padding:12px 4px;text-align:center;cursor:pointer;margin:4px;" onclick="selectBookForVerse(\'' + b.name + '\')">' +
-        '<div style="font-size:16px;font-weight:800;color:#6b4f2e;">' + b.abbr + '</div>' +
-        '<div style="font-size:10px;color:#8a6e4e;">' + b.chapters + '장</div>' +
-        '</div>';
-    }
-    ntDiv.innerHTML = ntHtml;
+  // OT_BOOKS, NT_BOOKS 확인
+  if (typeof OT_BOOKS === 'undefined') {
+    console.error('OT_BOOKS 정의되지 않음');
+    otDiv.innerHTML = '<div style="color:red;">데이터 로드 실패</div>';
+    ntDiv.innerHTML = '<div style="color:red;">데이터 로드 실패</div>';
+    return;
   }
+  
+  var bookBtnStyle = 'background:linear-gradient(145deg,#fdf8f0,#f5e8d5);border:1.5px solid #c8b896;border-radius:16px;padding:12px 4px;text-align:center;cursor:pointer;margin:4px;transition:all 0.2s;';
+  var bookTitleStyle = 'font-size:16px;font-weight:800;color:#6b4f2e;';
+  var bookSubStyle = 'font-size:10px;color:#8a6e4e;margin-top:4px;';
+  
+  var otHtml = '';
+  for (var i = 0; i < OT_BOOKS.length; i++) {
+    var b = OT_BOOKS[i];
+    otHtml += '<div style="' + bookBtnStyle + '" onclick="selectBookForVerse(\'' + b.name + '\')" onmouseover="this.style.transform=\'scale(1.02)\'" onmouseout="this.style.transform=\'scale(1)\'">' +
+      '<div style="' + bookTitleStyle + '">' + b.abbr + '</div>' +
+      '<div style="' + bookSubStyle + '">' + b.chapters + '장</div>' +
+      '</div>';
+  }
+  otDiv.innerHTML = otHtml;
+  
+  var ntHtml = '';
+  for (var i = 0; i < NT_BOOKS.length; i++) {
+    var b = NT_BOOKS[i];
+    ntHtml += '<div style="' + bookBtnStyle + '" onclick="selectBookForVerse(\'' + b.name + '\')" onmouseover="this.style.transform=\'scale(1.02)\'" onmouseout="this.style.transform=\'scale(1)\'">' +
+      '<div style="' + bookTitleStyle + '">' + b.abbr + '</div>' +
+      '<div style="' + bookSubStyle + '">' + b.chapters + '장</div>' +
+      '</div>';
+  }
+  ntDiv.innerHTML = ntHtml;
+  
+  console.log('책 목록 로드 완료 - 구약:', OT_BOOKS.length, '신약:', NT_BOOKS.length);
 }
 
 
 // 책 선택
 function selectBookForVerse(bookName) {
-  if (typeof OT_BOOKS !== 'undefined') {
-    selectedBookInfo = OT_BOOKS.find(function(b) { return b.name === bookName; });
-    if (!selectedBookInfo && typeof NT_BOOKS !== 'undefined') {
-      selectedBookInfo = NT_BOOKS.find(function(b) { return b.name === bookName; });
+  console.log('책 선택:', bookName);
+  
+  selectedBookInfo = null;
+  for (var i = 0; i < OT_BOOKS.length; i++) {
+    if (OT_BOOKS[i].name === bookName) {
+      selectedBookInfo = OT_BOOKS[i];
+      break;
     }
   }
-  if (!selectedBookInfo) return;
+  if (!selectedBookInfo) {
+    for (var i = 0; i < NT_BOOKS.length; i++) {
+      if (NT_BOOKS[i].name === bookName) {
+        selectedBookInfo = NT_BOOKS[i];
+        break;
+      }
+    }
+  }
+  
+  if (!selectedBookInfo) {
+    console.error('책을 찾을 수 없음:', bookName);
+    return;
+  }
   
   var bookSelectedEl = document.getElementById('vs-book-selected');
   if (bookSelectedEl) {
@@ -169,6 +200,8 @@ function selectBookForVerse(bookName) {
 
 // 장 선택
 function selectChapterForVerse(chapter) {
+  console.log('장 선택:', chapter);
+  
   selectedChapter = chapter;
   var chapterSelectedEl = document.getElementById('vs-chapter-selected');
   if (chapterSelectedEl) {
@@ -181,43 +214,47 @@ function selectChapterForVerse(chapter) {
   if (fromSelect && toSelect && selectedBookInfo) {
     fromSelect.innerHTML = '<option>로딩 중...</option>';
     
-    (function() {
-      var maxVerses = 150;
-      fetch(BIBLE_CDN + '/' + selectedBookInfo.file)
-        .then(function(res) { return res.json(); })
-        .then(function(data) {
-          var bookData = data;
-          if (data[selectedBookInfo.name] && data[selectedBookInfo.name][chapter]) {
-            bookData = data[selectedBookInfo.name];
-          } else if (data[selectedBookInfo.abbr] && data[selectedBookInfo.abbr][chapter]) {
-            bookData = data[selectedBookInfo.abbr];
-          }
-          if (bookData && bookData[chapter]) {
-            maxVerses = Object.keys(bookData[chapter]).length;
-          }
-          var options = '';
-          for (var i = 1; i <= maxVerses; i++) {
-            options += '<option value="' + i + '">' + i + '절</option>';
-          }
-          fromSelect.innerHTML = options;
-          toSelect.innerHTML = options;
-          if (toSelect) toSelect.value = Math.min(maxVerses, 5);
-          updateVersePreview();
-        })
-        .catch(function(e) {
-          var options = '';
-          for (var i = 1; i <= maxVerses; i++) {
-            options += '<option value="' + i + '">' + i + '절</option>';
-          }
-          fromSelect.innerHTML = options;
-          toSelect.innerHTML = options;
-          updateVersePreview();
-        });
-    })();
+    // 비동기로 최대 절 수 가져오기
+    var maxVerses = 150;
+    var filePath = selectedBookInfo.file;
+    var fullUrl = 'https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@main/' + filePath;
+    
+    fetch(fullUrl)
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        var bookData = data;
+        if (data[selectedBookInfo.name] && data[selectedBookInfo.name][chapter]) {
+          bookData = data[selectedBookInfo.name];
+        } else if (data[selectedBookInfo.abbr] && data[selectedBookInfo.abbr][chapter]) {
+          bookData = data[selectedBookInfo.abbr];
+        }
+        if (bookData && bookData[chapter]) {
+          maxVerses = Object.keys(bookData[chapter]).length;
+        }
+        
+        var options = '';
+        for (var i = 1; i <= maxVerses; i++) {
+          options += '<option value="' + i + '">' + i + '절</option>';
+        }
+        fromSelect.innerHTML = options;
+        toSelect.innerHTML = options;
+        if (toSelect) toSelect.value = Math.min(maxVerses, 5);
+        updateVersePreview();
+      })
+      .catch(function(err) {
+        console.warn('성경 데이터 로드 실패:', err);
+        var options = '';
+        for (var i = 1; i <= maxVerses; i++) {
+          options += '<option value="' + i + '">' + i + '절</option>';
+        }
+        fromSelect.innerHTML = options;
+        toSelect.innerHTML = options;
+        updateVersePreview();
+      });
   }
   
-  fromSelect.onchange = function() { updateVersePreview(); };
-  toSelect.onchange = function() { updateVersePreview(); };
+  if (fromSelect) fromSelect.onchange = function() { updateVersePreview(); };
+  if (toSelect) toSelect.onchange = function() { updateVersePreview(); };
   
   showVerseStep('verse');
 }
@@ -233,7 +270,10 @@ function updateVersePreview() {
   
   previewDiv.innerHTML = '<div style="text-align:center; padding:20px;">로딩 중...</div>';
   
-  fetch(BIBLE_CDN + '/' + selectedBookInfo.file)
+  var filePath = selectedBookInfo.file;
+  var fullUrl = 'https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@main/' + filePath;
+  
+  fetch(fullUrl)
     .then(function(res) { return res.json(); })
     .then(function(data) {
       var bookData = data;
@@ -257,13 +297,14 @@ function updateVersePreview() {
         previewDiv.innerHTML = '<div style="color:#b91c1c;text-align:center;padding:20px;">⚠️ 말씀을 불러올 수 없습니다</div>';
       }
     })
-    .catch(function(e) {
+    .catch(function(err) {
+      console.error('미리보기 오류:', err);
       previewDiv.innerHTML = '<div style="color:#b91c1c;text-align:center;padding:20px;">⚠️ 오류가 발생했습니다</div>';
     });
 }
 
 
-// 오늘의 말씀으로 등록
+// 오늘의 말씀 등록
 function applyTodayVerse() {
   var from = parseInt(document.getElementById('vs-from')?.value || 1);
   var to = parseInt(document.getElementById('vs-to')?.value || 1);
@@ -280,7 +321,10 @@ function applyTodayVerse() {
     ref += ' ' + from + '-' + to + '절';
   }
   
-  fetch(BIBLE_CDN + '/' + selectedBookInfo.file)
+  var filePath = selectedBookInfo.file;
+  var fullUrl = 'https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@main/' + filePath;
+  
+  fetch(fullUrl)
     .then(function(res) { return res.json(); })
     .then(function(data) {
       var bookData = data;
@@ -313,14 +357,14 @@ function applyTodayVerse() {
         
         updateVerseUI(todayVerseData);
         closeVerseSelector();
-        alert('✅ 오늘의 말씀이 등록되었습니다!\n\n📖 ' + ref + '\n\n"' + (verseText.length > 80 ? verseText.substring(0, 80) + '…' : verseText) + '"');
+        alert('✅ 오늘의 말씀이 등록되었습니다!\n\n📖 ' + ref);
       } else {
         alert('말씀을 불러올 수 없습니다');
       }
     })
-    .catch(function(e) {
-      console.error('말씀 등록 오류:', e);
-      alert('말씀 등록 중 오류가 발생했습니다');
+    .catch(function(err) {
+      console.error('말씀 등록 오류:', err);
+      alert('말씀 등록 중 오류가 발생했습니다: ' + err.message);
     });
 }
 
@@ -334,11 +378,11 @@ function vsGoBack(step) {
 }
 
 
-// ==================== 말씀 등록 모달 열기/닫기 ====================
+// ==================== 모달 열기/닫기 ====================
 
 
 window.openVerseSelector = function() {
-  console.log('openVerseSelector 실행됨');
+  console.log('🔧 openVerseSelector 실행됨');
   
   if (!currentUser) {
     alert('로그인이 필요합니다.');
@@ -357,6 +401,7 @@ window.openVerseSelector = function() {
     return;
   }
   
+  // 초기화
   selectedBookInfo = null;
   selectedChapter = 1;
   
@@ -372,15 +417,22 @@ window.openVerseSelector = function() {
   var step2 = document.getElementById('vstep2');
   var step3 = document.getElementById('vstep3');
   
-  if (step1) step1.style.background = 'var(--purple)';
-  if (step1) step1.style.color = 'white';
-  if (step2) step2.style.background = 'var(--bg2)';
-  if (step2) step2.style.color = 'var(--text2)';
-  if (step3) step3.style.background = 'var(--bg2)';
-  if (step3) step3.style.color = 'var(--text2)';
+  if (step1) {
+    step1.style.background = 'var(--purple)';
+    step1.style.color = 'white';
+  }
+  if (step2) {
+    step2.style.background = 'var(--bg2)';
+    step2.style.color = 'var(--text2)';
+  }
+  if (step3) {
+    step3.style.background = 'var(--bg2)';
+    step3.style.color = 'var(--text2)';
+  }
   
   loadBooksForSelector();
   modal.style.display = 'flex';
+  console.log('말씀 선택기 모달 열림');
 };
 
 
@@ -408,7 +460,7 @@ window.shareToday = function() {
     navigator.share({
       title: '가좌제일교회 오늘의 말씀',
       text: shareText,
-    });
+    }).catch(function() {});
   } else {
     navigator.clipboard.writeText(shareText);
     alert('말씀이 클립보드에 복사되었습니다');
@@ -416,7 +468,7 @@ window.shareToday = function() {
 };
 
 
-// ==================== 말씀 나누기 (묵상) ====================
+// ==================== 말씀 나누기 ====================
 
 
 function loadMeditations() {
@@ -435,7 +487,6 @@ function loadMeditations() {
             return new Date(b.createdAt) - new Date(a.createdAt);
           });
           meditations = items;
-          if (typeof LS !== 'undefined') LS.save('meditations', meditations);
         } else {
           meditations = (typeof LS !== 'undefined') ? LS.load('meditations', []) : [];
         }
@@ -537,36 +588,14 @@ window.submitMeditation = function() {
 function deleteMeditation(id) {
   if (!confirm('이 묵상을 삭제하시겠습니까?')) return;
   
-  if (window.FB_READY && typeof firebase !== 'undefined') {
-    firebase.database().ref('meditations').once('value')
-      .then(function(snapshot) {
-        if (snapshot.exists()) {
-          var data = snapshot.val();
-          var keyToDelete = null;
-          for (var key in data) {
-            if (data[key].id === id) {
-              keyToDelete = key;
-              break;
-            }
-          }
-          if (keyToDelete) {
-            firebase.database().ref('meditations/' + keyToDelete).remove()
-              .then(function() {
-                meditations = meditations.filter(function(m) { return m.id !== id; });
-                if (typeof LS !== 'undefined') LS.save('meditations', meditations);
-                renderMeditations();
-                alert('✅ 삭제되었습니다');
-              });
-          }
-        }
-      });
-  } else {
-    meditations = meditations.filter(function(m) { return m.id !== id; });
-    if (typeof LS !== 'undefined') LS.save('meditations', meditations);
-    renderMeditations();
-    alert('✅ 삭제되었습니다');
-  }
+  meditations = meditations.filter(function(m) { return m.id !== id; });
+  if (typeof LS !== 'undefined') LS.save('meditations', meditations);
+  renderMeditations();
+  alert('✅ 삭제되었습니다');
 }
 
 
-console.log('✅ js_meditations.js 로드 완료 (var 버전)');
+console.log('✅ js_meditations.js 로드 완료');
+console.log('openVerseSelector:', typeof openVerseSelector);
+console.log('shareToday:', typeof shareToday);
+console.log('submitMeditation:', typeof submitMeditation);

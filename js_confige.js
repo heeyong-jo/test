@@ -10,72 +10,39 @@ const firebaseConfig = {
 };
 
 
-// ✅ Promise 기반 초기화
+// Firebase 초기화 (기존 방식에 맞게 수정)
 let FB_READY = false;
-let firebaseInitPromise = null;
-
-
-function initFirebase() {
-  if (firebaseInitPromise) return firebaseInitPromise;
-  
-  firebaseInitPromise = new Promise((resolve, reject) => {
-    if (FB_READY) {
-      resolve();
-      return;
-    }
-    
-    try {
-      if (typeof firebase !== 'undefined' && firebase.initializeApp) {
-        if (!firebase.apps.length) {
-          firebase.initializeApp(firebaseConfig);
-        }
-        FB_READY = true;
-        console.log('✅ Firebase 연결 성공');
-        resolve();
-      } else {
-        reject(new Error('Firebase SDK가 로드되지 않음'));
-      }
-    } catch(e) {
-      console.error('Firebase 초기화 실패:', e);
-      reject(e);
-    }
-  });
-  
-  return firebaseInitPromise;
-}
-
-
-async function waitForFirebase() {
-  try {
-    await initFirebase();
-    return true;
-  } catch(e) {
-    console.error('Firebase 준비 실패:', e);
-    return false;
+try {
+  // 기존 코드와 호환되도록 기존 방식으로 초기화
+  if (typeof firebase !== 'undefined' && firebase.initializeApp) {
+    firebase.initializeApp(firebaseConfig);
+    FB_READY = true;
+    window.FB_READY = FB_READY;
+    console.log('✅ Firebase 연결 성공 (gajwajeil-add45)');
+  } else {
+    console.error('Firebase SDK가 로드되지 않음');
   }
+} catch(e) {
+  console.error('Firebase 초기화 실패:', e);
 }
 
 
-// ✅ Firebase 키 목록
+// Firebase 키 목록
 const FB_KEYS = ['notices', 'members', 'meditations', 'pendingUsers', 
                  'approvedUsers', 'offerings', 'todayVerse', 'serviceList', 
                  'scheduleList', 'posts', 'prayers'];
 
 
-// ✅ 성경 CDN
+// 성경 CDN
 const BIBLE_CDN = 'https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@main';
 const HYMN_CDN = 'https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@main';
 
 
-// ✅ 권한 라벨
+// 권한 라벨
 const roleLabel = { admin: '관리자', manager: '매니저', member: '일반성도' };
 
 
-// ✅ 성경 총 장 수
-const TOTAL_BIBLE_CHAPTERS = 1189;
-
-
-// ✅ 구약 39권
+// 구약 39권
 const OT_BOOKS = [
   { name: "창세기", abbr: "창", chapters: 50, file: "ot01_genesis.json" },
   { name: "출애굽기", abbr: "출", chapters: 40, file: "ot02_exodus.json" },
@@ -119,7 +86,7 @@ const OT_BOOKS = [
 ];
 
 
-// ✅ 신약 27권
+// 신약 27권
 const NT_BOOKS = [
   { name: "마태복음", abbr: "마", chapters: 28, file: "nt01_matthew.json" },
   { name: "마가복음", abbr: "막", chapters: 16, file: "nt02_mark.json" },
@@ -133,4 +100,19 @@ const NT_BOOKS = [
   { name: "에베소서", abbr: "엡", chapters: 6, file: "nt10_ephesians.json" },
   { name: "빌립보서", abbr: "빌", chapters: 4, file: "nt11_philippians.json" },
   { name: "골로새서", abbr: "골", chapters: 4, file: "nt12_colossians.json" },
-  { name: "데살로니가
+  { name: "데살로니가전서", abbr: "살전", chapters: 5, file: "nt13_1thessalonians.json" },
+  { name: "데살로니가후서", abbr: "살후", chapters: 3, file: "nt14_2thessalonians.json" },
+  { name: "디모데전서", abbr: "딤전", chapters: 6, file: "nt15_1timothy.json" },
+  { name: "디모데후서", abbr: "딤후", chapters: 4, file: "nt16_2timothy.json" },
+  { name: "디도서", abbr: "딛", chapters: 3, file: "nt17_titus.json" },
+  { name: "빌레몬서", abbr: "몬", chapters: 1, file: "nt18_philemon.json" },
+  { name: "히브리서", abbr: "히", chapters: 13, file: "nt19_hebrews.json" },
+  { name: "야고보서", abbr: "약", chapters: 5, file: "nt20_james.json" },
+  { name: "베드로전서", abbr: "벧전", chapters: 5, file: "nt21_1peter.json" },
+  { name: "베드로후서", abbr: "벧후", chapters: 3, file: "nt22_2peter.json" },
+  { name: "요한일서", abbr: "요일", chapters: 5, file: "nt23_1john.json" },
+  { name: "요한이서", abbr: "요이", chapters: 1, file: "nt24_2john.json" },
+  { name: "요한삼서", abbr: "요삼", chapters: 1, file: "nt25_3john.json" },
+  { name: "유다서", abbr: "유", chapters: 1, file: "nt26_jude.json" },
+  { name: "요한계시록", abbr: "계", chapters: 22, file: "nt27_revelation.json" }
+];

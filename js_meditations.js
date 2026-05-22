@@ -1,6 +1,14 @@
 ﻿// ==================== 말씀 묵상 & 오늘의 말씀 ====================
-
-
+// ✅ 전역 변수 (중복 선언 방지)
+if (typeof meditations === 'undefined') {
+  var meditations = [];
+  var meditationPage = 1;
+  const MEDITATION_PER_PAGE = 10;
+} else {
+  // 이미 선언되어 있으면 값만 초기화
+  meditations = [];
+  meditationPage = 1;
+}
 // ------------------- 1. 오늘의 말씀 렌더링 -------------------
 function renderTodayVerse() {
   let todayVerse = null;

@@ -1273,63 +1273,6 @@ window.NT_BOOKS = [
 ];
 
 
-// CDN 주소
-const BIBLE_CDN = 'https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@main';
-
-
-// ------------------- 1. 오늘의 말씀 렌더링 -------------------
-function renderTodayVerse() {
-  let todayVerse = null;
-  if (typeof LS !== 'undefined') todayVerse = LS.load('todayVerse', null);
-
-
-  if (!todayVerse) {
-    todayVerse = {
-      text: '"하나님은 사랑이시라"',
-      ref: '요한일서 4:16',
-      body: '사랑 안에 거하는 자는 하나님 안에 거하고 하나님이 그 안에 거하시느니라'
-    };
-  }
-
-
-  const el_text = document.getElementById('today-verse-text');
-  const el_ref = document.getElementById('today-verse-ref');
-  const el_body = document.getElementById('today-verse-body');
-  if (el_text) el_text.textContent = todayVerse.text;
-  if (el_ref) el_ref.textContent = todayVerse.ref;
-  if (el_body) el_body.textContent = todayVerse.body || todayVerse.text;
-}
-
-
-// ------------------- 2. 말씀 공유 -------------------
-function shareToday() {
-  const tv = LS.load('todayVerse', {
-    text: '"하나님은 사랑이시라"',
-    ref: '요한일서 4:16',
-    body: '사랑 안에 거하는 자는 하나님 안에 거하고 하나님이 그 안에 거하시느니라'
-  });
-  const shareText = `${tv.text} - ${tv.ref}\n${tv.body || tv.text}`;
-  if (navigator.share) navigator.share({ title: '오늘의 말씀', text: shareText });
-  else navigator.clipboard.writeText(shareText).then(() => showToast('📋 복사되었습니다'));
-}
-
-
-// ------------------- 3. 말씀 등록 모달 (탭 방식) -------------------
-const VerseTab = {
-  selectedBook: null,
-  selectedChapter: 1,
-  selectedText: '',
-  maxVerses: 150,
-
-
-  ensureBibleData: function() {
-    if (typeof OT_BOOKS === 'undefined' || typeof NT_BOOKS === 'undefined' ||
-        OT_BOOKS.length === 0 || NT_BOOKS.length === 0) {
-      if (typeof showToast === 'function') showToast('성경 데이터를 불러올 수 없습니다');
-      return false;
-    }
-    return true;
-  },
   // 단계 표시
   showStep: function(step) {
     const step1 = document.getElementById('vstep1');

@@ -1288,11 +1288,9 @@ for (let i = from; i <= to && verses[i]; i++) {
 this.currentVerseText = text.trim();
           previewDiv.innerHTML = `<div style="background:linear-gradient(145deg,#fdf8f0,#f5e8d5);border-radius:20px;padding:20px;border:1px solid #e8dcc8;">
             <div style="font-size:14px;color:#8a6e4e;margin-bottom:12px;">📖 말씀 미리보기</div>
-            <div style="font-size:15px;line-height:1.8;color:#4a3a28;font-style:italic;">"${function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}}"</div>
+            <div style="font-size:15px;line-height:1.8;color:#4a3a28;font-style:italic;">
+"${escapeHtml(text.trim())}"
+</div>
           </div>`;
         } else {
           previewDiv.innerHTML = '<div style="color:#b91c1c;text-align:center;padding:20px;">⚠️ 말씀을 불러올 수 없습니다</div>';
@@ -1331,9 +1329,10 @@ if (!verseText) {
     LS.save('todayVerse', todayVerseData);
     renderTodayVerse();
     closeVerseSelector();
-function showToast((`✅ 오늘의 말씀이 등록되었습니다: ${ref}`) {
-  alert(msg);
-}
+closeVerseSelector();
+
+
+showToast(`✅ 오늘의 말씀이 등록되었습니다: ${ref}`);
  
   // 뒤로가기
   goBack: function(step) {
@@ -1351,13 +1350,6 @@ function showToast((`✅ 오늘의 말씀이 등록되었습니다: ${ref}`) {
 
 // 전역 함수 연결
 window.openVerseSelector = function() {
-  window.openVerseSelector = function() {
-  if (!currentUser) {
-    alert('로그인이 필요합니다.');
-    document.getElementById('screen-login').style.display = 'flex';
-    return;
-  }
-  window.openVerseSelector = function() {
 
 
   if (typeof currentUser === 'undefined' || !currentUser) {
@@ -1368,45 +1360,47 @@ window.openVerseSelector = function() {
 
 
   if (
-    !currentUser ||
-    (
-      currentUser.role !== 'admin' &&
-      currentUser.role !== 'manager'
-    )
+    currentUser.role !== 'admin' &&
+    currentUser.role !== 'manager'
   ) {
     alert('관리자 또는 매니저만 말씀을 등록할 수 있습니다.');
     return;
   }
-    alert('관리자 또는 매니저만 말씀을 등록할 수 있습니다.');
-    return;
-  }
-  
+
+
   const modal = document.getElementById('modal-verse-selector');
+
+
   if (!modal) {
     alert('말씀 선택기 모달을 찾을 수 없습니다.');
     return;
   }
-  
-  if (typeof OT_BOOKS === 'undefined' || typeof NT_BOOKS === 'undefined') {
+
+
+  if (
+    typeof OT_BOOKS === 'undefined' ||
+    typeof NT_BOOKS === 'undefined'
+  ) {
     VerseTab.initializeBibleBooks();
   }
-  
+
+
   VerseTab.selectedBook = null;
   VerseTab.selectedChapter = 1;
+
+
   VerseTab.showStep('book');
   VerseTab.loadBooks();
+
+
   modal.style.display = 'flex';
 };
-
-
 
 
 window.closeVerseSelector = function() {
   const modal = document.getElementById('modal-verse-selector');
   if (modal) modal.style.display = 'none';
 };
-
-
 
 
 window.vsGoBack = function(step) { VerseTab.goBack(step); };

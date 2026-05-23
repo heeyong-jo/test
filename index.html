@@ -311,7 +311,123 @@
       <div style="overflow:hidden;"><button class="write-submit" onclick="submitMeditation()">등록</button></div>
     </div>
   </div>
+// ==================== 기도제목 저장 함수 ====================
+
+
+let prayers = [];
+
+
+function submitPrayer() {
+  const title = document.getElementById('prayer-title')?.value.trim();
+  const content = document.getElementById('prayer-content')?.value.trim();
   
+  if (!title || !content) {
+    showToast('제목과 내용을 입력하세요');
+    return;
+  }
+  
+  if (!currentUser) {
+    showToast('로그인이 필요합니다');
+    document.getElementById('screen-login').style.display = 'flex';
+    return;
+  }
+  
+  const newPrayer = {
+    id: Date.now(),
+    title: title,
+    content: content,
+    author: currentUser.name,
+    authorId: currentUser.id,
+    date: new Date().toLocaleDateString('ko-KR'),
+    answered: false,
+    answers: 0
+  };
+  
+  prayers.unshift(newPrayer);
+  
+  if (typeof LS !== 'undefined') {
+    LS.save('prayers', prayers);
+  }
+  
+  if (window.FB_READY && typeof firebase !== 'undefined') {
+    firebase.database().ref('prayers').set(prayers)
+      .catch(err => console.error('firebase 저장 실패:', err));
+  }
+  
+  document.getElementById('prayer-title').value = '';
+  document.getElementById('prayer-content').value = '';
+  
+  closeModal('modal-prayer');
+  renderPrayerList();
+  showToast('✅ 기도제목이 등록되었습니다');
+}
+
+
+function renderPrayerList() {
+  const container = document.getElementById('prayer-list');
+  if (!container) return;
+  
+  if (!Array.isArray(prayers) || prayers.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2);">🙏 아직 등록된 기도제목이 없습니다</div>';
+    return;
+  }
+  
+  let html = '';
+  prayers.forEach(item => {
+    html += `
+      <div class="card" style="margin-bottom:12px;border-left:4px solid var(--purple);">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+          <strong style="font-size:14px;color:var(--purple);">${escapeHtml(item.title)}</strong>
+          <span style="font-size:11px;color:var(--text2);">${item.date}</span>
+        </div>
+        <div style="color:var(--text);font-size:13px;line-height:1.6;margin-bottom:10px;">${escapeHtml(item.content)}</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);">
+          <span>✍️ ${escapeHtml(item.author)}</span>
+          <button class="btn-secondary" style="padding:4px 12px;font-size:11px;cursor:pointer;" onclick="markPrayerAnswered(${item.id})">응답함 ${item.answers || 0}</button>
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+}
+
+
+function markPrayerAnswered(id) {
+  const prayer = prayers.find(p => p.id === id);
+  if (prayer) {
+    prayer.answered = !prayer.answered;
+    prayer.answers = (prayer.answers || 0) + 1;
+    
+    if (typeof LS !== 'undefined') {
+      LS.save('prayers', prayers);
+    }
+    
+    if (window.FB_READY && typeof firebase !== 'undefined') {
+      firebase.database().ref('prayers').set(prayers);
+    }
+    
+    renderPrayerList();
+    showToast('✅ 기도가 응답되었습니다');
+  }
+}
+
+
+// 초기 데이터 로드
+function loadPrayers() {
+  if (typeof LS !== 'undefined') {
+    prayers = LS.load('prayers', []);
+  }
+  renderPrayerList();
+}
+
+
+// 페이지 로드 시 실행
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', loadPrayers);
+} else {
+  loadPrayers();
+}  
   <div class="card">
     <div class="card-title">💬 성도들의 묵상</div>
     <div id="meditation-list"></div>
@@ -1682,6 +1798,98 @@ if (document.readyState === 'loading') {
       }
     }, 400);
   });
+// ==================== 말씀나누기 (명상) 저장 함수 ====================
+
+
+let meditations = [];
+
+
+function submitMeditation() {
+  const input = document.getElementById('meditation-input');
+  const content = input?.value.trim();
+  
+  if (!content) {
+    showToast('말씀 나누기 내용을 입력해주세요');
+    return;
+  }
+  
+  if (!currentUser) {
+    showToast('로그인이 필요합니다');
+    document.getElementById('screen-login').style.display = 'flex';
+    return;
+  }
+  
+  const newMeditation = {
+    id: Date.now(),
+    author: currentUser.name,
+    text: content,
+    content: content,
+    time: '방금 전',
+    createdAt: new Date().toISOString(),
+    likes: 0
+  };
+  
+  meditations.unshift(newMeditation);
+  
+  if (typeof LS !== 'undefined') {
+    LS.save('meditations', meditations);
+  }
+  
+  if (window.FB_READY && typeof firebase !== 'undefined') {
+    firebase.database().ref('meditations').set(meditations)
+      .catch(err => console.error('firebase 저장 실패:', err));
+  }
+  
+  input.value = '';
+  renderMeditations();
+  showToast('✅ 말씀 나누기가 등록되었습니다');
+}
+
+
+function renderMeditations() {
+  const container = document.getElementById('meditation-list');
+  if (!container) return;
+  
+  if (!Array.isArray(meditations) || meditations.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2);">💬 아직 등록된 묵상이 없습니다</div>';
+    return;
+  }
+  
+  let html = '';
+  meditations.forEach(m => {
+    html += `
+      <div style="background:var(--bg);border-radius:16px;padding:16px;margin-bottom:12px;border:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7a5230,#9e6b3e);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;">${m.author ? m.author.charAt(0) : '🙏'}</div>
+          <div style="flex:1;">
+            <div style="font-weight:700;">${escapeHtml(m.author)}</div>
+            <div style="font-size:11px;color:var(--text2);">${m.time}</div>
+          </div>
+        </div>
+        <div style="font-size:14px;line-height:1.7;">${escapeHtml(m.text)}</div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+}
+
+
+// 초기 데이터 로드
+function loadMeditations() {
+  if (typeof LS !== 'undefined') {
+    meditations = LS.load('meditations', []);
+  }
+  renderMeditations();
+}
+
+
+// 페이지 로드 시 실행
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', loadMeditations);
+} else {
+  loadMeditations();
+}
 </script>
 <!-- 카카오 광고 스크립트 (필요시) -->
 <script type="text/javascript" src="//t1.kakaocdn.net/kas/static/ba.min.js" async></script>

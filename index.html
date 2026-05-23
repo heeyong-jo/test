@@ -31,8 +31,6 @@
 <body>
 
 
-
-
 <!-- ── 스플래시 ── -->
 <div id="splash">
   <img src="logo.png" alt="로고" style="width:80px;height:80px;object-fit:contain;animation:float 1.5s ease-in-out infinite;">
@@ -40,8 +38,6 @@
   <div style="color:rgba(255,255,255,0.55);font-size:12px;">대한예수교 장로회</div>
   <div class="splash-spinner"></div>
 </div>
-
-
 
 
 <!-- ── 로그인 ── -->
@@ -55,8 +51,6 @@
       <div class="login-sub">대한예수교 장로회</div>
 
 
-
-
       <!-- 로그인/회원가입 탭 -->
       <div style="display:flex;background:rgba(255,255,255,0.1);border-radius:12px;padding:4px;margin-bottom:20px;gap:4px;">
         <button id="auth-tab-login" onclick="switchAuthTab('login')"
@@ -66,12 +60,8 @@
       </div>
 
 
-
-
       <!-- 에러 메시지 -->
       <div id="login-err" class="login-err"></div>
-
-
 
 
       <!-- 승인 대기 메시지 -->
@@ -80,8 +70,6 @@
         <div style="color:#ffd966;font-size:14px;font-weight:700;margin-bottom:4px;">승인 대기 중입니다</div>
         <div style="color:rgba(255,255,255,0.65);font-size:12px;line-height:1.7;">가입 신청이 완료되었습니다.<br>담당자 승인 후 이용 가능합니다.<br><span style="color:rgba(255,255,255,0.4);font-size:10px;">문의: 032-581-4048</span></div>
       </div>
-
-
 
 
       <!-- 로그인 폼 -->
@@ -93,8 +81,6 @@
           <button onclick="showForgotPw()" style="background:none;border:none;color:rgba(255,255,255,0.45);font-size:11px;cursor:pointer;text-decoration:underline;">비밀번호를 잊으셨나요?</button>
         </div>
       </div>
-
-
 
 
       <!-- 회원가입 추가 폼 -->
@@ -113,8 +99,6 @@
       </div>
 
 
-
-
       <!-- 비밀번호 찾기 폼 -->
       <div id="forgot-form" style="display:none;">
         <div style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:14px;line-height:1.6;text-align:center;">
@@ -131,8 +115,6 @@
     </div>
   </div>
 </div>
-
-
 
 
 <!-- ── 헤더 ── -->
@@ -161,8 +143,6 @@
 </header>
 
 
-
-
 <!-- ── 탭 ── -->
 <div class="tabs" id="tab-bar">
   <div class="tab active" onclick="showTab(0)" id="tab0">🏠 홈</div>
@@ -173,8 +153,6 @@
   <div class="tab" onclick="showTab(5)" id="tab5">📖 성경책</div>
   <div class="tab admin-manager-only" onclick="showTab(6)" id="tab6">⚙️ 관리</div>
 </div>
-
-
 
 
 <div id="swipe-container">
@@ -197,8 +175,6 @@
       </div>
     </div>
   </div>
-
-
 
 
   <!-- 글쓰기 모달 -->
@@ -233,8 +209,6 @@
 </div>
 
 
-
-
 <!-- 기도제목 작성 모달 -->
 <div id="modal-prayer" class="modal-overlay">
   <div class="modal-box">
@@ -255,12 +229,8 @@
 </div>
 
 
-
-
 <!-- ══════════════════════ p0: 홈 ══════════════════════ -->
 <div id="p0" class="page show">
-
-
 
 
   <!-- ⛪ 주일 예배 카드 -->
@@ -285,8 +255,6 @@
   </div>
 
 
-
-
   <!-- 📅 그 외 예배 카드 -->
   <div class="card">
     <div class="card-title" style="justify-content:space-between;">
@@ -309,8 +277,6 @@
   </div>
 
 
-
-
   <!-- 📢 최근 공지 카드 -->
   <div class="card">
     <div class="sec-hd">
@@ -320,8 +286,6 @@
     <div id="home-notices"></div>
   </div>
 </div>
-
-
 
 
 <!-- ══════════════════════ p1: 말씀 ══════════════════════ -->
@@ -347,6 +311,7 @@
       <div style="overflow:hidden;"><button class="write-submit" onclick="submitMeditation()">등록</button></div>
     </div>
   </div>
+  
   <div class="card">
     <div class="card-title">💬 성도들의 묵상</div>
     <div id="meditation-list"></div>
@@ -364,8 +329,6 @@
 </div>
 
 
-
-
 <!-- ══════════════════════ p2: 게시물 ══════════════════════ -->
 <div id="p2" class="page">
   <!-- 카테고리 목록 -->
@@ -376,8 +339,6 @@
     <button class="board-cat-btn" data-cat="꿈하나">🔥 꿈하나<span class="board-tab-sub">청소년</span></button>
     <button class="board-cat-btn" data-cat="새이플러스">✝️ 새이플러스<span class="board-tab-sub">청년부</span></button>
   </div>
-
-
 
 
   <!-- 게시판 본문 -->
@@ -399,8 +360,6 @@
     <div id="board-pagination" style="display:flex; justify-content:center; gap:6px; margin-top:16px; flex-wrap:wrap;"></div>
   </div> <!-- ✅ board-content 닫는 태그 -->
 </div> <!-- ✅ p2 닫는 태그 -->
-
-
 
 
 <!-- ==================== p3: 성경읽기 (p2 밖으로 나와야 함) ==================== -->
@@ -432,8 +391,6 @@
     </div>
   </div>
 </div>
-
-
 
 
 <!-- ══════════════════════ p4: 안내 ══════════════════════ -->
@@ -483,8 +440,6 @@
 우리 교회는 이런 만남이 있는 좋은 교회입니다.
 
 
-
-
 사람들은 죄인의 모습으로 하나님의 뜻을 떠나 있습니다.
 하나님의 아들이신 예수님이 우리의 죄 문제를 해결하시기 위해 십자가에서 돌아가셨습니다.
 그 예수님을 믿음으로 구원을 얻을 수 있습니다.<br><br>
@@ -498,8 +453,6 @@
     </div>
   </div>
 </div>
-
-
 
 
   <!-- 📜 교회 연혁 카드 추가 -->
@@ -523,8 +476,6 @@
         <div style="font-size:13px;color:var(--text2);">가좌제일교회는 대한예수교 장로회 통합측에 소속된 교회입니다.
 
 
-
-
 장로교 통합측은 1884년 우리나라 최초의 선교사 중 하나인 언더우드 선교사의 선교 등에 영향받아 세워진 교단으로,
 서울의 영락교회, 새문안교회, 소망교회, 동안교회, 서울온누리교회, 천안중앙교회 등과 같은 대표적인 교회들이 있으며,
 건강하고 균형잡힌 신앙을 추구하는 교단입니다.
@@ -534,10 +485,6 @@
     </div>
   </div>
 </div>
-
-
-
-
 
 
 
@@ -573,8 +520,6 @@
       </div>
     </div>
   </div>
-
-
 
 
 <!-- 👥 섬기는 분들 카드 -->
@@ -667,17 +612,11 @@
 
 
 
-
-
-
-
 </div>
 <div id="bibleAppendixView" style="display:none;padding:0;"><div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px 8px;background:#fdf8f0;"><button onclick="closeBibleSection()" style="background:#fdf8f0;border:1px solid #7a5c38;border-radius:30px;padding:7px 14px;font-size:13px;font-weight:600;color:#7a5c38;cursor:pointer;">← 뒤로</button>
 <div style="display:flex;gap:6px;"><button onclick="changeAppendixFont(-1)" style="width:34px;height:34px;border-radius:50%;border:1px solid #5a3a10;background:#2a1a08;cursor:pointer;color:#d4a840;font-size:15px;font-weight:700;">A-</button><button onclick="changeAppendixFont(1)" style="width:34px;height:34px;border-radius:50%;border:1px solid #5a3a10;background:#2a1a08;cursor:pointer;color:#d4a840;font-size:17px;font-weight:700;">A+</button></div></div>
 <div style="background:#fdf8f0;border-radius:0;padding:4px 0;margin-bottom:14px;"><div style="padding:14px 18px;border-bottom:1px solid rgba(184,148,42,0.2);cursor:pointer;" onclick="toggleAppendix('dokun')">
 <div style="font-size:15px;font-weight:700;color:#7a5c38;">교독문</div></div><div id="app-dokun" style="display:none;padding:16px 18px;border-bottom:1px solid rgba(184,148,42,0.1);"><div style="font-size:13px;color:#1a1008;line-height:2.0;"><div style="font-weight:700;color:#d4a840;margin-bottom:10px;">1. 예배 부름 교독문 (시편 95편)</div><div><span style="color:#f0d080;">인도자:</span> 오라 우리가 여호와께 노래하며 우리의 구원의 반석을 향하여 즐거이 외치자</div><div style="margin-top:8px;"><span style="color:#a0c0ff;">회중:</span> 우리가 감사함으로 그 앞에 나아가며 시를 지어 즐거이 그를 노래하자</div><div style="margin-top:8px;"><span style="color:#f0d080;">인도자:</span> 여호와는 크신 하나님이시요 모든 신들보다 크신 왕이시기 때문이로다</div><div style="margin-top:8px;"><span style="color:#a0c0ff;">회중:</span> 땅의 깊은 곳이 그의 손안에 있으며 산들의 높은 곳도 그의 것이로다</div><div style="margin-top:8px;"><span style="color:#f0d080;">인도자:</span> 바다도 그의 것이라 그가 만드셨고 육지도 그의 손이 지으셨도다</div><div style="margin-top:8px;"><span style="color:#a0c0ff;">회중:</span> 오라 우리가 굽혀 경배하며 우리를 지으신 여호와 앞에 무릎을 꿇자</div><div style="margin-top:8px;"><span style="color:#f0d080;">인도자:</span> 그는 우리의 하나님이시요 우리는 그가 기르시는 백성이며 그의 손이 돌보시는 양이기 때문이라</div><div style="margin-top:12px;font-weight:700;color:#d4a840;"><span style="color:#f0d080;">다함께:</span> 오늘 너희가 그의 음성을 듣거든 너희는 마음을 완고하게 하지 말지어다 (아멘)</div></div></div><div style="padding:14px 18px;border-bottom:1px solid rgba(184,148,42,0.2);cursor:pointer;" onclick="toggleAppendix('apostle')"><div style="font-size:15px;font-weight:700;color:#d4a840;">사도신경</div></div><div id="app-apostle" style="display:none;padding:16px 18px;border-bottom:1px solid rgba(184,148,42,0.1);"><div style="font-size:14px;color:#1a1008;line-height:2.2;text-align:center;">나는 전능하신 아버지 하나님,<br>천지의 창조주를 믿습니다.<br><br>나는 그의 유일하신 아들,<br>우리 주 예수 그리스도를 믿습니다.<br>그는 성령으로 잉태되어<br>동정녀 마리아에게서 나시고,<br>본디오 빌라도에게 고난을 받아<br>십자가에 못 박혀 죽으시고,<br>장사된 지 사흘 만에<br>죽은 자 가운데서 다시 살아나셨으며,<br>하늘에 오르시어<br>전능하신 아버지 하나님 우편에 앉아 계시다가,<br>거기로부터 살아있는 자와 죽은 자를<br>심판하러 오십니다.<br><br>나는 성령을 믿으며,<br>거룩한 공교회와<br>성도의 교제와<br>죄를 용서받는 것과<br>몸의 부활과<br>영생을 믿습니다.<br><br><span style="color:#d4a840;font-weight:700;">아멘</span></div></div><div style="padding:14px 18px;border-bottom:1px solid rgba(184,148,42,0.2);cursor:pointer;" onclick="toggleAppendix('lords')"><div style="font-size:15px;font-weight:700;color:#d4a840;">주기도문</div></div><div id="app-lords" style="display:none;padding:16px 18px;border-bottom:1px solid rgba(184,148,42,0.1);"><div style="font-size:14px;color:#1a1008;line-height:2.2;text-align:center;">하늘에 계신 우리 아버지여,<br>이름이 거룩히 여김을 받으시오며,<br>나라가 임하시오며,<br>뜻이 하늘에서 이루어진 것같이<br>땅에서도 이루어지이다.<br><br>오늘 우리에게 일용할 양식을 주시옵고,<br>우리가 우리에게 죄 지은 자를<br>사하여 준 것같이<br>우리 죄를 사하여 주시옵고,<br>우리를 시험에 들게 하지 마시옵고<br>다만 악에서 구하시옵소서.<br><br>나라와 권세와 영광이<br>아버지께 영원히 있사옵나이다.<br><br><span style="color:#d4a840;font-weight:700;">아멘</span></div></div><div style="padding:14px 18px;cursor:pointer;" onclick="toggleAppendix('ten')"><div style="font-size:15px;font-weight:700;color:#d4a840;">십계명</div></div><div id="app-ten" style="display:none;padding:16px 18px;"><div style="font-size:13px;color:#1a1008;line-height:1.9;"><div style="color:#d4a840;font-size:12px;margin-bottom:12px;">출애굽기 20:1-17</div><div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 1계명</span><br>너는 나 외에는 다른 신들을 네게 두지 말라</div><div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 2계명</span><br>너를 위하여 새긴 우상을 만들지 말고 그것들에게 절하지 말며 그것들을 섬기지 말라</div><div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 3계명</span><br>너는 네 하나님 여호와의 이름을 망령되게 부르지 말라</div><div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 4계명</span><br>안식일을 기억하여 거룩하게 지키라</div><div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 5계명</span><br>네 부모를 공경하라</div><div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 6계명</span><br>살인하지 말라</div><div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 7계명</span><br>간음하지 말라</div><div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 8계명</span><br>도둑질하지 말라</div><div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 9계명</span><br>네 이웃에 대하여 거짓 증거하지 말라</div><div><span style="color:#f0d080;font-weight:700;">제 10계명</span><br>네 이웃의 집을 탐내지 말라 네 이웃의 아내나 그의 남종이나 그의 여종이나 그의 소나 그의 나귀나 무릇 네 이웃의 소유를 탐내지 말라</div></div></div></div></div>
-
-
 
 
 <!-- ══════════════════════ p6: 관리 (관리자) ══════════════════════ -->
@@ -695,8 +634,6 @@
       </div>
     </div>
   </div>
-
-
 
 
   <!-- 성도 관리 -->
@@ -723,8 +660,6 @@
   </div>
 
 
-
-
     <!-- 가입 승인 -->
   <div class="accord-card admin-manager-only">
     <div class="accord-header" onclick="toggleAccord('approval')">
@@ -742,8 +677,6 @@
   <div style="text-align:center;padding:20px;color:var(--text2);font-size:11px;">가좌제일교회 · since 1972 1.23 </div>
 </div>
 </div><!-- /swipe-container -->
-
-
 
 
 <!-- 성도 등록 모달 -->
@@ -773,8 +706,6 @@
     <button class="btn-primary" onclick="saveMember()">등록하기</button>
   </div>
 </div>
-
-
 
 
 <!-- 성도 프로필 모달 -->
@@ -844,8 +775,6 @@
 </div>
 
 
-
-
 <!-- 내 정보 모달 (ID 변경됨) -->
 <div id="modal-my-profile" class="modal-overlay">
   <div class="modal-box">
@@ -879,10 +808,6 @@
 
 
 
-
-
-
-
 <!-- 비밀번호 변경 모달 -->
 <div id="modal-change-pw" class="modal-overlay">
   <div class="modal-box">
@@ -893,10 +818,6 @@
     <button class="btn-primary" onclick="changePassword()">변경하기</button>
   </div>
 </div>
-
-
-
-
 
 
 
@@ -915,10 +836,6 @@
 
 
 
-
-
-
-
 <!-- 예배안내 항목 추가 모달 -->
 <div id="modal-add-service" class="modal-overlay">
   <div class="modal-box">
@@ -932,8 +849,6 @@
 </div>
 
 
-
-
 <!-- 예배시간표 항목 추가 모달 -->
 <div id="modal-add-schedule" class="modal-overlay">
   <div class="modal-box">
@@ -945,8 +860,6 @@
     <button class="btn-primary" onclick="confirmAddSchedule()">추가</button>
   </div>
 </div>
-
-
 
 
 <!-- 공지 작성 모달 -->
@@ -966,8 +879,6 @@
   </div>
 </div>
 <div id="toast"></div>
-
-
 
 
 <div id="modal-edit-churchinfo" class="modal-overlay">
@@ -1028,8 +939,6 @@
 </div>
 
 
-
-
 <div class="ad-bar">
   <div class="ad-addr">
     <div style="display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap;">
@@ -1058,14 +967,8 @@
 
 
 
-
-
-
-
 <div id="modal-staff" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:20000;align-items:center;justify-content:center;">
   <div style="background:#fff;border-radius:20px;width:92%;max-width:400px;max-height:88vh;overflow-y:auto;padding:20px;">
-
-
 
 
     <!-- 헤더 -->
@@ -1073,8 +976,6 @@
       <div id="sf-modal-title" style="font-size:16px;font-weight:800;color:var(--purple);">✏️ 정보 수정</div>
       <button onclick="staffCloseModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#888;">✕</button>
     </div>
-
-
 
 
     <!-- 사진 업로드 영역 -->
@@ -1096,16 +997,12 @@
     </div>
 
 
-
-
     <!-- 이름 -->
     <div style="margin-bottom:12px;">
       <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;">이름 *</div>
       <input id="sf-input-name" type="text" placeholder="예: 홍길동 목사"
         style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;">
     </div>
-
-
 
 
     <!-- 담당사역 / 저서 -->
@@ -1116,8 +1013,6 @@
     </div>
 
 
-
-
     <!-- 저장 버튼 -->
     <button onclick="staffSave()"
       style="width:100%;background:var(--purple);color:#fff;border:none;padding:13px;border-radius:30px;font-size:15px;font-weight:700;cursor:pointer;">
@@ -1125,8 +1020,6 @@
     </button>
   </div>
 </div>
-
-
 
 
 <!-- 분할된 JS 파일 로드 (원본 script는 제거) -->
@@ -1484,133 +1377,215 @@ window.updateVersePreview = function() { VerseTab.loadVersePreview(); };
 window.applyTodayVerse = function() { VerseTab.applyTodayVerse(); };
 window.loadBooksForSelector = function() { VerseTab.loadBooks(); };
 window.showVerseStep = function(step) { VerseTab.showStep(step); };
+// ==================== 말씀나누기 (명상) 저장 함수 ====================
 
 
-// ------------------- 4. 묵상 기능 -------------------
-var meditations = [];
-var meditationPage = 1;
-const MEDITATION_PER_PAGE = 10;
+let meditations = [];
 
 
-function loadMeditations() {
-  meditations = (typeof LS !== 'undefined') ? LS.load('meditations', []) : [];
+function submitMeditation() {
+  const input = document.getElementById('meditation-input');
+  const content = input?.value.trim();
+  
+  if (!content) {
+    showToast('말씀 나누기 내용을 입력해주세요');
+    return;
+  }
+  
+  if (!currentUser) {
+    showToast('로그인이 필요합니다');
+    document.getElementById('screen-login').style.display = 'flex';
+    return;
+  }
+  
+  const newMeditation = {
+    id: Date.now(),
+    author: currentUser.name,
+    text: content,
+    content: content,
+    time: '방금 전',
+    createdAt: new Date().toISOString(),
+    likes: 0
+  };
+  
+  meditations.unshift(newMeditation);
+  
+  if (typeof LS !== 'undefined') {
+    LS.save('meditations', meditations);
+  }
+  
+  if (window.FB_READY && typeof firebase !== 'undefined') {
+    firebase.database().ref('meditations').set(meditations)
+      .catch(err => console.error('firebase 저장 실패:', err));
+  }
+  
+  input.value = '';
   renderMeditations();
-}
-
-
-function formatDisplayTime(createdAt) {
-  if (!createdAt) return '방금 전';
-  const date = new Date(createdAt);
-  const now = new Date();
-  const diffMin = Math.floor((now - date) / 1000 / 60);
-  const diffHours = Math.floor((now - date) / 1000 / 60 / 60);
-  const diffDays = Math.floor((now - date) / 1000 / 60 / 60 / 24);
-  if (diffMin < 1) return '방금 전';
-  if (diffMin < 60) return `${diffMin}분 전`;
-  if (diffHours < 24) return `${diffHours}시간 전`;
-  if (diffDays === 1) return '어제';
-  if (diffDays === 2) return '그저께';
-  if (diffDays < 7) return `${diffDays}일 전`;
-  return `${date.getMonth()+1}.${date.getDate()}`;
+  showToast('✅ 말씀 나누기가 등록되었습니다');
 }
 
 
 function renderMeditations() {
   const container = document.getElementById('meditation-list');
   if (!container) return;
-  if (!meditations.length) {
-    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2);">💬 아직 등록된 묵상이 없습니다.<br>첫 번째로 말씀 나누기를 해보세요!</div>';
+  
+  if (!Array.isArray(meditations) || meditations.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2);">💬 아직 등록된 묵상이 없습니다</div>';
     return;
   }
-  const start = (meditationPage - 1) * MEDITATION_PER_PAGE;
-  const pageItems = meditations.slice(start, start + MEDITATION_PER_PAGE);
-  const isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager');
+  
   let html = '';
-  for (let i = 0; i < pageItems.length; i++) {
-    const m = pageItems[i];
-    const firstChar = m.author ? (typeof escapeHtml === 'function' ? escapeHtml(m.author.charAt(0)) : m.author.charAt(0)) : '🙏';
-    const authorName = typeof escapeHtml === 'function' ? escapeHtml(m.author) : m.author;
-    const contentHtml = typeof escapeHtml === 'function' ? escapeHtml(m.text || m.content) : (m.text || m.content);
-    html += `<div style="background:var(--bg);border-radius:16px;padding:16px;margin-bottom:12px;border:1px solid var(--border);">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7a5230,#9e6b3e);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;">${firstChar}</div>
-        <div style="flex:1;"><div style="font-weight:700;">${authorName}</div><div style="font-size:11px;color:var(--text2);">${formatDisplayTime(m.createdAt)}</div></div>
-        ${(currentUser && (currentUser.name === m.author || isAdmin)) ? `<button onclick="deleteMeditation(${m.id})" style="background:none;border:none;font-size:18px;cursor:pointer;color:#b91c1c;">🗑</button>` : ''}
+  meditations.forEach(m => {
+    html += `
+      <div style="background:var(--bg);border-radius:16px;padding:16px;margin-bottom:12px;border:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7a5230,#9e6b3e);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;">${m.author ? m.author.charAt(0) : '🙏'}</div>
+          <div style="flex:1;">
+            <div style="font-weight:700;">${escapeHtml(m.author)}</div>
+            <div style="font-size:11px;color:var(--text2);">${m.time}</div>
+          </div>
+        </div>
+        <div style="font-size:14px;line-height:1.7;">${escapeHtml(m.text)}</div>
       </div>
-      <div style="font-size:14px;line-height:1.7;">${contentHtml}</div>
-    </div>`;
-  }
+    `;
+  });
+  
   container.innerHTML = html;
-  const totalPages = Math.ceil(meditations.length / MEDITATION_PER_PAGE);
-  if (totalPages > 1) {
-    let paginationHtml = '<div style="display:flex;justify-content:center;gap:8px;margin-top:16px;flex-wrap:wrap;">';
-    for (let i = 1; i <= totalPages; i++) {
-      paginationHtml += `<button onclick="goToMeditationPage(${i})" style="padding:6px 12px;border-radius:20px;background:${meditationPage === i ? 'var(--purple)' : 'var(--bg2)'};color:${meditationPage === i ? 'white' : 'var(--text)'};">${i}</button>`;
-    }
-    paginationHtml += '</div>';
-    container.innerHTML += paginationHtml;
-  }
 }
 
 
-function goToMeditationPage(page) {
-  meditationPage = page;
+// 초기 데이터 로드
+function loadMeditations() {
+  if (typeof LS !== 'undefined') {
+    meditations = LS.load('meditations', []);
+  }
   renderMeditations();
 }
 
 
-function submitMeditation() {
-  const input = document.getElementById('meditation-input');
-  const content = input?.value.trim();
-  if (!content) {
-    if (typeof showToast === 'function') showToast('말씀 나누기 내용을 입력해주세요');
-    else alert('말씀 나누기 내용을 입력해주세요');
-    return;
-  }
-  if (!currentUser) {
-    if (typeof showToast === 'function') showToast('로그인이 필요합니다');
-    else alert('로그인이 필요합니다');
-    const loginScreen = document.getElementById('screen-login');
-    if (loginScreen) loginScreen.style.display = 'flex';
-    return;
-  }
-  const newMeditation = {
-    id: Date.now(),
-    author: currentUser.name,
-    text: content,
-    content: content,
-    createdAt: new Date().toISOString(),
-    likes: 0
-  };
-  meditations.unshift(newMeditation);
-  if (typeof LS !== 'undefined') LS.save('meditations', meditations);
-  if (input) input.value = '';
-  meditationPage = 1;
-  renderMeditations();
-  if (typeof showToast === 'function') showToast('✅ 말씀 나누기가 등록되었습니다');
-  else alert('✅ 말씀 나누기가 등록되었습니다');
-}
-
-
-function deleteMeditation(id) {
-  if (!confirm('삭제하시겠습니까?')) return;
-  meditations = meditations.filter(m => m.id !== id);
-  if (typeof LS !== 'undefined') LS.save('meditations', meditations);
-  renderMeditations();
-  if (typeof showToast === 'function') showToast('🗑 삭제됨');
-  else alert('🗑 삭제됨');
-}
-
-
-// 초기화
+// 페이지 로드 시 실행
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', loadMeditations);
 } else {
   loadMeditations();
 }
+// ==================== 기도제목 저장 함수 ====================
 
 
-console.log('✅ 말씀 기능 로드 완료 (자체 성경 데이터 버전)');
+let prayers = [];
+
+
+function submitPrayer() {
+  const title = document.getElementById('prayer-title')?.value.trim();
+  const content = document.getElementById('prayer-content')?.value.trim();
+  
+  if (!title || !content) {
+    showToast('제목과 내용을 입력하세요');
+    return;
+  }
+  
+  if (!currentUser) {
+    showToast('로그인이 필요합니다');
+    document.getElementById('screen-login').style.display = 'flex';
+    return;
+  }
+  
+  const newPrayer = {
+    id: Date.now(),
+    title: title,
+    content: content,
+    author: currentUser.name,
+    authorId: currentUser.id,
+    date: new Date().toLocaleDateString('ko-KR'),
+    answered: false,
+    answers: 0
+  };
+  
+  prayers.unshift(newPrayer);
+  
+  if (typeof LS !== 'undefined') {
+    LS.save('prayers', prayers);
+  }
+  
+  if (window.FB_READY && typeof firebase !== 'undefined') {
+    firebase.database().ref('prayers').set(prayers)
+      .catch(err => console.error('firebase 저장 실패:', err));
+  }
+  
+  document.getElementById('prayer-title').value = '';
+  document.getElementById('prayer-content').value = '';
+  
+  closeModal('modal-prayer');
+  renderPrayerList();
+  showToast('✅ 기도제목이 등록되었습니다');
+}
+
+
+function renderPrayerList() {
+  const container = document.getElementById('prayer-list');
+  if (!container) return;
+  
+  if (!Array.isArray(prayers) || prayers.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2);">🙏 아직 등록된 기도제목이 없습니다</div>';
+    return;
+  }
+  
+  let html = '';
+  prayers.forEach(item => {
+    html += `
+      <div class="card" style="margin-bottom:12px;border-left:4px solid var(--purple);">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+          <strong style="font-size:14px;color:var(--purple);">${escapeHtml(item.title)}</strong>
+          <span style="font-size:11px;color:var(--text2);">${item.date}</span>
+        </div>
+        <div style="color:var(--text);font-size:13px;line-height:1.6;margin-bottom:10px;">${escapeHtml(item.content)}</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);">
+          <span>✍️ ${escapeHtml(item.author)}</span>
+          <button class="btn-secondary" style="padding:4px 12px;font-size:11px;cursor:pointer;" onclick="markPrayerAnswered(${item.id})">응답함 ${item.answers || 0}</button>
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+}
+
+
+function markPrayerAnswered(id) {
+  const prayer = prayers.find(p => p.id === id);
+  if (prayer) {
+    prayer.answered = !prayer.answered;
+    prayer.answers = (prayer.answers || 0) + 1;
+    
+    if (typeof LS !== 'undefined') {
+      LS.save('prayers', prayers);
+    }
+    
+    if (window.FB_READY && typeof firebase !== 'undefined') {
+      firebase.database().ref('prayers').set(prayers);
+    }
+    
+    renderPrayerList();
+    showToast('✅ 기도가 응답되었습니다');
+  }
+}
+
+
+// 초기 데이터 로드
+function loadPrayers() {
+  if (typeof LS !== 'undefined') {
+    prayers = LS.load('prayers', []);
+  }
+  renderPrayerList();
+}
+
+
+// 페이지 로드 시 실행
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', loadPrayers);
+} else {
+  loadPrayers();
+}
 </script>
 <script src="js_bible.js"></script>
 <script src="js_app.js"></script>
@@ -1631,8 +1606,6 @@ console.log('✅ 말씀 기능 로드 완료 (자체 성경 데이터 버전)');
       }
     }, 800);
   });
-
-
 
 
   // 페이지 로드 후 초기화
@@ -1712,8 +1685,6 @@ console.log('✅ 말씀 기능 로드 완료 (자체 성경 데이터 버전)');
 </script>
 <!-- 카카오 광고 스크립트 (필요시) -->
 <script type="text/javascript" src="//t1.kakaocdn.net/kas/static/ba.min.js" async></script>
-
-
 
 
 </body>

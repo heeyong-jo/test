@@ -1330,8 +1330,7 @@ const VerseTab = {
     }
     return true;
   },
-
-
+  // 단계 표시
   showStep: function(step) {
     const step1 = document.getElementById('vstep1');
     const step2 = document.getElementById('vstep2');
@@ -1355,12 +1354,15 @@ const VerseTab = {
   },
 
 
+  // 책 목록 로드
   loadBooks: function() {
     const otDiv = document.getElementById('vs-ot-books');
     const ntDiv = document.getElementById('vs-nt-books');
     if (!otDiv || !ntDiv) return;
     
-    if (!this.ensureBibleData()) return;
+    if (typeof OT_BOOKS === 'undefined' || typeof NT_BOOKS === 'undefined') {
+      this.initializeBibleBooks();
+    }
     
     const btnStyle = 'background:linear-gradient(145deg,#fdf8f0,#f5e8d5);border:1.5px solid #c8b896;border-radius:16px;padding:12px 4px;text-align:center;cursor:pointer;margin:4px;transition:all 0.2s;';
     const titleStyle = 'font-size:16px;font-weight:800;color:#6b4f2e;';
@@ -1369,8 +1371,7 @@ const VerseTab = {
     let otHtml = '';
     for (let i = 0; i < OT_BOOKS.length; i++) {
       const b = OT_BOOKS[i];
-      const safeName = JSON.stringify(b.name).slice(1, -1);
-      otHtml += `<div style="${btnStyle}" onclick="VerseTab.pickBook('${safeName}')" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+      otHtml += `<div style="${btnStyle}" onclick="VerseTab.pickBook('${b.name}')" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
         <div style="${titleStyle}">${b.abbr}</div>
         <div style="${subStyle}">${b.chapters}장</div>
       </div>`;
@@ -1380,8 +1381,7 @@ const VerseTab = {
     let ntHtml = '';
     for (let i = 0; i < NT_BOOKS.length; i++) {
       const b = NT_BOOKS[i];
-      const safeName = JSON.stringify(b.name).slice(1, -1);
-      ntHtml += `<div style="${btnStyle}" onclick="VerseTab.pickBook('${safeName}')" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+      ntHtml += `<div style="${btnStyle}" onclick="VerseTab.pickBook('${b.name}')" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
         <div style="${titleStyle}">${b.abbr}</div>
         <div style="${subStyle}">${b.chapters}장</div>
       </div>`;
@@ -1390,8 +1390,8 @@ const VerseTab = {
   },
 
 
+  // 책 선택
   pickBook: function(bookName) {
-    if (!this.ensureBibleData()) return;
     this.selectedBook = OT_BOOKS.find(b => b.name === bookName) || NT_BOOKS.find(b => b.name === bookName);
     if (!this.selectedBook) return;
     
@@ -1411,6 +1411,7 @@ const VerseTab = {
   },
 
 
+  // 장 선택
   pickChapter: function(chapter) {
     this.selectedChapter = chapter;
     const chapterSelectedEl = document.getElementById('vs-chapter-selected');
@@ -1419,74 +1420,29 @@ const VerseTab = {
     const fromSelect = document.getElementById('vs-from');
     const toSelect = document.getElementById('vs-to');
     if (fromSelect && toSelect) {
-      fromSelect.innerHTML = '<option>로딩 중...</option>';
-      toSelect.innerHTML = '<option>로딩 중...</option>';
-      
-      const url = `${BIBLE_CDN}/${this.selectedBook.file}`;
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          let bookData = data[this.selectedBook.name] || data[this.selectedBook.abbr];
-          if (bookData && bookData[chapter]) {
-            this.maxVerses = Object.keys(bookData[chapter]).length;
-          } else {
-            this.maxVerses = 150;
-          }
-          
-          let options = '';
-          for (let i = 1; i <= this.maxVerses; i++) {
-            options += `<option value="${i}">${i}절</option>`;
-          }
-          fromSelect.innerHTML = options;
-          toSelect.innerHTML = options;
-          toSelect.value = Math.min(5, this.maxVerses);
-          
-          this.showStep('verse');
-          this.loadVersePreview();
-        })
-        .catch(() => {
-          let options = '';
-          for (let i = 1; i <= 150; i++) {
-            options += `<option value="${i}">${i}절</option>`;
-          }
-          fromSelect.innerHTML = options;
-          toSelect.innerHTML = options;
-          toSelect.value = 5;
-          
-          this.showStep('verse');
-          this.loadVersePreview();
-        });
-    } else {
-      this.showStep('verse');
-      this.loadVersePreview();
+      let options = '';
+      for (let i = 1; i <= 150; i++) {
+        options += `<option value="${i}">${i}절</option>`;
+      }
+      fromSelect.innerHTML = options;
+      toSelect.innerHTML = options;
+      toSelect.value = 5;
     }
+    
+    this.showStep('verse');
+    this.loadVersePreview();
   },
 
 
+  // 말씀 미리보기 로드
   loadVersePreview: function() {
     const previewDiv = document.getElementById('vs-preview');
     if (!previewDiv || !this.selectedBook) return;
     
-    const fromInput = document.getElementById('vs-from');
-    const toInput = document.getElementById('vs-to');
+    previewDiv.innerHTML = '<div style="text-align:center;padding:20px;">말씀을 불러오는 중...</div>';
     
-    if (!fromInput || !toInput || fromInput.innerHTML === '<option>로딩 중...</option>') {
-      previewDiv.innerHTML = '<div style="text-align:center;padding:20px;">절 범위를 불러오는 중...</div>';
-      return;
-    }
-    
-    const from = parseInt(fromInput.value || 1);
-    const to = parseInt(toInput.value || 1);
-    
-    if (isNaN(from) || isNaN(to)) {
-      previewDiv.innerHTML = '<div style="text-align:center;padding:20px;">절을 선택해주세요</div>';
-      return;
-    }
-    
-    const startVerse = Math.min(from, to);
-    const endVerse = Math.max(from, to);
-    
-    const url = `${BIBLE_CDN}/${this.selectedBook.file}`;
+    const filePath = this.selectedBook.file;
+    const url = `https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@main/${filePath}`;
     
     fetch(url)
       .then(res => res.json())
@@ -1494,14 +1450,15 @@ const VerseTab = {
         let bookData = data[this.selectedBook.name] || data[this.selectedBook.abbr];
         if (bookData && bookData[this.selectedChapter]) {
           const verses = bookData[this.selectedChapter];
+          const from = parseInt(document.getElementById('vs-from')?.value || 1);
+          const to = parseInt(document.getElementById('vs-to')?.value || 1);
           let text = '';
-          for (let i = startVerse; i <= endVerse && verses[i]; i++) {
+          for (let i = from; i <= to && verses[i]; i++) {
             text += verses[i] + ' ';
           }
-          this.selectedText = text.trim();
           previewDiv.innerHTML = `<div style="background:linear-gradient(145deg,#fdf8f0,#f5e8d5);border-radius:20px;padding:20px;border:1px solid #e8dcc8;">
             <div style="font-size:14px;color:#8a6e4e;margin-bottom:12px;">📖 말씀 미리보기</div>
-            <div style="font-size:15px;line-height:1.8;color:#4a3a28;font-style:italic;">"${escapeHtml(this.selectedText)}"</div>
+            <div style="font-size:15px;line-height:1.8;color:#4a3a28;font-style:italic;">"${escapeHtml(text.trim())}"</div>
           </div>`;
         } else {
           previewDiv.innerHTML = '<div style="color:#b91c1c;text-align:center;padding:20px;">⚠️ 말씀을 불러올 수 없습니다</div>';
@@ -1513,33 +1470,36 @@ const VerseTab = {
   },
 
 
+  // 오늘의 말씀으로 등록
   applyTodayVerse: function() {
     if (!this.selectedBook || !this.selectedChapter) {
-      if (typeof showToast === 'function') showToast('책과 장을 선택해주세요');
-      else alert('책과 장을 선택해주세요');
+      alert('책과 장을 선택해주세요');
       return;
     }
     
-    const from = parseInt(document.getElementById('vs-from')?.value || 1);
-    const to = parseInt(document.getElementById('vs-to')?.value || 1);
-    const startVerse = Math.min(from, to);
-    const endVerse = Math.max(from, to);
-    
+    const from = document.getElementById('vs-from')?.value || 1;
+    const to = document.getElementById('vs-to')?.value || 1;
     let ref = `${this.selectedBook.name} ${this.selectedChapter}장`;
-    if (startVerse === endVerse) ref += ` ${startVerse}절`;
-    else ref += ` ${startVerse}-${endVerse}절`;
+    if (from == to) ref += ` ${from}절`;
+    else ref += ` ${from}-${to}절`;
     
-    const verseText = this.selectedText || '말씀을 불러올 수 없습니다';
+    const previewDiv = document.getElementById('vs-preview');
+    let verseText = '';
+    if (previewDiv) {
+      const textMatch = previewDiv.innerText.match(/"([^"]+)"/);
+      if (textMatch) verseText = textMatch[1];
+    }
+    if (!verseText) verseText = `말씀을 불러올 수 없습니다 (${ref})`;
     
     const todayVerseData = { text: `"${verseText}"`, ref: ref, body: verseText };
-    if (typeof LS !== 'undefined') LS.save('todayVerse', todayVerseData);
+    LS.save('todayVerse', todayVerseData);
     renderTodayVerse();
     closeVerseSelector();
-    if (typeof showToast === 'function') showToast(`✅ 오늘의 말씀이 등록되었습니다: ${ref}`);
-    else alert(`✅ 오늘의 말씀이 등록되었습니다: ${ref}`);
+    showToast(`✅ 오늘의 말씀이 등록되었습니다: ${ref}`);
   },
 
 
+  // 뒤로가기
   goBack: function(step) {
     if (step === 'book') {
       this.showStep('book');
@@ -1553,9 +1513,9 @@ const VerseTab = {
 
 // 전역 함수 연결
 window.openVerseSelector = function() {
-  console.log('openVerseSelector 실행');
   if (!currentUser) {
     alert('로그인이 필요합니다.');
+    document.getElementById('screen-login').style.display = 'flex';
     return;
   }
   if (currentUser.role !== 'admin' && currentUser.role !== 'manager') {
@@ -1569,9 +1529,12 @@ window.openVerseSelector = function() {
     return;
   }
   
+  if (typeof OT_BOOKS === 'undefined' || typeof NT_BOOKS === 'undefined') {
+    VerseTab.initializeBibleBooks();
+  }
+  
   VerseTab.selectedBook = null;
   VerseTab.selectedChapter = 1;
-  VerseTab.selectedText = '';
   VerseTab.showStep('book');
   VerseTab.loadBooks();
   modal.style.display = 'flex';

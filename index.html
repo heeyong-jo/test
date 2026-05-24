@@ -1320,18 +1320,28 @@ this.currentVerseText = text.trim();
     
     const verseText = this.currentVerseText || '';
     
-    // ✅ 들여쓰기 정상화
     if (!verseText) {
       alert('말씀 데이터를 불러오지 못했습니다.');
       return;
     }
     
     const todayVerseData = { text: `"${verseText}"`, ref: ref, body: verseText };
-    LS.save('todayVerse', todayVerseData);
-    renderTodayVerse();
+    
+    if (typeof LS !== 'undefined') {
+      LS.save('todayVerse', todayVerseData);
+    }
+    
+    if (window.FB_READY && typeof firebase !== 'undefined') {
+      firebase.database().ref('todayVerse').set(todayVerseData);
+    }
+    
+    if (typeof renderTodayVerse === 'function') {
+      renderTodayVerse();
+    }
+    
     closeVerseSelector();
     showToast(`✅ 오늘의 말씀이 등록되었습니다: ${ref}`);
-  },  // ✅ 함수 닫음 (중요!)
+  },
 
 
   // 뒤로가기
@@ -1342,8 +1352,10 @@ this.currentVerseText = text.trim();
     } else if (step === 'chapter') {
       this.showStep('chapter');
     }
-  }  // ✅ 함수 닫음
+  }
 };
+
+
 
 
 // 전역 함수 연결

@@ -1305,6 +1305,7 @@ this.currentVerseText = text.trim();
 
 
   // 오늘의 말씀으로 등록
+  // 오늘의 말씀으로 등록
   applyTodayVerse: function() {
     if (!this.selectedBook || !this.selectedChapter) {
       alert('책과 장을 선택해주세요');
@@ -1318,22 +1319,31 @@ this.currentVerseText = text.trim();
     else ref += ` ${from}-${to}절`;
     
     const verseText = this.currentVerseText || '';
-
-
-if (!verseText) {
-  alert('말씀 데이터를 불러오지 못했습니다.');
-  return;
-}
+    
+    if (!verseText) {
+      alert('말씀 데이터를 불러오지 못했습니다.');
+      return;
+    }
     
     const todayVerseData = { text: `"${verseText}"`, ref: ref, body: verseText };
-    LS.save('todayVerse', todayVerseData);
-    renderTodayVerse();
+    
+    if (typeof LS !== 'undefined') {
+      LS.save('todayVerse', todayVerseData);
+    }
+    
+    if (window.FB_READY && typeof firebase !== 'undefined') {
+      firebase.database().ref('todayVerse').set(todayVerseData);
+    }
+    
+    if (typeof renderTodayVerse === 'function') {
+      renderTodayVerse();
+    }
+    
     closeVerseSelector();
-closeVerseSelector();
+    showToast(`✅ 오늘의 말씀이 등록되었습니다: ${ref}`);
+  },
 
 
-showToast(`✅ 오늘의 말씀이 등록되었습니다: ${ref}`);
- 
   // 뒤로가기
   goBack: function(step) {
     if (step === 'book') {

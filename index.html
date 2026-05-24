@@ -1023,27 +1023,33 @@ function escapeHtml(text) {
 }
 // ------------------- 1. 오늘의 말씀 렌더링 -------------------
 function renderTodayVerse() {
-  let todayVerse = null;
-  if (typeof LS !== 'undefined') todayVerse = LS.load('todayVerse', null);
-
-
-
-
-  if (!todayVerse) {
-    todayVerse = {
+  // js_storage.js의 전역 변수 todayVerse 사용
+  let verse = todayVerse;
+  
+  // localStorage에서도 확인
+  if (!verse && typeof LS !== 'undefined') {
+    verse = LS.load('todayVerse', null);
+  }
+  
+  // 기본값 설정
+  if (!verse) {
+    verse = {
       text: '"하나님은 사랑이시라"',
       ref: '요한일서 4:16',
       body: '사랑 안에 거하는 자는 하나님 안에 거하고 하나님이 그 안에 거하시느니라'
     };
   }
-
-
+  
+  // HTML 요소에 적용
   const el_text = document.getElementById('today-verse-text');
   const el_ref = document.getElementById('today-verse-ref');
   const el_body = document.getElementById('today-verse-body');
-  if (el_text) el_text.textContent = todayVerse.text;
-  if (el_ref) el_ref.textContent = todayVerse.ref;
-  if (el_body) el_body.textContent = todayVerse.body || todayVerse.text;
+  
+  if (el_text) el_text.textContent = verse.text || '';
+  if (el_ref) el_ref.textContent = verse.ref || '';
+  if (el_body) el_body.textContent = verse.body || verse.text || '';
+  
+  console.log('✅ renderTodayVerse 실행:', verse.ref);
 }
 
 
@@ -1279,13 +1285,10 @@ window.NT_BOOKS = [
           const from = parseInt(document.getElementById('vs-from')?.value || 1);
           const to = parseInt(document.getElementById('vs-to')?.value || 1);
           let text = '';
-for (let i = from; i <= to && verses[i]; i++) {
-  text += verses[i] + ' ';
-}
-
-
-// 실제 말씀 저장
-this.currentVerseText = text.trim();
+          for (let i = from; i <= to && verses[i]; i++) {
+            text += verses[i] + ' ';
+          }
+          this.currentVerseText = text.trim();
           previewDiv.innerHTML = `<div style="background:linear-gradient(145deg,#fdf8f0,#f5e8d5);border-radius:20px;padding:20px;border:1px solid #e8dcc8;">
             <div style="font-size:14px;color:#8a6e4e;margin-bottom:12px;">📖 말씀 미리보기</div>
             <div style="font-size:15px;line-height:1.8;color:#4a3a28;font-style:italic;">
@@ -1320,28 +1323,19 @@ this.currentVerseText = text.trim();
     
     const verseText = this.currentVerseText || '';
     
+    // ✅ 들여쓰기 정상화
     if (!verseText) {
       alert('말씀 데이터를 불러오지 못했습니다.');
       return;
     }
     
     const todayVerseData = { text: `"${verseText}"`, ref: ref, body: verseText };
-    
-    if (typeof LS !== 'undefined') {
-      LS.save('todayVerse', todayVerseData);
-    }
-    
-    if (window.FB_READY && typeof firebase !== 'undefined') {
-      firebase.database().ref('todayVerse').set(todayVerseData);
-    }
-    
-    if (typeof renderTodayVerse === 'function') {
-      renderTodayVerse();
-    }
-    
+    LS.save('todayVerse', todayVerseData);
+    renderTodayVerse();
     closeVerseSelector();
     showToast(`✅ 오늘의 말씀이 등록되었습니다: ${ref}`);
   },
+  },  // ✅ 함수 닫음 (중요!)
 
 
   // 뒤로가기
@@ -1352,10 +1346,8 @@ this.currentVerseText = text.trim();
     } else if (step === 'chapter') {
       this.showStep('chapter');
     }
-  }
+  }  // ✅ 함수 닫음
 };
-
-
 
 
 // 전역 함수 연결
@@ -1583,12 +1575,6 @@ console.log('✅ 말씀 기능 로드 완료 (자체 성경 데이터 버전)');
       }
     }, 800);
   });
-
-
-
-
-
-
 
 
   // 페이지 로드 후 초기화

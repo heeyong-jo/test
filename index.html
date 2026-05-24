@@ -1305,9 +1305,6 @@ window.NT_BOOKS = [
   },
 
 
-
-
-  // 오늘의 말씀으로 등록
   // 오늘의 말씀으로 등록
   applyTodayVerse: function() {
     if (!this.selectedBook || !this.selectedChapter) {
@@ -1575,7 +1572,6 @@ console.log('✅ 말씀 기능 로드 완료 (자체 성경 데이터 버전)');
       }
     }, 800);
   });
-</script>
 
 
   // 페이지 로드 후 초기화
@@ -1637,7 +1633,10 @@ console.log('✅ 말씀 기능 로드 완료 (자체 성경 데이터 버전)');
         renderPrayers();
       }
     }, 300);
-    
+   </script>
+ <script>
+
+
     // ✅ 말씀 렌더링 (수정됨)
     setTimeout(function() {
       if (typeof renderTodayVerse === 'function') {
@@ -1653,15 +1652,9 @@ console.log('✅ 말씀 기능 로드 완료 (자체 성경 데이터 버전)');
     }, 400);
   });
 </script>
+
+
 <!-- 카카오 광고 스크립트 (필요시) -->
 <script type="text/javascript" src="//t1.kakaocdn.net/kas/static/ba.min.js" async></script>
-
-
-
-
-
-
-
-
 </body>
 </html>

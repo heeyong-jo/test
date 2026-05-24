@@ -1023,33 +1023,27 @@ function escapeHtml(text) {
 }
 // ------------------- 1. 오늘의 말씀 렌더링 -------------------
 function renderTodayVerse() {
-  // js_storage.js의 전역 변수 todayVerse 사용
-  let verse = todayVerse;
-  
-  // localStorage에서도 확인
-  if (!verse && typeof LS !== 'undefined') {
-    verse = LS.load('todayVerse', null);
-  }
-  
-  // 기본값 설정
-  if (!verse) {
-    verse = {
+  let todayVerse = null;
+  if (typeof LS !== 'undefined') todayVerse = LS.load('todayVerse', null);
+
+
+
+
+  if (!todayVerse) {
+    todayVerse = {
       text: '"하나님은 사랑이시라"',
       ref: '요한일서 4:16',
       body: '사랑 안에 거하는 자는 하나님 안에 거하고 하나님이 그 안에 거하시느니라'
     };
   }
-  
-  // HTML 요소에 적용
+
+
   const el_text = document.getElementById('today-verse-text');
   const el_ref = document.getElementById('today-verse-ref');
   const el_body = document.getElementById('today-verse-body');
-  
-  if (el_text) el_text.textContent = verse.text || '';
-  if (el_ref) el_ref.textContent = verse.ref || '';
-  if (el_body) el_body.textContent = verse.body || verse.text || '';
-  
-  console.log('✅ renderTodayVerse 실행:', verse.ref);
+  if (el_text) el_text.textContent = todayVerse.text;
+  if (el_ref) el_ref.textContent = todayVerse.ref;
+  if (el_body) el_body.textContent = todayVerse.body || todayVerse.text;
 }
 
 
@@ -1337,7 +1331,6 @@ this.currentVerseText = text.trim();
     renderTodayVerse();
     closeVerseSelector();
     showToast(`✅ 오늘의 말씀이 등록되었습니다: ${ref}`);
-  },
   },  // ✅ 함수 닫음 (중요!)
 
 
@@ -1578,6 +1571,12 @@ console.log('✅ 말씀 기능 로드 완료 (자체 성경 데이터 버전)');
       }
     }, 800);
   });
+
+
+
+
+
+
 
 
   // 페이지 로드 후 초기화

@@ -107,9 +107,7 @@ function fbUpdateUI(key, data) {
   if (typeof renderTodayVerse === 'function') renderTodayVerse(); 
   break;
     case 'serviceList':
-  if (typeof window.serviceList !== 'undefined') {
-    window.serviceList = arr || [];
-  }
+  serviceList = arr || [];
   if (typeof renderServiceView === 'function') renderServiceView();
   break;
 case 'scheduleList':

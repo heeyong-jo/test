@@ -41,13 +41,17 @@ header {
 }
 
 
+
+
 .logo {
-  flex-shrink: 0;             /* 로고 크기 유지 */
+  flex-shrink: 0;
 }
 
 
+
+
 .user-badge {
-  flex-shrink: 0;             /* 배지 크기 유지 */
+  flex-shrink: 0;
 }
 .logo{display:flex;align-items:center;gap:12px;}
 .logo-icon{font-size:28px;animation:float 3s ease-in-out infinite;}
@@ -58,6 +62,10 @@ header {
 .user-dot{width:7px;height:7px;background:#ffd966;border-radius:50%;animation:pulse 2s infinite;}
 .user-name-txt{font-size:11px;color:white;font-weight:700;}
 .user-role-txt{font-size:9px;color:rgba(255,255,255,0.6);font-weight:600;}
+
+
+
+
 /* 개인정보 드롭다운 */
 .profile-dropdown{
   position:absolute;
@@ -80,6 +88,10 @@ header {
 }
 .profile-dropdown-item:hover{background:var(--bg);}
 .profile-dropdown-item.danger{color:var(--red);}
+
+
+
+
 /* ── 탭 ── */
 .tabs{display:flex;background:white;border-bottom:2px solid var(--border);overflow-x:auto;
   box-shadow:0 2px 10px rgba(0,0,0,0.06);}
@@ -127,7 +139,6 @@ header {
 .member-avatar{width:40px;height:40px;border-radius:50%;
   background:linear-gradient(135deg,#d4bfa0,#9e6b3e);
   display:flex;align-items:center;justify-content:center;font-size:18px;color:white;flex-shrink:0;}
- 
 .member-name{font-weight:700;font-size:14px;color:var(--text);}
 .member-info{font-size:11px;color:var(--text2);margin-top:2px;}
 .member-tag{background:var(--bg2);color:var(--purple);font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;}
@@ -141,6 +152,7 @@ header {
 
 
 
+/* ── 예배 안내 ── */
 .service-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border);}
 .service-row:last-child{border-bottom:none;}
 .service-name{font-weight:600;color:var(--text);font-size:13px;}
@@ -149,6 +161,7 @@ header {
 
 
 
+/* ── 헌금 ── */
 .offering-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
 .offering-row:last-child{border-bottom:none;}
 .offering-label{font-size:13px;font-weight:600;color:var(--text);}
@@ -246,10 +259,14 @@ textarea.input-field{resize:vertical;min-height:80px;}
 
 
 
+
+
 /* ── 하단 광고 ── */
-.ad-bar{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--border);z-index:1000;display:flex;flex-direction:column;}
+.ad-bar{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--border);z-index:90;display:flex;flex-direction:column;}
 .ad-addr{display:flex;align-items:center;justify-content:center;padding:8px 12px;background:white;flex-wrap:wrap;gap:6px;}
 .ad-banner{padding:6px;text-align:center;background:#faf5ff;}
+
+
 
 
 /* ── 숨김 클래스 ── */
@@ -321,6 +338,8 @@ textarea.input-field{resize:vertical;min-height:80px;}
   color:white;padding:9px 18px;font-size:12px;font-weight:700;cursor:pointer;float:right;margin-top:8px;}
 
 
+
+
 /* ── 예배안내 수정 ── */
 .service-edit-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);}
 .service-edit-row:last-child{border-bottom:none;}
@@ -337,30 +356,175 @@ textarea.input-field{resize:vertical;min-height:80px;}
   color:var(--purple);font-size:11px;font-weight:700;padding:5px 12px;cursor:pointer;}
 
 
+
+
+/* ── 모달 ── */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,0.55);align-items:flex-end;justify-content:center;}
+.modal-box{background:white;border-radius:24px 24px 0 0;padding:24px 20px 40px;
+  width:100%;max-width:520px;max-height:85vh;overflow-y:auto;}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.modal-title{font-size:16px;font-weight:800;color:var(--text);}
+.modal-close{background:var(--bg2);border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;}
+
+
+
+
+/* 찬송가 탭 스타일 */
+.hymn-range-tab {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  background: #d4a840;
+  color: #2a1a08;
+  min-width: 70px;
+  text-align: center;
+}
+.hymn-range-tab.active {
+  background: #f0d060;
+  color: #1a1008;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.hymn-range-tab:hover {
+  background: #e8c850;
+  transform: translateY(-1px);
+}
+.hymn-grid-btn {
+  background: #2a1a08;
+  border: 1.5px solid #d4a840;
+  border-radius: 12px;
+  padding: 12px 4px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.hymn-grid-btn:hover {
+  background: #3a2a18;
+  transform: scale(1.02);
+}
+.hymn-grid-num {
+  font-size: 16px;
+  font-weight: 800;
+  color: #d4a840;
+}
+.hymn-grid-title {
+  font-size: 9px;
+  color: #c0a060;
+  margin-top: 3px;
+  line-height: 1.3;
+}
+
+
+
+
+/* ── 섬기는 분들 ── */
+.sf-group { margin-bottom: 20px; }
+.sf-group-header {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 13px; font-weight: 800; color: var(--purple);
+  background: linear-gradient(135deg,#f5ede0,#ede0ce);
+  border-radius: 10px; padding: 8px 14px; margin-bottom: 10px;
+}
+.sf-btn-add {
+  background: var(--purple); color: #fff; border: none;
+  border-radius: 20px; padding: 4px 10px; font-size: 11px; cursor: pointer;
+}
+.sf-list { display: flex; flex-direction: column; gap: 10px; }
+.sf-card {
+  background: #fff; border-radius: 14px; padding: 12px;
+  display: flex; align-items: flex-start; gap: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  border: 1px solid var(--border);
+}
+.sf-photo-wrap {
+  position: relative; width: 72px; height: 86px;
+  border-radius: 10px; overflow: hidden; flex-shrink: 0;
+  background: #f0eaf8;
+}
+.sf-photo-wrap--lg { width: 90px; height: 110px; }
+.sf-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sf-photo-ph {
+  width: 100%; height: 100%; display: flex;
+  align-items: center; justify-content: center; font-size: 28px; color: #c9b8e8;
+}
+.sf-cam-btn {
+  position: absolute; bottom: 0; right: 0;
+  background: rgba(61,15,82,0.75); color: #fff;
+  font-size: 13px; padding: 3px 5px; cursor: pointer;
+  border-radius: 6px 0 0 0; line-height: 1;
+}
+.sf-card-body { flex: 1; min-width: 0; }
+.sf-name { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 5px; }
+.sf-roles {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.sf-roles li {
+  font-size: 12px; color: var(--text2); padding-left: 10px; position: relative;
+}
+.sf-roles li::before {
+  content: "■"; position: absolute; left: 0;
+  color: var(--purple); font-size: 7px; top: 3px;
+}
+.sf-pastor-card {
+  background: linear-gradient(145deg,#fdf5e8,#f5e8d5);
+  border-radius: 16px; padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  border: 1px solid var(--border);
+}
+.sf-pastor-top { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 12px; }
+.sf-pastor-info { flex: 1; }
+.sf-pastor-name { font-size: 17px; font-weight: 900; color: var(--purple); margin-bottom: 6px; }
+.sf-books-label { font-size: 12px; font-weight: 700; color: var(--purple); margin-bottom: 6px; }
+.sf-books { display: flex; flex-direction: column; gap: 4px; }
+.sf-book {
+  font-size: 11.5px; color: var(--text2); line-height: 1.5;
+  padding: 5px 10px; background: rgba(255,255,255,.7);
+  border-radius: 8px; border-left: 3px solid var(--purple);
+}
+.sf-actions { display: flex; gap: 6px; margin-top: 8px; }
+.sf-actions button {
+  font-size: 11px; padding: 3px 8px; border: none; border-radius: 12px;
+  cursor: pointer; background: var(--purple); color: #fff;
+}
+.sf-actions .sf-del { background: #e53e3e; }
 /* ── 게시물 탭: 세로 컬럼 ── */
 .board-tab-col {
   display: flex;
   flex-direction: column;
-  gap: 13px;                    /* 위아래 탭 사이 간격 */
-  width: 100%;                  /* 좌우 영역 최대한 확보 */
-  max-width: 300px;             /* 기존의 약 2배 */
+  gap: 13px;
+  width: 100%;
+  max-width: 300px;
   flex-shrink: 0;
-  align-items: center;          /* 탭 버튼 가로 가운데 */
-  margin: 0 auto;               /* 컬럼 자체를 가운데 정렬 */
+  align-items: center;
+  margin: 0 auto;
 }
+
+
+
+
 #board-category-list {
-  max-width: 320px;      /* 이미지의 버튼 크기에 맞춤 */
-  margin: 0 auto;        /* 가운데 정렬 */
+  max-width: 320px;
+  margin: 0 auto;
 }
+
+
+
+
 .board-cat-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  width: 100%;                  /* 컬럼 너비에 맞춤 */
-  padding: 7px 4px;            /* 상하 더 넉넉하게 */
-  border-radius: 13px;
+  width: 100%;
+  padding: 12px 8px;
+  border-radius: 16px;
   font-size: 18px;
   font-weight: 700;
   border: 1.5px solid var(--border);
@@ -369,8 +533,10 @@ textarea.input-field{resize:vertical;min-height:80px;}
   cursor: pointer;
   transition: all 0.2s;
   line-height: 1.4;
-  gap: 4px;
+  gap: 6px;
 }
+
+
 
 
 .board-cat-btn.active {
@@ -380,104 +546,35 @@ textarea.input-field{resize:vertical;min-height:80px;}
 }
 
 
+
+
 .board-cat-btn:hover:not(.active) {
   background: var(--bg2);
+  transform: translateY(-2px);
 }
+
+
 
 
 .board-tab-sub {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 400;
-  opacity: 0.75;
+  opacity: 0.8;
 }
 
 
-/* ── 게시물 목록 (1열 리스트) ── */
+
+
+/* 게시물 목록 컨테이너 */
 #board-post-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  align-items: center;
-  padding-left: 8px;         /* 왼쪽 탭과의 간격 */
+  gap: 12px;
+  padding: 0 8px;
 }
 
 
-.board-post-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #fdfaf5;
-  border: 1px solid #e0d7c6;
-  border-radius: 12px;
-  padding: 10px 12px;
-  cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  transition: transform 0.15s;
-  max-width: 100%;           /* 420px 제한 제거 */
-  width: 100%;
-}
-.board-post-item:hover { transform: translateY(-1px); }
-
-
-.board-post-thumb {
-  width: 52px;
-  height: 52px;
-  border-radius: 8px;
-  object-fit: cover;
-  background: #f5f0e6;
-  flex-shrink: 0;
-}
-
-
-.board-post-title {
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 3px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-
-.board-post-meta {
-  font-size: 10px;
-  color: var(--text2);
-}
-/* 게시판 본문 스타일 수정 */
-#board-content {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--bg);
-  overflow-y: auto;
-  padding: 90px 14px 100px 14px;
-  z-index: 5 !important;  /* 헤더(100)보다 낮게 */
-}
-
-
-/* 탭이 항상 위에 오도록 */
-.tabs {
-  position: relative;
-  z-index: 20;
-  background: white;
-}
-
-
-/* 헤더 */
-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-
-/* 게시물 아이템 스타일 */
+/* 게시물 아이템 */
 .board-post-item {
   display: flex;
   align-items: center;
@@ -487,7 +584,6 @@ header {
   border-radius: 12px;
   padding: 12px;
   cursor: pointer;
-  margin-bottom: 10px;
   transition: all 0.2s;
 }
 
@@ -498,6 +594,7 @@ header {
 }
 
 
+/* 썸네일 */
 .board-post-thumb {
   width: 60px;
   height: 60px;
@@ -508,6 +605,7 @@ header {
 }
 
 
+/* 게시물 정보 */
 .board-post-info {
   flex: 1;
 }
@@ -532,6 +630,33 @@ header {
 }
 
 
+/* 글쓰기 버튼 */
+#board-write-btn-wrap {
+  margin-left: auto;
+}
+
+
+#board-write-btn-wrap .btn-primary {
+  width: auto;
+  padding: 6px 14px;
+  font-size: 12px;
+}
+
+
+/* 게시판 본문 */
+#board-content {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  overflow-y: auto;
+  padding: 90px 14px 100px 14px;
+  z-index: 10;
+}
+
+
 /* 뒤로 가기 버튼 */
 #board-back-btn {
   background: var(--bg2);
@@ -543,71 +668,6 @@ header {
   color: var(--text);
   font-size: 13px;
 }
-/* ── 모달 ── */
-.modal-overlay{display:none;position:fixed;inset:0;z-index:500;
-  background:rgba(0,0,0,0.55);align-items:flex-end;justify-content:center;}
-.modal-box{background:white;border-radius:24px 24px 0 0;padding:24px 20px 40px;
-  width:100%;max-width:520px;max-height:85vh;overflow-y:auto;}
-.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
-.modal-title{font-size:16px;font-weight:800;color:var(--text);}
-.modal-close{background:var(--bg2);border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;}
-    
-    /* 찬송가 탭 스타일 - 가독성 개선 */
-    .hymn-range-tab {
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      border: none;
-      background: #d4a840;  /* 연한 금색 배경 */
-      color: #2a1a08;  /* 진한 갈색 글씨 - 가독성 높임 */
-      min-width: 70px;
-      text-align: center;
-    }
-    
-    .hymn-range-tab.active {
-      background: #f0d060;  /* 더 밝은 금색 */
-      color: #1a1008;
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-    
-    .hymn-range-tab:hover {
-      background: #e8c850;
-      transform: translateY(-1px);
-    }
-    
-    /* 찬송가 그리드 버튼 */
-    .hymn-grid-btn {
-      background: #2a1a08;
-      border: 1.5px solid #d4a840;
-      border-radius: 12px;
-      padding: 12px 4px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    
-    .hymn-grid-btn:hover {
-      background: #3a2a18;
-      transform: scale(1.02);
-    }
-    
-    .hymn-grid-num {
-      font-size: 16px;
-      font-weight: 800;
-      color: #d4a840;
-    }
-    
-    .hymn-grid-title {
-      font-size: 9px;
-      color: #c0a060;
-      margin-top: 3px;
-      line-height: 1.3;
-    }
-    
 /* ── 섬기는 분들 전체 그룹 ── */
 .sf-group {
   margin-bottom: 24px;

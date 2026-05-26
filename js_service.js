@@ -337,3 +337,22 @@ function addMember() {
   renderMembers();
   showToast('✅ 새로운 분이 추가되었습니다');
 }
+// ==================== 자동 실행 (페이지 로드 시) ====================
+(function autoInit() {
+  // DOM이 준비되면 자동으로 실행
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(function() {
+        console.log('🚀 js_service.js 자동 실행');
+        loadServiceListFromStorage();
+        renderServiceView();
+      }, 50);
+    });
+  } else {
+    setTimeout(function() {
+      console.log('🚀 js_service.js 자동 실행 (즉시)');
+      loadServiceListFromStorage();
+      renderServiceView();
+    }, 50);
+  }
+})();

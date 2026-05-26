@@ -1,63 +1,18 @@
 ﻿// ==================== 앱 초기화 ====================
 
 
-// ✅ Firebase 초기화 후 실행되는 함수들
-async function initializeApp() {
-  // Firebase 준비 대기
-  const firebaseReady = await waitForFirebase();
-  
-  if (!firebaseReady) {
-    console.warn('Firebase 연결 실패, 일부 기능 제한됨');
-    showToast('서버 연결에 실패했습니다. 오프라인 모드로 실행합니다.');
+// ✅ 지연 평가 함수 (js_confige.js보다 먼저 로드되어도 안전)
+function getAllBooks() {
+  if (typeof OT_BOOKS !== 'undefined' && typeof NT_BOOKS !== 'undefined') {
+    return [...OT_BOOKS, ...NT_BOOKS];
   }
-  
-  // 나머지 초기화 진행
-  setTimeout(function() {
-    if (typeof renderServiceView === 'function') renderServiceView();
-    if (typeof renderScheduleView === 'function') renderScheduleView();
-    if (typeof renderTodayVerse === 'function') renderTodayVerse();
-    if (typeof renderMeditations === 'function') renderMeditations();
-    if (typeof renderPrayers === 'function') renderPrayers();
-    if (typeof renderPosts === 'function') renderPosts();
-    if (typeof loadChurchInfo === 'function') loadChurchInfo();
-  }, 800);
+  return [];
 }
 
 
-// ✅ 수정된 loadChurchInfo
-async function loadChurchInfo() {
-  const firebaseReady = await waitForFirebase();
-  if (!firebaseReady) {
-    console.warn('Firebase 미연결, 기본값 사용');
-    renderGreeting(defaultGreeting);
-    renderHistory(defaultHistory);
-    return;
-  }
-  
-  firebase.database().ref('churchInfo').once('value', snap => {
-    if (snap.exists()) {
-      const d = snap.val();
-      if (typeof renderGreeting === 'function') renderGreeting(d.greeting || defaultGreeting);
-      if (typeof renderHistory === 'function') renderHistory(d.history || defaultHistory);
-    } else {
-      if (typeof renderGreeting === 'function') renderGreeting(defaultGreeting);
-      if (typeof renderHistory === 'function') renderHistory(defaultHistory);
-    }
-    if (currentUser && currentUser.role === 'admin') {
-      const greetingBtn = document.getElementById('greeting-edit-btn');
-      const historyBtn = document.getElementById('history-edit-btn');
-      if (greetingBtn) greetingBtn.style.display = 'inline-block';
-      if (historyBtn) historyBtn.style.display = 'inline-block';
-    }
-  }).catch(err => {
-    console.error('교회 정보 로드 실패:', err);
-    renderGreeting(defaultGreeting);
-    renderHistory(defaultHistory);
-  });
-}
+const TOTAL_BIBLE_CHAPTERS = 1189;
 
 
-// window.load 이벤트 수정
 window.addEventListener('load', function() {
   setTimeout(function() {
     var splash = document.getElementById('splash');
@@ -66,10 +21,6 @@ window.addEventListener('load', function() {
       setTimeout(function() { splash.style.display = 'none'; }, 500);
     }
   }, 1500);
-  
-  // ✅ Firebase 준비 후 초기화
-  initializeApp();
-});
   
   setTimeout(function() {
     if (typeof renderServiceView === 'function') renderServiceView();

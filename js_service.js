@@ -1,6 +1,11 @@
 ﻿// ==================== 예배 안내 및 시간표 ====================
 
 
+// ✅ 서비스 리스트 전역 변수 선언
+let serviceList = [];
+let scheduleList = [];
+
+
 // 1. 기본값 상수 정의
 const DEFAULT_SERVICE_LIST = [
   { emoji:'⛪', name:'주일 낮예배 1부',       sub:'매주 일요일',  time:'오전 8:00   3층 예루살렘성전' },
@@ -20,34 +25,29 @@ const DEFAULT_SERVICE_LIST = [
 ];
 
 
-// ✅ serviceList는 js_storage.js에서 관리하므로 여기서 선언하지 않음
-// ✅ scheduleList도 js_storage.js에서 관리
-
-
-// 편집용 임시 데이터
-let sundayEditData = [];
-let otherEditData = [];
+// ✅ localStorage에서 데이터 로드하는 함수 추가
+function loadServiceListFromStorage() {
+  try {
+    const saved = localStorage.getItem('ch2_serviceList');
+    if (saved) {
+      serviceList = JSON.parse(saved);
+      console.log('✅ localStorage에서 serviceList 로드:', serviceList.length);
+    } else {
+      serviceList = JSON.parse(JSON.stringify(DEFAULT_SERVICE_LIST));
+      localStorage.setItem('ch2_serviceList', JSON.stringify(serviceList));
+      console.log('✅ 기본 serviceList 설정');
+    }
+  } catch(e) {
+    console.error('serviceList 로드 실패:', e);
+    serviceList = JSON.parse(JSON.stringify(DEFAULT_SERVICE_LIST));
+  }
+}
 
 
 // 예배 안내 데이터 로드
 function initServiceData() {
   console.log('initServiceData 실행');
-  
-  // localStorage에서 로드
-  try {
-    const saved = localStorage.getItem('ch2_serviceList');
-    if (saved) {
-      serviceList = JSON.parse(saved);
-      console.log('localStorage에서 serviceList 로드:', serviceList.length);
-    }
-  } catch(e) {}
-  
-  // 기본값 설정
-  if (!serviceList || serviceList.length === 0) {
-    serviceList = JSON.parse(JSON.stringify(DEFAULT_SERVICE_LIST));
-    console.log('serviceList 기본값 설정');
-  }
-  
+  loadServiceListFromStorage();
   renderServiceView();
 }
 

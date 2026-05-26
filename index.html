@@ -1049,12 +1049,30 @@
 <script src="js_ui.js"></script>
 <!-- 말씀 기능 (HTML 직접 삽입) -->
 <script>
+// ==================== 임시 LS 정의 (가장 먼저!) ====================
+if (typeof LS === 'undefined') {
+  window.LS = {
+    save: function(key, value) {
+      try { localStorage.setItem('ch2_' + key, JSON.stringify(value)); } catch(e) {}
+    },
+    load: function(key, defaultValue) {
+      try {
+        const val = localStorage.getItem('ch2_' + key);
+        return val ? JSON.parse(val) : defaultValue;
+      } catch(e) { return defaultValue; }
+    },
+    del: function(key) {
+      try { localStorage.removeItem('ch2_' + key); } catch(e) {}
+    }
+  };
+  console.log('✅ 임시 LS 정의됨');
+}
+
+
 // toast
 function showToast(msg) {
   alert(msg);
 }
-
-
 
 
 // html escape
@@ -1063,17 +1081,16 @@ function escapeHtml(text) {
   div.textContent = text;
   return div.innerHTML;
 }
+
+
 // ------------------- 1. 오늘의 말씀 렌더링 -------------------
 function renderTodayVerse() {
-  // js_storage.js의 전역 변수 todayVerse 사용
   let verse = todayVerse;
   
-  // localStorage에서도 확인
   if (!verse && typeof LS !== 'undefined') {
     verse = LS.load('todayVerse', null);
   }
   
-  // 기본값 설정
   if (!verse) {
     verse = {
       text: '"하나님은 사랑이시라"',
@@ -1082,7 +1099,6 @@ function renderTodayVerse() {
     };
   }
   
-  // HTML 요소에 적용
   const el_text = document.getElementById('today-verse-text');
   const el_ref = document.getElementById('today-verse-ref');
   const el_body = document.getElementById('today-verse-body');
@@ -1093,8 +1109,6 @@ function renderTodayVerse() {
   
   console.log('✅ renderTodayVerse 실행:', verse.ref);
 }
-
-
 
 
 // ------------------- 2. 말씀 공유 -------------------
@@ -1108,12 +1122,6 @@ function shareToday() {
   if (navigator.share) navigator.share({ title: '오늘의 말씀', text: shareText });
   else navigator.clipboard.writeText(shareText).then(() => showToast('📋 복사되었습니다'));
 }
-
-
-
-
-
-
 
 
 // ------------------- 3. 말씀 등록 모달 (탭 방식) -------------------
@@ -1332,12 +1340,6 @@ window.NT_BOOKS = [
   },
 
 
-
-
-
-
-
-
   // 말씀 미리보기 로드
   loadVersePreview: function() {
     const previewDiv = document.getElementById('vs-preview');
@@ -1380,15 +1382,6 @@ this.currentVerseText = text.trim();
         previewDiv.innerHTML = '<div style="color:#b91c1c;text-align:center;padding:20px;">⚠️ 데이터 로드 오류</div>';
       });
   },
-
-
-
-
-
-
-
-
-  // 오늘의 말씀으로 등록
   // 오늘의 말씀으로 등록
   applyTodayVerse: function() {
     if (!this.selectedBook || !this.selectedChapter) {

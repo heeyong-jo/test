@@ -1,4 +1,7 @@
-﻿// ==================== Firebase 설정 ====================
+﻿// ==================== 설정 및 상수 ====================
+
+
+// Firebase 설정
 const firebaseConfig = {
   apiKey: "AIzaSyDLn693_LIAnQWyWDzpLjPukJ2joYpndPw",
   authDomain: "gajwajeil-add45.firebaseapp.com",
@@ -10,27 +13,30 @@ const firebaseConfig = {
 };
 
 
-// Firebase 초기화 (기존 방식에 맞게 수정)
-let FB_READY = false;
+// 관리자 계정
+const ADMIN_ACCOUNTS = [
+  { id: 'gajwajeil', pw: 'gajwajeil123', name: '김명서 담임목사', role: 'admin', email: 'pastor@hamkke.church', phone: '032-581-4048', birth: '1955-03-29' },
+  { id: 'reodrino', pw: '232735a', name: '조희용 관리자', role: 'admin', email: 'reodrino@gmail.com', phone: '010-9797-1408', birth: '1981-08-27' }
+];
+
+
+// Firebase 초기화 (단순화)
 try {
-  // 기존 코드와 호환되도록 기존 방식으로 초기화
-  if (typeof firebase !== 'undefined' && firebase.initializeApp) {
+  if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
-    FB_READY = true;
-    window.FB_READY = FB_READY;
-    console.log('✅ Firebase 연결 성공 (gajwajeil-add45)');
-  } else {
-    console.error('Firebase SDK가 로드되지 않음');
   }
+  window.FB_READY = true;
+  window.FB = firebase.database();
+  console.log('✅ Firebase 연결 성공');
 } catch(e) {
-  console.error('Firebase 초기화 실패:', e);
+  console.error('❌ Firebase 연결 오류:', e);
+  window.FB_READY = false;
 }
 
 
-// Firebase 키 목록
-const FB_KEYS = ['notices', 'members', 'meditations', 'pendingUsers', 
-                 'approvedUsers', 'offerings', 'todayVerse', 'serviceList', 
-                 'scheduleList', 'posts', 'prayers'];
+// Firebase 동기화 키 목록
+const FB_KEYS = ['notices', 'members', 'meditations', 'pendingUsers', 'approvedUsers', 
+                  'offerings', 'todayVerse', 'serviceList', 'scheduleList', 'posts', 'prayers'];
 
 
 // 성경 CDN

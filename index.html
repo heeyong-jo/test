@@ -1604,20 +1604,15 @@ console.log('✅ 말씀 기능 로드 완료 (자체 성경 데이터 버전)');
         console.log('저장된 로그인 정보 있음:', userData);
       }
     } catch(e) {}
-    
-    // 예배 데이터 초기화
-    if (typeof initServiceData === 'function') {
-      initServiceData();
-    } else if (typeof renderServiceView === 'function') {
-      if (typeof serviceList !== 'undefined' && (!serviceList || serviceList.length === 0)) {
-        if (typeof DEFAULT_SERVICE_LIST !== 'undefined') {
-          serviceList = JSON.parse(JSON.stringify(DEFAULT_SERVICE_LIST));
-          console.log('serviceList 기본값 설정 완료');
+     
+        // fallback: 직접 데이터 설정
+        if (typeof loadServiceListFromStorage === 'function') {
+          loadServiceListFromStorage();
+          if (typeof renderServiceView === 'function') renderServiceView();
         }
       }
-      renderServiceView();
-    }
-    
+    }, 100);
+       
     // 공지사항 로드
     if (typeof loadNotices === 'function') {
       loadNotices();

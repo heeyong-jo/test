@@ -101,10 +101,11 @@ function fbUpdateUI(key, data) {
       offerings = arr || [];
       if (typeof renderOfferingsAccord === 'function') renderOfferingsAccord();
       break;
-    case 'todayVerse':
-      todayVerse = data;
-      if (typeof renderTodayVerse === 'function') renderTodayVerse();
-      break;
+    case 'todayVerse': 
+  // todayVerse는 배열이 아닌 객체로 저장됨
+  todayVerse = (Array.isArray(data) ? data[0] : data) || null;
+  if (typeof renderTodayVerse === 'function') renderTodayVerse(); 
+  break;
     case 'serviceList':
   if (typeof window.serviceList !== 'undefined') {
     window.serviceList = arr || [];
@@ -117,9 +118,11 @@ case 'scheduleList':
   }
   if (typeof renderScheduleView === 'function') renderScheduleView();
   break;
- renderBoardPosts();
-      break;
-    case 'prayers':
+case 'posts':
+  posts = arr || [];
+  if (typeof renderBoardPosts === 'function') renderBoardPosts();
+  break;
+case 'prayers':
       prayers = arr || [];  // prayers 업데이트
       if (typeof renderPrayers === 'function') renderPrayers();
       break;

@@ -307,6 +307,7 @@
     <div id="prayer-list" class="prayer-list-container"></div>
   </div>
 </div>
+</div>
 
 
 <!-- ══════════════════════ p2: 게시물 ══════════════════════ -->
@@ -1284,10 +1285,13 @@ window.NT_BOOKS = [
           const from = parseInt(document.getElementById('vs-from')?.value || 1);
           const to = parseInt(document.getElementById('vs-to')?.value || 1);
           let text = '';
-          for (let i = from; i <= to && verses[i]; i++) {
-            text += verses[i] + ' ';
-          }
-          this.currentVerseText = text.trim();
+for (let i = from; i <= to && verses[i]; i++) {
+  text += verses[i] + ' ';
+}
+
+
+// 실제 말씀 저장
+this.currentVerseText = text.trim();
           previewDiv.innerHTML = `<div style="background:linear-gradient(145deg,#fdf8f0,#f5e8d5);border-radius:20px;padding:20px;border:1px solid #e8dcc8;">
             <div style="font-size:14px;color:#8a6e4e;margin-bottom:12px;">📖 말씀 미리보기</div>
             <div style="font-size:15px;line-height:1.8;color:#4a3a28;font-style:italic;">
@@ -1304,6 +1308,9 @@ window.NT_BOOKS = [
   },
 
 
+
+
+  // 오늘의 말씀으로 등록
   // 오늘의 말씀으로 등록
   applyTodayVerse: function() {
     if (!this.selectedBook || !this.selectedChapter) {
@@ -1604,15 +1611,20 @@ console.log('✅ 말씀 기능 로드 완료 (자체 성경 데이터 버전)');
         console.log('저장된 로그인 정보 있음:', userData);
       }
     } catch(e) {}
-     
-        // fallback: 직접 데이터 설정
-        if (typeof loadServiceListFromStorage === 'function') {
-          loadServiceListFromStorage();
-          if (typeof renderServiceView === 'function') renderServiceView();
+    
+    // 예배 데이터 초기화
+    if (typeof initServiceData === 'function') {
+      initServiceData();
+    } else if (typeof renderServiceView === 'function') {
+      if (typeof serviceList !== 'undefined' && (!serviceList || serviceList.length === 0)) {
+        if (typeof DEFAULT_SERVICE_LIST !== 'undefined') {
+          serviceList = JSON.parse(JSON.stringify(DEFAULT_SERVICE_LIST));
+          console.log('serviceList 기본값 설정 완료');
         }
       }
-    }, 100);
-       
+      renderServiceView();
+    }
+    
     // 공지사항 로드
     if (typeof loadNotices === 'function') {
       loadNotices();
@@ -1627,10 +1639,7 @@ console.log('✅ 말씀 기능 로드 완료 (자체 성경 데이터 버전)');
         renderPrayers();
       }
     }, 300);
-   </script>
- <script>
-
-
+    
     // ✅ 말씀 렌더링 (수정됨)
     setTimeout(function() {
       if (typeof renderTodayVerse === 'function') {
@@ -1646,9 +1655,15 @@ console.log('✅ 말씀 기능 로드 완료 (자체 성경 데이터 버전)');
     }, 400);
   });
 </script>
-
-
 <!-- 카카오 광고 스크립트 (필요시) -->
 <script type="text/javascript" src="//t1.kakaocdn.net/kas/static/ba.min.js" async></script>
+
+
+
+
+
+
+
+
 </body>
 </html>

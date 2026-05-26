@@ -2,8 +2,8 @@
 
 
 // ✅ 서비스 리스트 전역 변수 선언
-let serviceList = [];
-let scheduleList = [];
+var serviceList = [];
+var scheduleList = [];
 
 
 // 1. 기본값 상수 정의

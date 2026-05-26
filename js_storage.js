@@ -1,11 +1,15 @@
 ﻿// ==================== 로컬 스토리지 및 Firebase 저장 ====================
 
 
+
+
 // FB_KEYS가 없으면 직접 정의 (안전 장치)
 if (typeof FB_KEYS === 'undefined') {
   var FB_KEYS = ['notices', 'members', 'meditations', 'pendingUsers', 'approvedUsers', 
                   'offerings', 'todayVerse', 'serviceList', 'scheduleList', 'posts', 'prayers'];
 }
+
+
 
 
 // 전역 변수 선언
@@ -21,8 +25,12 @@ let todayVerse = null;
 let posts = [];
 
 
+
+
 // localStorage 접두사
 const STORAGE_PREFIX = 'ch2_';
+
+
 
 
 // LS 객체
@@ -50,6 +58,8 @@ const LS = {
 };
 
 
+
+
 // Firebase 실시간 동기화
 function fbSync() {
   if (!window.FB_READY) return;
@@ -66,6 +76,10 @@ function fbSync() {
     } catch(e) { console.warn(key + ' 동기화 오류:', e); }
   });
 }
+
+
+
+
 
 
 
@@ -128,6 +142,8 @@ case 'prayers':
 }
 
 
+
+
 // 모든 데이터 로드
 async function fbLoadAll() {
   if (!window.FB_READY) return;
@@ -150,3 +166,30 @@ async function fbLoadAll() {
     console.error('fbLoadAll 오류:', e);
   }
 }
+// ==================== 자동 실행 ====================
+(function() {
+  console.log('🚀 js_storage.js 자동 실행');
+  
+  // localStorage에서 데이터 로드
+  try {
+    const savedService = localStorage.getItem('ch2_serviceList');
+    if (savedService && typeof serviceList !== 'undefined') {
+      serviceList = JSON.parse(savedService);
+      console.log('serviceList 로드됨:', serviceList.length);
+    }
+  } catch(e) {}
+  
+  // Firebase 준비 확인 및 동기화 시작
+  setTimeout(function() {
+    if (typeof window.FB_READY !== 'undefined' && window.FB_READY) {
+      fbLoadAll();
+      fbSync();
+      console.log('Firebase 동기화 시작됨');
+    } else {
+      console.log('Firebase 미준비, localStorage만 사용');
+      // fallback: localStorage 데이터로 UI 업데이트
+      if (typeof renderServiceView === 'function') renderServiceView();
+      if (typeof renderHomeNotices === 'function') renderHomeNotices();
+    }
+  }, 200);
+})();

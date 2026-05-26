@@ -1,4 +1,4 @@
-﻿// ==================== 게시판 기능 ====================
+﻿// ==================== 게시판 기능 (최종 수정 완료) ====================
 
 
 let currentBoardCategory = '일반성도';
@@ -6,7 +6,7 @@ let currentPostId = null;
 let currentBoardPage = 1;
 const POSTS_PER_PAGE = 10;
 let boardPostCache = {};
-let isSubmittingPost = false;  // 중복 제출 방지
+let isSubmittingPost = false;
 
 
 function getCurrentUser() {
@@ -14,12 +14,21 @@ function getCurrentUser() {
 }
 
 
-// ✅ src 속성 안전화 함수
+// ✅ 수정: SVG 등 위험한 형식 차단
 function sanitizeImageUrl(url) {
   if (!url) return '';
-  if (url.startsWith('data:image/')) return url;
+  if (url.startsWith('data:image/png') || 
+      url.startsWith('data:image/jpeg') || 
+      url.startsWith('data:image/jpg') || 
+      url.startsWith('data:image/gif') || 
+      url.startsWith('data:image/webp')) {
+    return url;
+  }
   if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url.replace(/[<>"']/g, '');
+    const ext = url.split('.').pop().toLowerCase();
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+      return url.replace(/[<>"']/g, '');
+    }
   }
   return '';
 }
@@ -94,7 +103,6 @@ function loadPosts() {
     if (data) {
       filteredPosts = Object.entries(data).map(([key, value]) => ({ ...value, firebaseKey: key }))
         .sort((a, b) => (b.createdAt || b.timestamp || 0) - (a.createdAt || a.timestamp || 0));
-      window.posts = filteredPosts;
     }
     boardPostCache[currentBoardCategory] = filteredPosts;
     renderPostsPage();
@@ -144,15 +152,9 @@ function renderPagination(totalPages) {
   if (!pagDiv) return;
   if (totalPages <= 1) { pagDiv.innerHTML = ''; return; }
   let pagHTML = '';
-  const maxButtons = 7;
-  let startPage = Math.max(1, currentBoardPage - 3);
-  let endPage = Math.min(totalPages, startPage + maxButtons - 1);
-  if (endPage - startPage < maxButtons - 1) startPage = Math.max(1, endPage - maxButtons + 1);
-  if (startPage > 1) pagHTML += `<button class="board-page-btn" onclick="changeBoardPage(1)">1</button>${startPage > 2 ? '<span>...</span>' : ''}`;
-  for (let i = startPage; i <= endPage; i++) {
+  for (let i = 1; i <= totalPages; i++) {
     pagHTML += `<button class="board-page-btn${i === currentBoardPage ? ' active' : ''}" onclick="changeBoardPage(${i})">${i}</button>`;
   }
-  if (endPage < totalPages) pagHTML += `${endPage < totalPages - 1 ? '<span>...</span>' : ''}<button class="board-page-btn" onclick="changeBoardPage(${totalPages})">${totalPages}</button>`;
   pagDiv.innerHTML = pagHTML;
 }
 
@@ -275,7 +277,6 @@ function submitBoardComment() {
   firebase.database().ref(`boards/${currentBoardCategory}/posts/${post.firebaseKey}/comments`).push(comment)
     .then(() => {
       if (commentInput) commentInput.value = '';
-      // ✅ 모달 닫지 않고 댓글만 갱신
       const commentsRef = firebase.database().ref(`boards/${currentBoardCategory}/posts/${post.firebaseKey}/comments`);
       commentsRef.once('value').then(snap => { renderComments(snap.val() || {}); });
       showToast('✅ 댓글이 등록되었습니다.');
@@ -352,15 +353,28 @@ async function submitBoardPost() {
 }
 
 
-function boardPhotoPreview(input) {
+// ✅ 수정: 순서 보존을 위한 async/await + for 루프
+async function boardPhotoPreview(input) {
   if (!input.files || input.files.length === 0) return;
+  
   const previewDiv = document.getElementById('board-photo-preview');
   if (!previewDiv) return;
+  
   previewDiv.innerHTML = '';
-  const resizedPromises = [];
-  for (let file of input.files) {
-    if (file.size > 3 * 1024 * 1024) { alert('사진은 3MB 이하로 올려주세요.'); continue; }
-    resizedPromises.push(resizeBoardImage(file, 800, 600, 0.8).then(dataUrl => {
+  const files = Array.from(input.files);
+  const resizedPhotos = [];
+  
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    if (file.size > 3 * 1024 * 1024) {
+      alert(`${file.name}은 3MB를 초과하여 제외됩니다.`);
+      continue;
+    }
+    
+    try {
+      const dataUrl = await resizeBoardImage(file, 800, 600, 0.8);
+      resizedPhotos.push(dataUrl);
+      
       const img = document.createElement('img');
       img.src = dataUrl;
       img.style.width = '80px';
@@ -369,10 +383,12 @@ function boardPhotoPreview(input) {
       img.style.borderRadius = '8px';
       img.style.margin = '4px';
       previewDiv.appendChild(img);
-      return dataUrl;
-    }).catch(err => { console.error('이미지 리사이즈 실패:', err); return null; }));
+    } catch (err) {
+      console.error('이미지 리사이즈 실패:', err);
+    }
   }
-  Promise.all(resizedPromises).then(photos => { window._boardResizedPhotos = photos.filter(p => p !== null); });
+  
+  window._boardResizedPhotos = resizedPhotos;
 }
 
 

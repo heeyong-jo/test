@@ -1056,33 +1056,6 @@
 <script src="js_ui.js"></script>
 <!-- 말씀 기능 (HTML 직접 삽입) -->
 <script>
-// ==================== 공통 유틸 ====================
-
-
-
-
-// localStorage helper
-const LS = {
-  save(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
-  },
-
-
-
-
-  load(key, defaultValue = null) {
-    try {
-      const value = localStorage.getItem(key);
-      return value ? JSON.parse(value) : defaultValue;
-    } catch (e) {
-      return defaultValue;
-    }
-  }
-};
-
-
-
-
 // toast
 function showToast(msg) {
   alert(msg);

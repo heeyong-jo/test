@@ -1049,6 +1049,56 @@
 <script src="js_ui.js"></script>
 <!-- 말씀 기능 (HTML 직접 삽입) -->
 <script>
+// ==================== 탭 전환 함수 ====================
+
+
+function showTab(tabIndex) {
+  console.log('showTab 호출 - 탭:', tabIndex);
+  
+  // 모든 page 숨기기
+  const pages = document.querySelectorAll('.page');
+  pages.forEach(page => {
+    page.classList.remove('show');
+    page.style.display = 'none';
+  });
+  
+  // 해당 탭 표시
+  const pageIds = ['p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6'];
+  if (pageIds[tabIndex]) {
+    const page = document.getElementById(pageIds[tabIndex]);
+    if (page) {
+      page.classList.add('show');
+      page.style.display = 'block';
+      console.log('탭 ' + tabIndex + ' (' + pageIds[tabIndex] + ') 표시됨');
+    }
+  }
+  
+  // 활성 탭 버튼 업데이트
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach((tab, index) => {
+    if (index === tabIndex) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+  
+  // 탭별 초기화 로직
+  if (tabIndex === 1) {
+    // 말씀 탭
+    if (typeof renderTodayVerse === 'function') renderTodayVerse();
+    if (typeof loadMeditations === 'function') loadMeditations();
+  } else if (tabIndex === 4) {
+    // 안내 탭
+    if (typeof renderScheduleView === 'function') renderScheduleView();
+  }
+}
+
+
+function afterTab(n) {
+  console.log('afterTab 호출 - 탭:', n);
+  // 탭 전환 후 처리 (필요시)
+}
 // ==================== 임시 LS 정의 (가장 먼저!) ====================
 if (typeof LS === 'undefined') {
   window.LS = {

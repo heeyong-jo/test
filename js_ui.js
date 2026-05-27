@@ -55,11 +55,11 @@ function escapeHtml(str) {
 
 function showTab(n) {
   n = Math.max(0, Math.min(TOTAL_TABS - 1, n));
-  if (n !== 0 && !currentUser) {
-    const loginScreen = document.getElementById('screen-login');
-    if (loginScreen) loginScreen.style.display = 'flex';
-    return;
-  }
+  if (n !== 0 && n !== 1 && n !== 4 && !currentUser) {
+  const loginScreen = document.getElementById('screen-login');
+  if (loginScreen) loginScreen.style.display = 'flex';
+  return;
+}
   currentTab = n;
   document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
   for (let i = 0; i < TOTAL_TABS; i++) {

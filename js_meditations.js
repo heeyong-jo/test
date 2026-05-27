@@ -1,14 +1,6 @@
 ﻿// ==================== 말씀 묵상 & 오늘의 말씀 ====================
-// ✅ 전역 변수 (중복 선언 방지)
-if (typeof meditations === 'undefined') {
-  var meditations = [];
-  var meditationPage = 1;
-  const MEDITATION_PER_PAGE = 10;
-} else {
-  // 이미 선언되어 있으면 값만 초기화
-  meditations = [];
-  meditationPage = 1;
-}
+
+
 // ------------------- 1. 오늘의 말씀 렌더링 -------------------
 function renderTodayVerse() {
   let todayVerse = null;
@@ -29,6 +21,7 @@ function renderTodayVerse() {
   const el_body = document.getElementById('today-verse-body');
   if (el_text) el_text.textContent = todayVerse.text;
   if (el_ref) el_ref.textContent = todayVerse.ref;
+  // ✅ body가 없으면 text에서 따옴표 제거 후 표시
   if (el_body) el_body.textContent = todayVerse.body || todayVerse.text.replace(/^"|"$/g, '');
 }
 
@@ -63,6 +56,7 @@ const VerseTab = {
   maxVerses: 150,
 
 
+  // ✅ js_confige.js의 OT_BOOKS/NT_BOOKS 사용 (직접 정의하지 않음)
   ensureBibleData: function() {
     if (typeof OT_BOOKS === 'undefined' || typeof NT_BOOKS === 'undefined' ||
         OT_BOOKS.length === 0 || NT_BOOKS.length === 0) {
@@ -110,7 +104,7 @@ const VerseTab = {
     let otHtml = '';
     for (let i = 0; i < OT_BOOKS.length; i++) {
       const b = OT_BOOKS[i];
-      const safeName = JSON.stringify(b.name).slice(1, -1);
+      const safeName = b.name.replace(/'/g, "\\'");
       otHtml += `<div style="${btnStyle}" onclick="VerseTab.pickBook('${safeName}')" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
         <div style="${titleStyle}">${b.abbr}</div>
         <div style="${subStyle}">${b.chapters}장</div>
@@ -121,7 +115,7 @@ const VerseTab = {
     let ntHtml = '';
     for (let i = 0; i < NT_BOOKS.length; i++) {
       const b = NT_BOOKS[i];
-      const safeName = JSON.stringify(b.name).slice(1, -1);
+      const safeName = b.name.replace(/'/g, "\\'");
       ntHtml += `<div style="${btnStyle}" onclick="VerseTab.pickBook('${safeName}')" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
         <div style="${titleStyle}">${b.abbr}</div>
         <div style="${subStyle}">${b.chapters}장</div>
@@ -152,7 +146,6 @@ const VerseTab = {
   },
 
 
-  // ✅ 수정: BIBLE_CDN 사용
   pickChapter: function(chapter) {
     this.selectedChapter = chapter;
     const chapterSelectedEl = document.getElementById('vs-chapter-selected');
@@ -164,8 +157,7 @@ const VerseTab = {
       fromSelect.innerHTML = '<option>로딩 중...</option>';
       toSelect.innerHTML = '<option>로딩 중...</option>';
       
-      // ✅ BIBLE_CDN 사용
-      const url = `${BIBLE_CDN}/${this.selectedBook.file}`;
+      const url = `https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@main/${this.selectedBook.file}`;
       fetch(url)
         .then(res => res.json())
         .then(data => {
@@ -178,60 +170,40 @@ const VerseTab = {
           
           let options = '';
           for (let i = 1; i <= this.maxVerses; i++) {
-            options += `<option value="${i}">${i}절</option>`;
+            options += `<option value="${i}">${i}절</option>`;  // ✅ 수정됨
           }
           fromSelect.innerHTML = options;
           toSelect.innerHTML = options;
           toSelect.value = Math.min(5, this.maxVerses);
-          
-          this.showStep('verse');
-          this.loadVersePreview();
         })
         .catch(() => {
           let options = '';
           for (let i = 1; i <= 150; i++) {
-            options += `<option value="${i}">${i}절</option>`;
+            options += `<option value="${i}">${i}절</option>`;  // ✅ 수정됨
           }
           fromSelect.innerHTML = options;
           toSelect.innerHTML = options;
           toSelect.value = 5;
-          
-          this.showStep('verse');
-          this.loadVersePreview();
         });
-    } else {
-      this.showStep('verse');
-      this.loadVersePreview();
     }
+    
+    this.showStep('verse');
+    this.loadVersePreview();
   },
 
 
-  // ✅ 수정: BIBLE_CDN 사용
   loadVersePreview: function() {
     const previewDiv = document.getElementById('vs-preview');
     if (!previewDiv || !this.selectedBook) return;
     
-    const fromInput = document.getElementById('vs-from');
-    const toInput = document.getElementById('vs-to');
+    previewDiv.innerHTML = '<div style="text-align:center;padding:20px;">말씀을 불러오는 중...</div>';
     
-    if (!fromInput || !toInput || fromInput.innerHTML === '<option>로딩 중...</option>') {
-      previewDiv.innerHTML = '<div style="text-align:center;padding:20px;">절 범위를 불러오는 중...</div>';
-      return;
-    }
-    
-    const from = parseInt(fromInput.value || 1);
-    const to = parseInt(toInput.value || 1);
-    
-    if (isNaN(from) || isNaN(to)) {
-      previewDiv.innerHTML = '<div style="text-align:center;padding:20px;">절을 선택해주세요</div>';
-      return;
-    }
-    
+    const from = parseInt(document.getElementById('vs-from')?.value || 1);
+    const to = parseInt(document.getElementById('vs-to')?.value || 1);
     const startVerse = Math.min(from, to);
     const endVerse = Math.max(from, to);
     
-    // ✅ BIBLE_CDN 사용
-    const url = `${BIBLE_CDN}/${this.selectedBook.file}`;
+    const url = `https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@main/${this.selectedBook.file}`;
     
     fetch(url)
       .then(res => res.json())
@@ -360,18 +332,10 @@ function formatDisplayTime(createdAt) {
   if (!createdAt) return '방금 전';
   const date = new Date(createdAt);
   const now = new Date();
-  const diffMs = now - date;
-  const diffMin = Math.floor(diffMs / 1000 / 60);
-  const diffHours = Math.floor(diffMs / 1000 / 60 / 60);
-  const diffDays = Math.floor(diffMs / 1000 / 60 / 60 / 24);
-  
-  if (diffMin < 1) return '방금 전';
-  if (diffMin < 60) return `${diffMin}분 전`;
-  if (diffHours < 24) return `${diffHours}시간 전`;
-  if (diffDays === 1) return '어제';
-  if (diffDays === 2) return '그저께';
-  if (diffDays < 7) return `${diffDays}일 전`;
-  
+  const diff = Math.floor((now - date) / 1000 / 60);
+  if (diff < 1) return '방금 전';
+  if (diff < 60) return `${diff}분 전`;
+  if (diff < 1440) return `${Math.floor(diff / 60)}시간 전`;
   return `${date.getMonth()+1}.${date.getDate()}`;
 }
 

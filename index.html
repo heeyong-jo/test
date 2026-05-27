@@ -322,18 +322,18 @@
 <!-- ══════════════════════ p1: 말씀 ══════════════════════ -->
 <div id="p1" class="page">
   <div class="card">
-    <div class="card-title">📅 이번주 말씀</div>
-    <div style="background:#f9f2f9;border-radius:16px;padding:20px;margin-bottom:16px;">
-      <div style="font-size:24px;margin-bottom:12px;">📖</div>
-      <div id="today-verse-text" style="font-size:18px;font-weight:600;color:#3b2e1e;margin-bottom:8px;">"하나님은 사랑이시라"</div>
-      <div id="today-verse-ref" style="color:var(--purple);margin-bottom:6px;font-weight:600;">요한일서 4:16</div>
-      <div id="today-verse-body" style="font-size:13px;color:var(--text2);line-height:1.7;">사랑 안에 거하는 자는 하나님 안에 거하고 하나님이 그 안에 거하시느니라</div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button class="btn-secondary admin-only" style="flex:1;" onclick="openVerseSelector()">📖 말씀등록하기</button>
-      <button class="btn-primary" style="flex:1;padding:12px;" onclick="shareToday()">📤 공유</button>
-    </div>
+  <div class="card-title">📅 이번주 말씀</div>
+  <div style="background:#f9f2f9;border-radius:16px;padding:20px;margin-bottom:16px;">
+    <div style="font-size:24px;margin-bottom:12px;">📖</div>
+    <div id="today-verse-text" style="font-size:18px;font-weight:600;color:#3b2e1e;margin-bottom:8px;"></div>
+    <div id="today-verse-ref" style="color:var(--purple);margin-bottom:6px;font-weight:600;"></div>
+    <div id="today-verse-body" style="font-size:13px;color:var(--text2);line-height:1.7;"></div>
   </div>
+  <div style="display:flex;gap:8px;">
+    <button class="btn-secondary admin-only" style="flex:1;" onclick="openVerseSelector()">📖 말씀등록하기</button>
+    <button class="btn-primary" style="flex:1;padding:12px;" onclick="shareToday()">📤 공유</button>
+  </div>
+</div>
   
   <div class="card" id="write-meditation-card">
     <div class="card-title">✏️ 말씀 나누기</div>
@@ -1158,8 +1158,6 @@
     </div>
 
 
-
-
     <!-- 저장 버튼 -->
     <button onclick="staffSave()"
       style="width:100%;background:var(--purple);color:#fff;border:none;padding:13px;border-radius:30px;font-size:15px;font-weight:700;cursor:pointer;">
@@ -1198,12 +1196,6 @@
   });
 
 
-
-
-// 페이지 로드 후 초기화 (기존 코드 대체)
-window.addEventListener('DOMContentLoaded', function() {
-  console.log('DOMContentLoaded - 초기화 시작');
-  
   // ✅ 교회 정보 로드 추가
   setTimeout(function() {
     if (typeof loadChurchInfo === 'function') {
@@ -1211,69 +1203,53 @@ window.addEventListener('DOMContentLoaded', function() {
       console.log('교회 정보 로드 요청됨');
     }
   }, 500);
-  
-  // 스플래시 숨김
-  setTimeout(function() {
-    var splash = document.getElementById('splash');
-    if (splash) {
-      splash.style.opacity = '0';
-      setTimeout(function() {
-        if (splash) splash.style.display = 'none';
-      }, 500);
-    }
-  }, 1500);
-  
-  // 현재 로그인 상태 확인 (localStorage에서 복원)
-  try {
-    const logged = localStorage.getItem('ch2_logged');
-    if (logged) {
-      const userData = JSON.parse(logged);
-      // 실제 사용자 정보는 approvedUsers나 ADMIN_ACCOUNTS에서 찾아야 함
-      console.log('저장된 로그인 정보 있음:', userData);
-    }
-  } catch(e) {}
-  
-  // 예배 데이터 초기화 (가장 중요)
-  if (typeof initServiceData === 'function') {
-    initServiceData();
-  } else if (typeof renderServiceView === 'function') {
-    // initServiceData가 없으면 serviceList 직접 초기화
-    if (typeof serviceList !== 'undefined' && (!serviceList || serviceList.length === 0)) {
-      if (typeof DEFAULT_SERVICE_LIST !== 'undefined') {
-        serviceList = JSON.parse(JSON.stringify(DEFAULT_SERVICE_LIST));
-        console.log('serviceList 기본값 설정 완료');
+
+
+  // 페이지 로드 후 초기화
+  window.addEventListener('DOMContentLoaded', function() {
+    console.log('DOMContentLoaded - 초기화 시작');
+    
+    // 스플래시 숨김
+    setTimeout(function() {
+      var splash = document.getElementById('splash');
+      if (splash) {
+        splash.style.opacity = '0';
+        setTimeout(function() {
+          if (splash) splash.style.display = 'none';
+        }, 500);
       }
+    }, 1500);
+    
+    // 예배 데이터 초기화
+    if (typeof initServiceData === 'function') {
+      initServiceData();
     }
-    renderServiceView();
-  }
-  
-  // 공지사항 렌더링
-  if (typeof renderHomeNotices === 'function') {
-    renderHomeNotices();
-  }
-  
-  // 기도제목 렌더링
-  setTimeout(function() {
-    if (typeof renderPrayers === 'function') {
-      renderPrayers();
+    
+    // 공지사항 로드
+    if (typeof loadNotices === 'function') {
+      loadNotices();
     }
-  }, 300);
-  
-  // 말씀 렌더링
-  setTimeout(function() {
-    if (typeof renderTodayVerse === 'function') {
-      renderTodayVerse();
-    }
-    if (typeof renderMeditations === 'function') {
-      renderMeditations();
-    }
-  }, 400);
-});
+    
+    // 기도제목 렌더링
+    setTimeout(function() {
+      if (typeof renderPrayers === 'function') {
+        renderPrayers();
+      }
+    }, 300);
+    
+    // 말씀 렌더링
+    setTimeout(function() {
+      if (typeof renderTodayVerse === 'function') {
+        renderTodayVerse();
+      }
+      if (typeof loadMeditations === 'function') {
+        loadMeditations();
+      }
+    }, 400);
+  });  
 </script>
 <!-- 카카오 광고 스크립트 (필요시) -->
 <script type="text/javascript" src="//t1.kakaocdn.net/kas/static/ba.min.js" async></script>
-
-
 
 
 </body>

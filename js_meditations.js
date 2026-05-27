@@ -19,7 +19,12 @@ function renderTodayVerse() {
   const el_body = document.getElementById('today-verse-body');
   if (el_text) el_text.textContent = todayVerse.text;
   if (el_ref) el_ref.textContent = todayVerse.ref;
-  if (el_body) el_body.textContent = todayVerse.body || todayVerse.text;
+  
+let bodyText = todayVerse.body;
+if (!bodyText && todayVerse.text) {
+  bodyText = todayVerse.text.replace(/^"|"$/g, '');
+}
+if (el_body) el_body.textContent = bodyText;
 }
 
 
@@ -321,7 +326,8 @@ const VerseTab = {
       return;
     }
     
-    const todayVerseData = { text: `"${verseText}"`, ref: ref, body: verseText };
+const cleanText = verseText.replace(/^"|"$/g, '');
+const todayVerseData = { text: `"${verseText}"`, ref: ref, body: cleanText };
     
     if (typeof LS !== 'undefined') {
       LS.save('todayVerse', todayVerseData);

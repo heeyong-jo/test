@@ -292,15 +292,12 @@ async function completeCurrentChapter() {
   const today = new Date().toISOString().slice(0, 10);
   const userRef = firebase.database().ref(`bibleReading/${currentUser.id}`);
   
-  // ✅ 트랜잭션 결과 저장
-  let transactionResult = null;
-  
   await userRef.transaction((data) => {
     if (!data) data = { name: currentUser.name, totalPages: 0, completions: 0, history: {}, currentBookIndex: 0, currentChapter: 1 };
     if (!data.history) data.history = {};
     
     const todayCount = (data.history[today] || 0) + 1;
-    if (todayCount > 10) return; // abort
+    if (todayCount > 10) return; // 10장 초과 방지
     
     data.history[today] = todayCount;
     
@@ -309,21 +306,14 @@ async function completeCurrentChapter() {
     data.totalPages = total;
     data.completions = Math.floor(total / TOTAL_BIBLE_CHAPTERS);
     
-    transactionResult = { todayCount, total, completions: data.completions };
     return data;
   });
-  
-  // ✅ 트랜잭션이 abort되었는지 확인
-  if (!transactionResult) {
-    alert('오늘 10장을 모두 읽으셨습니다.');
-    return;
-  }
-  
-  // ✅ 트랜잭션 결과로 상태 업데이트
-  bibleReadingState.todayPagesRead = transactionResult.todayCount;
-  
-  const todayCountEl = document.getElementById('bible-reading-today-count');
-  if (todayCountEl) todayCountEl.textContent = `오늘 ${bibleReadingState.todayPagesRead} / 10 장`;
+
+
+  // 상태 업데이트
+  bibleReadingState.todayPagesRead++;
+  const todayCount = document.getElementById('bible-reading-today-count');
+  if (todayCount) todayCount.textContent = `오늘 ${bibleReadingState.todayPagesRead} / 10 장`;
 
 
   if (bibleReadingState.todayPagesRead >= 10) {
@@ -364,14 +354,6 @@ function closeBibleReading() {
   const readerHome = document.getElementById('bible-reader-home');
   if (readerScreen) readerScreen.style.display = 'none';
   if (readerHome) readerHome.style.display = 'block';
-  
-  // ✅ 현재 읽기 위치 DB에 저장
-  if (currentUser && typeof firebase !== 'undefined') {
-    firebase.database().ref(`bibleReading/${currentUser.id}`).update({
-      currentBookIndex: bibleReadingState.bookIndex,
-      currentChapter: bibleReadingState.chapter
-    }).catch(err => console.error('위치 저장 실패:', err));
-  }
 }
 
 

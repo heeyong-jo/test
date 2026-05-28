@@ -321,23 +321,20 @@
 
 <!-- ══════════════════════ p1: 말씀 ══════════════════════ -->
 <div id="p1" class="page">
-  
-  <!-- 오늘의 말씀 카드 -->
   <div class="card">
-    <div class="card-title">📅 이번주 말씀</div>
-    <div style="background:#f9f2f9;border-radius:16px;padding:20px;margin-bottom:16px;">
-      <div style="font-size:24px;margin-bottom:12px;">📖</div>
-      <div id="today-verse-text" style="font-size:18px;font-weight:600;color:#3b2e1e;margin-bottom:8px;"></div>
-      <div id="today-verse-ref" style="color:var(--purple);margin-bottom:6px;font-weight:600;"></div>
-      <div id="today-verse-body" style="font-size:13px;color:var(--text2);line-height:1.7;"></div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button class="btn-secondary admin-only" style="flex:1;" onclick="openVerseSelector()">📖 말씀등록하기</button>
-      <button class="btn-primary" style="flex:1;padding:12px;" onclick="shareToday()">📤 공유</button>
-    </div>
+  <div class="card-title">📅 이번주 말씀</div>
+  <div style="background:#f9f2f9;border-radius:16px;padding:20px;margin-bottom:16px;">
+    <div style="font-size:24px;margin-bottom:12px;">📖</div>
+    <div id="today-verse-text" style="font-size:18px;font-weight:600;color:#3b2e1e;margin-bottom:8px;"></div>
+    <div id="today-verse-ref" style="color:var(--purple);margin-bottom:6px;font-weight:600;"></div>
+    <div id="today-verse-body" style="font-size:13px;color:var(--text2);line-height:1.7;"></div>
   </div>
+  <div style="display:flex;gap:8px;">
+    <button class="btn-secondary admin-only" style="flex:1;" onclick="openVerseSelector()">📖 말씀등록하기</button>
+    <button class="btn-primary" style="flex:1;padding:12px;" onclick="shareToday()">📤 공유</button>
+  </div>
+</div>
   
-  <!-- 말씀 나누기 카드 -->
   <div class="card" id="write-meditation-card">
     <div class="card-title">✏️ 말씀 나누기</div>
     <div class="write-area">
@@ -346,13 +343,12 @@
     </div>
   </div>
   
-  <!-- 묵상 목록 카드 -->
   <div class="card">
     <div class="card-title">💬 성도들의 묵상</div>
     <div id="meditation-list"></div>
   </div>
   
-  <!-- 기도제목 카드 -->
+  <!-- 기도제목 목록 영역을 p1 내부로 이동 -->
   <div class="card">
     <div class="card-title" style="justify-content:space-between;">
       <span>🙏 기도제목</span>
@@ -360,9 +356,7 @@
     </div>
     <div id="prayer-list" class="prayer-list-container"></div>
   </div>
-</div> 
-
-
+</div>
 <!-- 말씀 등록 모달 -->
 <div id="modal-verse-selector" class="modal-overlay">
   <div class="modal-box" style="max-height:90vh;">
@@ -411,7 +405,7 @@
       <button onclick="applyTodayVerse()" style="width:100%;padding:13px;background:linear-gradient(135deg,#7a5230,#9e6b3e);border:none;border-radius:12px;color:white;font-size:14px;font-weight:700;cursor:pointer;">✅ 오늘의 말씀으로 등록</button>
     </div>
   </div>
-</div> 
+</div>
 
 
 <!-- ══════════════════════ p2: 게시물 ══════════════════════ -->
@@ -941,6 +935,30 @@
     <button class="btn-primary" onclick="changePassword()">변경하기</button>
   </div>
 </div>
+
+
+
+
+
+
+
+
+<!-- 말씀 등록 모달 -->
+<div id="modal-verse-selector" class="modal-overlay">
+  <div class="modal-box" style="max-height:90vh;">
+    <div class="modal-header"><div class="modal-title" id="verse-modal-title">📖 말씀 선택</div><button class="modal-close" onclick="closeVerseSelector()">✕</button></div>
+    <div style="display:flex;gap:6px;margin-bottom:18px;"><div id="vstep1" style="flex:1;padding:8px;border-radius:10px;text-align:center;font-size:12px;font-weight:700;background:var(--purple);color:white;">① 책 선택</div><div id="vstep2" style="flex:1;padding:8px;border-radius:10px;text-align:center;font-size:12px;font-weight:700;background:var(--bg2);color:var(--text2);">② 장 선택</div><div id="vstep3" style="flex:1;padding:8px;border-radius:10px;text-align:center;font-size:12px;font-weight:700;background:var(--bg2);color:var(--text2);">③ 절 선택</div></div>
+    <div id="vstep-book"><div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:8px;">📖 구약</div><div id="vs-ot-books" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-height:180px;overflow-y:auto;margin-bottom:12px;"></div><div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:8px;">📖 신약</div><div id="vs-nt-books" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-height:180px;overflow-y:auto;"></div></div>
+    <div id="vstep-chapter" style="display:none;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;"><button onclick="vsGoBack('book')" style="background:var(--bg2);border:none;border-radius:20px;padding:6px 14px;font-size:12px;color:var(--purple);font-weight:600;cursor:pointer;">← 뒤로</button><div id="vs-book-selected" style="font-size:14px;font-weight:700;color:var(--text);"></div></div><div id="vs-chapters" style="display:flex;flex-wrap:wrap;gap:8px;max-height:280px;overflow-y:auto;"></div></div>
+    <div id="vstep-verse" style="display:none;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;"><button onclick="vsGoBack('chapter')" style="background:var(--bg2);border:none;border-radius:20px;padding:6px 14px;font-size:12px;color:var(--purple);font-weight:600;cursor:pointer;">← 뒤로</button><div id="vs-chapter-selected" style="font-size:14px;font-weight:700;color:var(--text);"></div></div><div style="background:var(--bg);border-radius:12px;padding:12px;margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;">절 범위 선택</div><div style="display:flex;align-items:center;gap:8px;"><select id="vs-from" class="input-field" style="flex:1;padding:8px;font-size:13px;"></select><span style="color:var(--text2);font-weight:600;">~</span><select id="vs-to" class="input-field" style="flex:1;padding:8px;font-size:13px;"></select></div></div><div id="vs-preview" style="background:var(--bg);border-radius:12px;padding:12px;margin-bottom:14px;font-size:13px;color:var(--text2);line-height:1.7;max-height:160px;overflow-y:auto;"></div><button onclick="applyTodayVerse()" style="width:100%;padding:13px;background:linear-gradient(135deg,#7a5230,#9e6b3e);border:none;border-radius:12px;color:white;font-size:14px;font-weight:700;cursor:pointer;">✅ 오늘의 말씀으로 등록</button></div>
+  </div>
+</div>
+
+
+
+
+
+
 
 
 <!-- 예배안내 항목 추가 모달 -->

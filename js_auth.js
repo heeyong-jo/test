@@ -339,7 +339,6 @@ function doSignup() {
 }
 
 
-// 로그인 성공 처리
 async function loginSuccess(acc) {
   console.log('loginSuccess 실행:', acc.name);
   
@@ -380,10 +379,33 @@ async function loginSuccess(acc) {
   if (userRoleSpan) userRoleSpan.textContent = roleText;
   if (settingInfoSpan) settingInfoSpan.textContent = acc.name + ' (' + roleText + ')';
   
-  // 권한에 따른 UI 표시
+  console.log('사용자 정보 UI 업데이트 완료');
+  
+  // 권한에 따른 UI 표시 (먼저 실행)
   if (typeof applyRole === 'function') {
     applyRole(currentUser.role);
+    console.log('권한 적용 완료:', currentUser.role);
   }
+  
+  // 현재 탭을 홈으로 리셋
+  currentTab = -1;
+  
+  // 페이지 표시 초기화 (모든 페이지 숨기기)
+  for (let i = 0; i < 7; i++) {
+    const page = document.getElementById('p' + i);
+    if (page) page.classList.remove('show');
+  }
+  
+  // 탭 활성화 리셋 (모든 탭 비활성화)
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  
+  // 약간의 지연 후 홈 탭으로 이동
+  setTimeout(() => {
+    console.log('홈 탭으로 이동 시작');
+    if (typeof showTab === 'function') {
+      showTab(0);
+    }
+  }, 50);
   
   // Firebase 데이터 로드
   if (window.FB_READY && typeof fbLoadAll === 'function') {
@@ -393,12 +415,6 @@ async function loginSuccess(acc) {
     } catch(e) {
       console.error('Firebase 데이터 로드 실패:', e);
     }
-  }
-  
-  // 홈 탭으로 이동
-  currentTab = 0;
-  if (typeof showTab === 'function') {
-    showTab(0);
   }
   
   // 각종 데이터 렌더링

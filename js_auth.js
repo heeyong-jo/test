@@ -721,6 +721,26 @@ function changePassword() {
 }
 
 
+if (!user) {
+    errDiv.textContent = '입력한 정보와 일치하는 회원이 없습니다';
+    errDiv.style.display = 'block';
+    return;
+  }
+  
+  // 일반 회원 비밀번호 재설정
+  const tmpPw = 'gajwajeil' + Math.floor(1000 + Math.random() * 9000);
+  user.pw = tmpPw;
+  if (typeof LS !== 'undefined') {
+    LS.save('approvedUsers', approvedUsers);
+  }
+  showLoginForm();
+  setTimeout(() => {
+    errDiv.style.background = 'rgba(134,239,172,0.15)';
+    errDiv.style.color = '#86efac';
+    errDiv.textContent = '임시 비밀번호: ' + tmpPw + ' (로그인 후 변경하세요)';
+    errDiv.style.display = 'block';
+  }, 300);
+}
 // ==================== 페이지 로드 시 자동 복원 ====================
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', function() {

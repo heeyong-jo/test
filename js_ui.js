@@ -180,8 +180,14 @@ function afterTab(n) {
     isSwiping = false;
   }, { passive: true });
 })();
-
-
+// ==================== 설정 화면 함수 ====================
+function openSettingView() {
+  const settingInfo = document.getElementById('setting-user-info');
+  if (currentUser && settingInfo) {
+    const roleText = currentUser.role === 'admin' ? '관리자' : '일반성도';
+    settingInfo.textContent = currentUser.name + ' (' + roleText + ')';
+  }
+}
 function applyRole(role) {
   const isAdmin = role === 'admin';
   const isAdminOrManager = role === 'admin' || role === 'manager';

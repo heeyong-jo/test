@@ -344,9 +344,10 @@ function openBoardDetail(postId) {
 
 
 function closeBoardDetail() {
-  const modal = document.getElementById('board-detail-overlay');
-  if (modal) modal.style.display = 'none';
-  currentPostId = null;
+  document.getElementById('board-detail-overlay').style.display = 'none';
+}
+function closeBoardWrite() {
+  document.getElementById('board-write-overlay').style.display = 'none';
 }
 
 

@@ -1,8 +1,12 @@
-﻿let toastTimer = null;
+﻿// ==================== UI 관련 (탭, 스와이프, 시계, 토스트, 모달) ====================
+
+
+// 전역 변수 (필요시 초기화)
 let currentTab = 0;
 const TOTAL_TABS = 7;
 
 
+// 시계 업데이트
 function tick() {
   const now = new Date();
   const el = document.getElementById('htime');
@@ -12,245 +16,246 @@ setInterval(tick, 1000);
 tick();
 
 
+// 토스트 메시지
 function showToast(msg) {
   const t = document.getElementById('toast');
-  if (!t) {
-    console.warn('Toast 요소를 찾을 수 없음:', msg);
-    alert(msg);
-    return;
-  }
+  if (!t) return;
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => {
-    if (t) t.classList.remove('show');
-  }, 2200);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
 }
 
 
+// 모달 닫기 공통 함수
 function closeModal(id) {
   const modal = document.getElementById(id);
-  if (modal) {
-    modal.style.display = 'none';
-  } else {
-    console.warn(`Modal "${id}"를 찾을 수 없음`);
-  }
+  if (modal) modal.style.display = 'none';
 }
 
 
-function escapeHtml(str) {
-  if (!str) return '';
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-
-
-
+// 탭 전환
 function showTab(n) {
-  console.log('showTab 호출:', n, 'currentUser:', currentUser ? '있음' : '없음');
-  
   n = Math.max(0, Math.min(TOTAL_TABS - 1, n));
-  
-  // 로그인 필요한 탭 체크
-  const needLoginTabs = [2, 3, 5, 6];
-  const publicTabs = [0, 1, 4];
-  
-  // 로그인하지 않은 상태에서 제한된 탭 접근 시도
-  if (!currentUser && needLoginTabs.includes(n)) {
-    console.log('로그인 필요한 탭 접근 시도:', n);
-    const loginScreen = document.getElementById('screen-login');
-    if (loginScreen) loginScreen.style.display = 'flex';
+  if (n !== 0 && !currentUser) {
+    document.getElementById('screen-login').style.display = 'flex';
     return;
   }
-  
-  // 현재 탭과 동일하면 리렌더링하지 않음
-  if (currentTab === n) {
-    console.log('이미 현재 탭:', n);
-    return;
-  }
-  
-  // 탭 변경
   currentTab = n;
-  
-  // 모든 탭 비활성화, 선택된 탭만 활성화
-  document.querySelectorAll('.tab').forEach((tab, i) => {
-    if (i === n) {
-      tab.classList.add('active');
-    } else {
-      tab.classList.remove('active');
-    }
-  });
-  
-  // 모든 페이지 숨기고, 선택된 페이지만 표시
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
   for (let i = 0; i < TOTAL_TABS; i++) {
     const page = document.getElementById('p' + i);
-    if (page) {
-      if (i === n) {
-        page.classList.add('show');
-        page.style.display = 'block';
-        console.log('페이지 표시:', 'p' + i);
-      } else {
-        page.classList.remove('show');
-        page.style.display = 'none';
-      }
-    }
+    if (page) page.classList.toggle('show', i === n);
   }
-  
-  // 성경 뷰 상태 유지
-  if (n !== 5) {
-    ['bibleScriptureView', 'bibleHymnView', 'bibleAppendixView'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = 'none';
-    });
-    const main = document.getElementById('bibleMain');
-    if (main) main.style.display = 'flex';
-  }
-  
-  console.log('탭 변경 완료:', n);
   afterTab(n);
 }
 
 
+// 탭 전환 후 추가 작업
 function afterTab(n) {
-  if (n === 0) {
-    if (typeof renderHomeNotices === 'function') renderHomeNotices();
-    if (typeof renderServiceView === 'function') renderServiceView();
-  }
+  if (n === 0 && typeof renderHomeNotices === 'function') renderHomeNotices();
   if (n === 1) {
-    
-    if (typeof loadMeditations === 'function') {
-      loadMeditations();
-    } else if (typeof renderMeditations === 'function') {
-      renderMeditations();
-    }
-    if (typeof renderTodayVerse === 'function') {
-      renderTodayVerse();
-    }
+    if (typeof renderMeditations === 'function') renderMeditations();
+    if (typeof renderTodayVerse === 'function') renderTodayVerse();
   }
-  if (n === 2) {
-    console.log('📋 게시물 탭 열림');
-    if (typeof initBoard === 'function') initBoard();
-    const list = document.getElementById('board-category-list');
-    const content = document.getElementById('board-content');
-    if (list) {
-      list.style.display = 'flex';
-      list.style.visibility = 'visible';
-      list.style.pointerEvents = 'auto';
-    }
-    if (content) {
-      content.style.display = 'none';
-      content.style.visibility = 'hidden';
-    }
-  }
-  if (n === 3) {
-    if (typeof loadBibleStatus === 'function') loadBibleStatus();
-    if (typeof loadBibleHallOfFame === 'function') loadBibleHallOfFame();
-  }  
+  if (n === 2 && typeof renderPrayers === 'function') renderPrayers();
+  if (n === 3 && typeof renderPosts === 'function') renderPosts();
   if (n === 4) {
     if (typeof renderServiceView === 'function') renderServiceView();
     if (typeof renderScheduleView === 'function') renderScheduleView();
-    if (typeof loadStaff === 'function') loadStaff();
   }
   if (n === 5 && typeof initBible === 'function') initBible();
   if (n === 6) {
     if (currentUser && currentUser.role === 'admin') {
       if (typeof renderMembersAccord === 'function') renderMembersAccord();
+      if (typeof renderOfferingsAccord === 'function') renderOfferingsAccord();
+      if (typeof renderApprovalsAccord === 'function') renderApprovalsAccord();
+    } else if (currentUser && currentUser.role === 'manager') {
       if (typeof renderApprovalsAccord === 'function') renderApprovalsAccord();
     }
   }
 }
 
 
-// ==================== 스와이프 (슬라이딩) ====================
+// 스와이프 제스처 (터치 슬라이드)
 (function() {
-  const container = document.getElementById('swipe-container');
-  if (!container) {
-    console.warn('swipe-container 요소 없음');
-    return;
+  const el = document.getElementById('swipe-container');
+  if (!el) return;
+  let startX = 0, startY = 0, dragging = false, locked = false, dragDir = 0;
+  let curEl = null, nxtEl = null;
+  const W = () => window.innerWidth;
+  
+  function getPage(n) { return document.getElementById('p' + n); }
+  
+  function getNext(dir) {
+    let idx = currentTab + dir;
+    while (idx >= 0 && idx < TOTAL_TABS) {
+      const t = document.getElementById('tab' + idx);
+      if (t && t.style.display !== 'none') return idx;
+      idx += dir;
+    }
+    return -1;
   }
   
-  let touchStartX = 0, touchStartY = 0, touchStartTime = 0, isSwiping = false;
+  function prepareNext(dir) {
+    const ni = getNext(dir);
+    if (ni < 0) return null;
+    const nxt = getPage(ni);
+    const top = curEl ? curEl.getBoundingClientRect().top : 60;
+    nxt.style.cssText = `display:block !important;position:fixed;top:${top}px;left:0;width:100%;z-index:10;transform:translateX(${dir > 0 ? W() : -W()}px);overflow-y:hidden;max-height:calc(100dvh - ${top}px);will-change:transform;`;
+    return nxt;
+  }
   
-  container.addEventListener('touchstart', function(e) {
-    // 성경 탭에서는 스와이프 비활성화
-    if (currentTab === 5) return;
-    
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-    touchStartTime = Date.now();
-    isSwiping = false;
-    console.log('터치 시작:', touchStartX);
+  function cleanup(finalIdx) {
+    const f = getPage(finalIdx);
+    f.style.cssText = '';
+    f.classList.add('show');
+    requestAnimationFrame(() => {
+      for (let i = 0; i < TOTAL_TABS; i++) {
+        if (i === finalIdx) continue;
+        const p = getPage(i);
+        p.style.cssText = '';
+        p.classList.remove('show');
+      }
+      curEl = null;
+      nxtEl = null;
+      dragDir = 0;
+      afterTab(finalIdx);
+    });
+  }
+  
+  el.addEventListener('touchstart', e => {
+    if (currentTab === 5 && currentBibleSection) { locked = true; return; }
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    dragging = false;
+    locked = false;
+    dragDir = 0;
+    curEl = getPage(currentTab);
+    nxtEl = null;
   }, { passive: true });
   
-  container.addEventListener('touchmove', function(e) {
-    if (currentTab === 5) return;
-    
-    const deltaX = Math.abs(e.touches[0].clientX - touchStartX);
-    const deltaY = Math.abs(e.touches[0].clientY - touchStartY);
-    
-    // 수평 이동이 수직 이동보다 크면 스와이프로 인식
-    if (deltaX > 10 && deltaX > deltaY && !isSwiping) {
-      isSwiping = true;
-      
-      const target = e.target;
-      const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
-      const isScrollable = target.scrollWidth > target.clientWidth;
-      
-      // 입력 필드나 스크롤 가능한 영역이 아니면 기본 동작 방지
-      if (!isInput && !isScrollable) {
+  el.addEventListener('touchmove', e => {
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    if (!dragging && !locked) {
+      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+      if (Math.abs(dy) > Math.abs(dx) * 1.8) { locked = true; curEl = null; return; }
+      if (currentTab === 0 && !currentUser && dx > 30) {
         e.preventDefault();
+        document.getElementById('screen-login').style.display = 'flex';
+        dragging = false;
+        locked = true;
+        return;
       }
+      dragging = true;
+      dragDir = dx > 0 ? -1 : 1;
+      if (curEl) {
+        const r = curEl.getBoundingClientRect();
+        curEl.style.cssText = `display:block !important;position:fixed;top:${r.top}px;left:0;width:100%;z-index:9;transform:translateX(0);overflow-y:hidden;max-height:calc(100dvh - ${r.top}px);will-change:transform;`;
+      }
+      nxtEl = prepareNext(dragDir);
     }
+    if (locked || !dragging) return;
+    let tx = dx;
+    if ((dx > 0 && currentTab === 0) || (dx < 0 && getNext(1) < 0)) tx = dx * 0.18;
+    if (curEl) curEl.style.transform = `translateX(${tx}px)`;
+    if (nxtEl) nxtEl.style.transform = `translateX(${tx + (dragDir > 0 ? W() : -W())}px)`;
   }, { passive: false });
   
-  container.addEventListener('touchend', function(e) {
-    if (currentTab === 5) return;
-    if (!isSwiping) return;
-    
-    const endX = e.changedTouches[0].clientX;
-    const deltaX = endX - touchStartX;
-    const deltaTime = Date.now() - touchStartTime;
-    
-    console.log('터치 끝:', 'deltaX:', deltaX, 'deltaTime:', deltaTime);
-    
-    // 최소 50px 이상, 300ms 이내의 빠른 슬라이드
-    if (Math.abs(deltaX) > 50 && deltaTime < 300) {
-      if (deltaX > 0 && currentTab > 0) {
-        // 오른쪽으로 스와이프 -> 이전 탭
-        console.log('오른쪽 스와이프, 이전 탭으로 이동');
-        showTab(currentTab - 1);
-      } else if (deltaX < 0 && currentTab < TOTAL_TABS - 1) {
-        // 왼쪽으로 스와이프 -> 다음 탭
-        console.log('왼쪽 스와이프, 다음 탭으로 이동');
-        showTab(currentTab + 1);
-      }
+  el.addEventListener('touchend', e => {
+    if (locked) { locked = false; return; }
+    if (!dragging) { if (curEl) curEl.style.cssText = ''; return; }
+    const dx = e.changedTouches[0].clientX - startX;
+    const ratio = Math.abs(dx) / W();
+    const ni = getNext(dragDir);
+    const will = ratio >= 0.3 && nxtEl !== null && ni >= 0 && ni < TOTAL_TABS;
+    dragging = false;
+    if (will) {
+      const tX = dragDir > 0 ? -W() : W();
+      const sp = dx;
+      const dur = 220;
+      const start = performance.now();
+      const ease = t => 1 - Math.pow(1 - t, 3);
+      (function frame(now) {
+        const t = Math.min((now - start) / dur, 1);
+        const pos = sp + (tX - sp) * ease(t);
+        if (curEl) curEl.style.transform = `translateX(${pos}px)`;
+        if (nxtEl) nxtEl.style.transform = `translateX(${pos + (dragDir > 0 ? W() : -W())}px)`;
+        if (t < 1) {
+          requestAnimationFrame(frame);
+        } else {
+          if (ni !== 0 && !currentUser) {
+            cleanup(currentTab);
+            document.getElementById('screen-login').style.display = 'flex';
+          } else {
+            currentTab = ni;
+            document.querySelectorAll('.tab').forEach((tb, i) => tb.classList.toggle('active', i === currentTab));
+            cleanup(currentTab);
+          }
+        }
+      })(start);
+    } else {
+      const sp = dx;
+      const dur = 180;
+      const start = performance.now();
+      const ease = t => 1 - Math.pow(1 - t, 3);
+      (function frame(now) {
+        const t = Math.min((now - start) / dur, 1);
+        const pos = sp * (1 - ease(t));
+        if (curEl) curEl.style.transform = `translateX(${pos}px)`;
+        if (nxtEl) nxtEl.style.transform = `translateX(${pos + (dragDir > 0 ? W() : -W())}px)`;
+        if (t < 1) {
+          requestAnimationFrame(frame);
+        } else {
+          cleanup(currentTab);
+        }
+      })(start);
     }
-    
-    isSwiping = false;
   }, { passive: true });
 })();
-// ==================== 설정 화면 함수 ====================
-function openSettingView() {
-  const settingInfo = document.getElementById('setting-user-info');
-  if (currentUser && settingInfo) {
-    const roleText = currentUser.role === 'admin' ? '관리자' : '일반성도';
-    settingInfo.textContent = currentUser.name + ' (' + roleText + ')';
-  }
+
+
+// XSS 방지 함수 (간단한 이스케이프)
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
 }
+
+
+// 권한에 따라 관리자 전용 요소 표시/숨김
 function applyRole(role) {
   const isAdmin = role === 'admin';
   const isAdminOrManager = role === 'admin' || role === 'manager';
+
+
+  function showEl(el) {
+    const tag = el.tagName.toLowerCase();
+    if (tag === 'button') {
+      el.classList.add('visible-inline');
+      el.classList.remove('visible');
+      el.setAttribute('style', 'display:inline-block !important');
+    } else {
+      el.classList.add('visible');
+      el.classList.remove('visible-inline');
+      el.setAttribute('style', 'display:block !important');
+    }
+  }
+  function hideEl(el) {
+    el.classList.remove('visible', 'visible-inline');
+    el.setAttribute('style', 'display:none !important');
+  }
+
+
   document.querySelectorAll('.admin-only').forEach(el => {
-    if (isAdmin) el.setAttribute('style', 'display:block !important');
-    else el.setAttribute('style', 'display:none !important');
+    if (isAdmin) showEl(el); else hideEl(el);
   });
   document.querySelectorAll('.admin-manager-only').forEach(el => {
-    if (isAdminOrManager) el.setAttribute('style', 'display:block !important');
-    else el.setAttribute('style', 'display:none !important');
+    if (isAdminOrManager) showEl(el); else hideEl(el);
   });
 }

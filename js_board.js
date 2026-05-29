@@ -592,6 +592,57 @@ function resizeStaffImage(file, maxW = 400, maxH = 480, quality = 0.85) {
     reader.readAsDataURL(file);
   });
 }
+// ==================== 게시판 보조 함수 ====================
 
 
+function updateBoardWriteBtn() {
+  const writeBtn = document.getElementById('board-write-btn');
+  if (!writeBtn) return;
+  
+  if (!currentUser) {
+    writeBtn.style.display = 'none';
+  } else if (currentUser.role === 'admin' || currentUser.role === 'manager') {
+    writeBtn.style.display = 'block';
+  } else {
+    writeBtn.style.display = 'none';
+  }
+}
+
+
+
+
+function loadBoardManager() {
+  // 카테고리별 담당자 정보 로드 (추후 Firebase에서 로드 가능)
+  const managerDiv = document.getElementById('board-manager-info');
+  if (managerDiv) {
+    const managers = {
+      '일반성도': '담당: 전체 관리자',
+      '꿈지락': '담당: 유아부',
+      '꿈트리': '담당: 유아부',
+      '꿈마루': '담당: 초등부',
+      '꿈하나': '담당: 청소년부',
+      '새이플러스': '담당: 청년부'
+    };
+    managerDiv.textContent = managers[currentBoardCategory] || '담당자 정보';
+  }
+}
+
+
+
+
+function loadPosts() {
+  console.log('loadPosts 실행, 카테고리:', currentBoardCategory, '페이지:', currentBoardPage);
+  
+  // Firebase 또는 localStorage에서 해당 카테고리 게시글 로드
+  const postsDiv = document.getElementById('board-posts-list');
+  if (!postsDiv) return;
+  
+  postsDiv.innerHTML = '';
+  
+  // 임시: 게시글 없음 표시
+  const emptyDiv = document.createElement('div');
+  emptyDiv.style.cssText = 'padding:30px;text-align:center;color:var(--text2);';
+  emptyDiv.textContent = '게시글이 없습니다.';
+  postsDiv.appendChild(emptyDiv);
+}
 console.log('✅ js_board.js 로드 완료');

@@ -8,6 +8,22 @@ if (typeof pendingUsers === 'undefined') {
 if (typeof approvedUsers === 'undefined') {
   var approvedUsers = [];
 }
+if (typeof authMode === 'undefined') {
+  var authMode = 'login';
+}
+if (typeof idCheckTimer === 'undefined') {
+  var idCheckTimer = null;
+}
+
+
+// ADMIN_ACCOUNTS가 없으면 직접 정의 (js_confige.js 누락 대비)
+if (typeof ADMIN_ACCOUNTS === 'undefined') {
+  var ADMIN_ACCOUNTS = [
+    { id: 'gajwajeil', pw: 'gajwajeil123', name: '김명서 담임목사', role: 'admin', email: 'pastor@hamkke.church', phone: '032-581-4048', birth: '1955-03-29' },
+    { id: 'reodrino', pw: '232735a', name: '조희용 관리자', role: 'admin', email: 'reodrino@gmail.com', phone: '010-9797-1408', birth: '1981-08-27' }
+  ];
+  console.log('ADMIN_ACCOUNTS 직접 정의됨');
+}
 
 
 // LS가 정의되어 있을 때만 데이터 로드
@@ -205,7 +221,7 @@ function doResetPassword() {
   // 관리자 계정 검색
   const admin = ADMIN_ACCOUNTS.find(a => a.id === id && a.email === email && (a.phone || '').replace(/-/g, '') === phone);
   if (admin) {
-    const tmpPw = 'hamkke' + Math.floor(1000 + Math.random() * 9000);
+    const tmpPw = 'gajwajeil' + Math.floor(1000 + Math.random() * 9000);
     admin.pw = tmpPw;
     showLoginForm();
     setTimeout(() => {
@@ -225,7 +241,7 @@ function doResetPassword() {
     return;
   }
   
-  const tmpPw = 'hamkke' + Math.floor(1000 + Math.random() * 9000);
+  const tmpPw = 'gajwajeil' + Math.floor(1000 + Math.random() * 9000);
   user.pw = tmpPw;
   if (typeof LS !== 'undefined') {
     LS.save('approvedUsers', approvedUsers);
@@ -323,7 +339,7 @@ function doSignup() {
 }
 
 
-// 로그인 성공 처리 (수정됨 - forceRefreshData 제거)
+// 로그인 성공 처리
 async function loginSuccess(acc) {
   console.log('loginSuccess 실행:', acc.name);
   
@@ -355,7 +371,7 @@ async function loginSuccess(acc) {
   if (loginScreen) loginScreen.style.display = 'none';
   
   // 사용자 정보 표시 업데이트
-  const roleText = roleLabel[currentUser.role] || '회원';
+  const roleText = roleLabel ? (roleLabel[currentUser.role] || '회원') : (currentUser.role === 'admin' ? '관리자' : '일반성도');
   const userNameSpan = document.getElementById('user-name-display');
   const userRoleSpan = document.getElementById('user-role-display');
   const settingInfoSpan = document.getElementById('setting-user-info');
@@ -369,7 +385,7 @@ async function loginSuccess(acc) {
     applyRole(currentUser.role);
   }
   
-  // Firebase 데이터 로드 (forceRefreshData 제거)
+  // Firebase 데이터 로드
   if (window.FB_READY && typeof fbLoadAll === 'function') {
     try {
       await fbLoadAll();
@@ -420,13 +436,91 @@ function doLogout() {
   }
   
   const loginScreen = document.getElementById('screen-login');
-  if (loginScreen) loginScreen.style.display = 'block';
+  if (loginScreen) loginScreen.style.display = 'flex';
   
   if (typeof showTab === 'function') {
     showTab(0);
   }
   
   showToast('로그아웃되었습니다');
+}
+
+
+// ==================== 로그인 상태 복원 (페이지 로드 시) ====================
+
+
+function restoreLogin() {
+  console.log('🔍 restoreLogin 실행 - 로그인 상태 복원 시도');
+  
+  // 1. localStorage에서 저장된 로그인 정보 확인
+  let savedLogin = null;
+  if (typeof LS !== 'undefined' && typeof LS.load === 'function') {
+    savedLogin = LS.load('logged', null);
+  } else {
+    try {
+      const saved = localStorage.getItem('ch2_logged');
+      if (saved) savedLogin = JSON.parse(saved);
+    } catch(e) {}
+  }
+  
+  if (!savedLogin || !savedLogin.id) {
+    console.log('⚠️ 저장된 로그인 정보 없음');
+    return false;
+  }
+  
+  console.log('📁 저장된 로그인 정보:', savedLogin.id);
+  
+  // 2. 관리자 계정에서 찾기
+  let user = ADMIN_ACCOUNTS.find(a => a.id === savedLogin.id);
+  if (user) {
+    console.log('✅ 관리자 계정 복원:', user.name);
+    currentUser = {
+      id: user.id,
+      name: user.name,
+      role: user.role || 'admin',
+      email: user.email || '',
+      phone: user.phone || '',
+      birth: user.birth || ''
+    };
+    window.currentUser = currentUser;
+    
+    // UI 업데이트
+    const userNameSpan = document.getElementById('user-name-display');
+    const userRoleSpan = document.getElementById('user-role-display');
+    if (userNameSpan) userNameSpan.textContent = user.name;
+    if (userRoleSpan) userRoleSpan.textContent = '관리자';
+    
+    if (typeof applyRole === 'function') applyRole(currentUser.role);
+    return true;
+  }
+  
+  // 3. 일반 회원에서 찾기
+  if (Array.isArray(approvedUsers)) {
+    user = approvedUsers.find(u => u.id === savedLogin.id);
+    if (user) {
+      console.log('✅ 일반 회원 복원:', user.name);
+      currentUser = {
+        id: user.id,
+        name: user.name,
+        role: user.role || 'member',
+        email: user.email || '',
+        phone: user.phone || '',
+        birth: user.birth || ''
+      };
+      window.currentUser = currentUser;
+      
+      const userNameSpan = document.getElementById('user-name-display');
+      const userRoleSpan = document.getElementById('user-role-display');
+      if (userNameSpan) userNameSpan.textContent = user.name;
+      if (userRoleSpan) userRoleSpan.textContent = '일반성도';
+      
+      if (typeof applyRole === 'function') applyRole(currentUser.role);
+      return true;
+    }
+  }
+  
+  console.log('❌ 복원할 사용자 없음');
+  return false;
 }
 
 
@@ -625,3 +719,16 @@ function changePassword() {
   
   showToast('현재 비밀번호가 일치하지 않습니다');
 }
+
+
+// ==================== 페이지 로드 시 자동 복원 ====================
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(restoreLogin, 100);
+  });
+} else {
+  setTimeout(restoreLogin, 100);
+}
+
+
+console.log('✅ js_auth.js 로드 완료');

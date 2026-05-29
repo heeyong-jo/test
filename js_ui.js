@@ -1,5 +1,4 @@
-﻿// ==================== UI 관련 (탭, 스와이프, 시계, 토스트, 모달) ====================
-let toastTimer = null;
+﻿let toastTimer = null;
 let currentTab = 0;
 const TOTAL_TABS = 7;
 
@@ -13,7 +12,6 @@ setInterval(tick, 1000);
 tick();
 
 
-// ✅ 강화된 showToast (toastTimer 재선언 제거)
 function showToast(msg) {
   const t = document.getElementById('toast');
   if (!t) {
@@ -30,7 +28,6 @@ function showToast(msg) {
 }
 
 
-// ✅ 강화된 closeModal
 function closeModal(id) {
   const modal = document.getElementById(id);
   if (modal) {
@@ -41,7 +38,6 @@ function closeModal(id) {
 }
 
 
-// ✅ escapeHtml 함수 중복 (한 번만 정의)
 function escapeHtml(str) {
   if (!str) return '';
   return str
@@ -53,13 +49,20 @@ function escapeHtml(str) {
 }
 
 
+
+
 function showTab(n) {
+  console.log('showTab 호출:', n, 'currentUser:', currentUser ? '있음' : '없음');
+  
   n = Math.max(0, Math.min(TOTAL_TABS - 1, n));
+  
+    const needLoginTabs = [2, 3, 5, 6];
   if (n !== 0 && n !== 1 && n !== 4 && !currentUser) {
-  const loginScreen = document.getElementById('screen-login');
-  if (loginScreen) loginScreen.style.display = 'flex';
-  return;
-}
+    const loginScreen = document.getElementById('screen-login');
+    if (loginScreen) loginScreen.style.display = 'flex';
+    return;
+  }
+  
   currentTab = n;
   document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
   for (let i = 0; i < TOTAL_TABS; i++) {
@@ -88,16 +91,16 @@ function afterTab(n) {
     if (typeof renderServiceView === 'function') renderServiceView();
   }
   if (n === 1) {
-  // ✅ 데이터 로드 후 렌더링
-  if (typeof loadMeditations === 'function') {
-    loadMeditations();  // 내부에서 renderMeditations() 호출
-  } else if (typeof renderMeditations === 'function') {
-    renderMeditations();
+    
+    if (typeof loadMeditations === 'function') {
+      loadMeditations();
+    } else if (typeof renderMeditations === 'function') {
+      renderMeditations();
+    }
+    if (typeof renderTodayVerse === 'function') {
+      renderTodayVerse();
+    }
   }
-  if (typeof renderTodayVerse === 'function') {
-    renderTodayVerse();
-  }
-}
   if (n === 2) {
     console.log('📋 게시물 탭 열림');
     if (typeof initBoard === 'function') initBoard();
@@ -132,7 +135,7 @@ function afterTab(n) {
 }
 
 
-// ==================== 스와이프 ====================
+// ==================== 스와이프 (슬라이딩) ====================
 (function() {
   const container = document.getElementById('swipe-container');
   if (!container) return;

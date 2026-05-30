@@ -4,6 +4,8 @@ if (typeof currentTab === 'undefined') var currentTab = 0;
 if (typeof TOTAL_TABS === 'undefined') var TOTAL_TABS = 7;
 
 
+
+
 // 시계 업데이트
 function tick() {
   const now = new Date();
@@ -12,6 +14,8 @@ function tick() {
 }
 setInterval(tick, 1000);
 tick();
+
+
 
 
 // 토스트 메시지
@@ -25,11 +29,15 @@ function showToast(msg) {
 }
 
 
+
+
 // 모달 닫기 공통 함수
 function closeModal(id) {
   const modal = document.getElementById(id);
   if (modal) modal.style.display = 'none';
 }
+
+
 
 
 // 탭 전환
@@ -47,6 +55,8 @@ function showTab(n) {
   }
   afterTab(n);
 }
+
+
 
 
 // 탭 전환 후 추가 작업
@@ -73,6 +83,8 @@ function afterTab(n) {
     }
   }
 }
+
+
 
 
 // 스와이프 제스처 (터치 슬라이드)
@@ -147,7 +159,7 @@ function afterTab(n) {
         return;
       }
       dragging = true;
-      dragDir = dx > 0 ? -1 : 1;
+      dragDir = dx > 0 ? 1 : -1;
       if (curEl) {
         const r = curEl.getBoundingClientRect();
         curEl.style.cssText = `display:block !important;position:fixed;top:${r.top}px;left:0;width:100%;z-index:9;transform:translateX(0);overflow-y:hidden;max-height:calc(100dvh - ${r.top}px);will-change:transform;`;
@@ -214,6 +226,8 @@ function afterTab(n) {
 })();
 
 
+
+
 // XSS 방지 함수 (간단한 이스케이프)
 function escapeHtml(str) {
   if (!str) return '';
@@ -226,10 +240,14 @@ function escapeHtml(str) {
 }
 
 
+
+
 // 권한에 따라 관리자 전용 요소 표시/숨김
 function applyRole(role) {
   const isAdmin = role === 'admin';
   const isAdminOrManager = role === 'admin' || role === 'manager';
+
+
 
 
   function showEl(el) {
@@ -248,6 +266,8 @@ function applyRole(role) {
     el.classList.remove('visible', 'visible-inline');
     el.setAttribute('style', 'display:none !important');
   }
+
+
 
 
   document.querySelectorAll('.admin-only').forEach(el => {

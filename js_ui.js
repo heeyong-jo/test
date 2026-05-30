@@ -1,4 +1,9 @@
-﻿// ==================== UI 관련 (탭, 스와이프, 시계, 토스트, 모달) ====================
+﻿// ==================== 전역 변수 선언 ====================
+let toastTimer = null;
+let currentBibleSection = null;
+
+
+// ==================== UI 관련 (탭, 스와이프, 시계, 토스트, 모달) ====================
 
 
 // 전역 변수 (필요시 초기화)
@@ -125,7 +130,7 @@ function afterTab(n) {
   }
   
   el.addEventListener('touchstart', e => {
-    if (currentTab === 5 && currentBibleSection) { locked = true; return; }
+    if (currentTab === 5) { locked = true; return; }
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
     dragging = false;
@@ -226,6 +231,8 @@ function escapeHtml(str) {
     return m;
   });
 }
+
+
 // 권한에 따라 관리자 전용 요소 표시/숨김
 function applyRole(role) {
   const isAdmin = role === 'admin';

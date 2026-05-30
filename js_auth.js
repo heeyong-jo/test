@@ -340,102 +340,34 @@ function doSignup() {
 
 
 async function loginSuccess(acc) {
-  console.log('loginSuccess 실행:', acc.name);
-  
-  // 현재 사용자 정보 설정
   currentUser = {
-    id: acc.id,
-    name: acc.name,
-    role: acc.role || 'member',
-    email: acc.email || '',
-    phone: acc.phone || '',
-    birth: acc.birth || ''
+    id: acc.id, name: acc.name, role: acc.role || 'member',
+    email: acc.email, phone: acc.phone, birth: acc.birth
   };
-  window.currentUser = currentUser;
-  
-  // 로그인 정보 저장
-  if (typeof LS !== 'undefined') {
-    LS.save('logged', {
-      id: acc.id,
-      ts: Date.now(),
-      email: acc.email || '',
-      phone: acc.phone || '',
-      birth: acc.birth || '',
-      name: acc.name
-    });
+  LS.save('logged', {
+    id: acc.id, ts: Date.now(), email: acc.email,
+    phone: acc.phone, birth: acc.birth, name: acc.name
+  });
+  document.getElementById('screen-login').style.display = 'none';
+  const roleText = roleLabel[currentUser.role] || '회원';
+  document.getElementById('user-name-display').textContent = acc.name;
+  document.getElementById('user-role-display').textContent = roleText;
+  document.getElementById('setting-user-info').textContent = acc.name + ' (' + roleText + ')';
+  applyRole(currentUser.role);
+  if(window.FB_READY && window.FB) {
+    await fbLoadAll();
+    await forceRefreshData();
   }
-  
-  // 로그인 화면 닫기
-  const loginScreen = document.getElementById('screen-login');
-  if (loginScreen) loginScreen.style.display = 'none';
-  
-  // 사용자 정보 표시 업데이트
-  const roleText = roleLabel ? (roleLabel[currentUser.role] || '회원') : (currentUser.role === 'admin' ? '관리자' : '일반성도');
-  const userNameSpan = document.getElementById('user-name-display');
-  const userRoleSpan = document.getElementById('user-role-display');
-  const settingInfoSpan = document.getElementById('setting-user-info');
-  
-  if (userNameSpan) userNameSpan.textContent = acc.name;
-  if (userRoleSpan) userRoleSpan.textContent = roleText;
-  if (settingInfoSpan) settingInfoSpan.textContent = acc.name + ' (' + roleText + ')';
-  
-  console.log('사용자 정보 UI 업데이트 완료');
-  
-  // 권한에 따른 UI 표시 (먼저 실행)
-  if (typeof applyRole === 'function') {
-    applyRole(currentUser.role);
-    console.log('권한 적용 완료:', currentUser.role);
+  currentTab = 0;
+  showTab(0);
+  if(typeof renderServiceView === 'function') renderServiceView();
+  if(typeof renderScheduleView === 'function') renderScheduleView();
+  if(typeof renderTodayVerse === 'function') renderTodayVerse();
+  if(acc.role === 'manager') {
+    setTimeout(() => { if(typeof renderApprovalsAccord === 'function') renderApprovalsAccord(); }, 150);
   }
-  
-  // 현재 탭을 홈으로 리셋
-  currentTab = -1;
-  
-  // 페이지 표시 초기화 (모든 페이지 숨기기)
-  for (let i = 0; i < 7; i++) {
-    const page = document.getElementById('p' + i);
-    if (page) page.classList.remove('show');
-  }
-  
-  // 탭 활성화 리셋 (모든 탭 비활성화)
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  
-  // 약간의 지연 후 홈 탭으로 이동
-  setTimeout(() => {
-    console.log('홈 탭으로 이동 시작');
-    if (typeof showTab === 'function') {
-      showTab(0);
-    }
-  }, 50);
-  
-  // Firebase 데이터 로드
-  if (window.FB_READY && typeof fbLoadAll === 'function') {
-    try {
-      await fbLoadAll();
-      console.log('Firebase 데이터 로드 완료');
-    } catch(e) {
-      console.error('Firebase 데이터 로드 실패:', e);
-    }
-  }
-  
-  // 각종 데이터 렌더링
-  setTimeout(() => {
-    if (typeof renderServiceView === 'function') renderServiceView();
-    if (typeof renderScheduleView === 'function') renderScheduleView();
-    if (typeof renderTodayVerse === 'function') renderTodayVerse();
-    if (typeof renderHomeNotices === 'function') renderHomeNotices();
-  }, 100);
-  
-  // 매니저 권한일 때 승인 관리 렌더링
-  if (acc.role === 'manager' || acc.role === 'admin') {
-    setTimeout(() => {
-      if (typeof renderApprovalsAccord === 'function') renderApprovalsAccord();
-    }, 200);
-  }
-  
   showToast('✅ ' + acc.name + '님 환영합니다');
 }
-
-
 // 로그아웃
 function doLogout() {
   if (!confirm('로그아웃하시겠습니까?')) return;
@@ -737,26 +669,6 @@ function changePassword() {
 }
 
 
-if (!user) {
-    errDiv.textContent = '입력한 정보와 일치하는 회원이 없습니다';
-    errDiv.style.display = 'block';
-    return;
-  }
-  
-  // 일반 회원 비밀번호 재설정
-  const tmpPw = 'gajwajeil' + Math.floor(1000 + Math.random() * 9000);
-  user.pw = tmpPw;
-  if (typeof LS !== 'undefined') {
-    LS.save('approvedUsers', approvedUsers);
-  }
-  showLoginForm();
-  setTimeout(() => {
-    errDiv.style.background = 'rgba(134,239,172,0.15)';
-    errDiv.style.color = '#86efac';
-    errDiv.textContent = '임시 비밀번호: ' + tmpPw + ' (로그인 후 변경하세요)';
-    errDiv.style.display = 'block';
-  }, 300);
-}
 // ==================== 페이지 로드 시 자동 복원 ====================
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', function() {

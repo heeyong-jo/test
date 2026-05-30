@@ -135,7 +135,7 @@ function afterTab(n) {
   }
   
   el.addEventListener('touchstart', e => {
-    if (currentTab === 5) { locked = true; return; }
+    if (currentTab === 5 && currentBibleSection) { locked = true; return; }
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
     dragging = false;
@@ -159,7 +159,7 @@ function afterTab(n) {
         return;
       }
       dragging = true;
-      dragDir = dx > 0 ? 1 : -1;
+      dragDir = dx > 0 ? -1 : 1;
       if (curEl) {
         const r = curEl.getBoundingClientRect();
         curEl.style.cssText = `display:block !important;position:fixed;top:${r.top}px;left:0;width:100%;z-index:9;transform:translateX(0);overflow-y:hidden;max-height:calc(100dvh - ${r.top}px);will-change:transform;`;

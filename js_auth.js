@@ -1,19 +1,24 @@
-﻿// ==================== 로그인/회원가입/비밀번호 찾기 ====================
+﻿// js_auth.js - 전체를 이 코드로 교체
+// ==================== 로그인/회원가입/비밀번호 찾기 ====================
 
 
-// 전역 변수 안전하게 초기화
-if (typeof pendingUsers === 'undefined') {
-  var pendingUsers = [];
-}
-if (typeof approvedUsers === 'undefined') {
-  var approvedUsers = [];
-}
-if (typeof authMode === 'undefined') {
-  var authMode = 'login';
-}
-if (typeof idCheckTimer === 'undefined') {
-  var idCheckTimer = null;
-}
+// 전역 변수 안전하게 초기화 (모든 var 선언을 window 객체에 직접 할당)
+if (typeof window.pendingUsers === 'undefined') window.pendingUsers = [];
+if (typeof window.approvedUsers === 'undefined') window.approvedUsers = [];
+if (typeof window.authMode === 'undefined') window.authMode = 'login';
+if (typeof window.idCheckTimer === 'undefined') window.idCheckTimer = null;
+if (typeof window.currentUser === 'undefined') window.currentUser = null;
+
+
+// 전역 변수로 복사 (편의상)
+var pendingUsers = window.pendingUsers;
+var approvedUsers = window.approvedUsers;
+var authMode = window.authMode;
+var idCheckTimer = window.idCheckTimer;
+var currentUser = window.currentUser;
+
+
+// ADMIN_ACCOUNTS는 js_confige.js에서 이미 선언됨 (재선언하지 않음)
 
 
 // LS가 정의되어 있을 때만 데이터 로드
@@ -21,8 +26,14 @@ if (typeof LS !== 'undefined') {
   try {
     var loadedPending = LS.load('pendingUsers', []);
     var loadedApproved = LS.load('approvedUsers', []);
-    if (loadedPending && Array.isArray(loadedPending)) pendingUsers = loadedPending;
-    if (loadedApproved && Array.isArray(loadedApproved)) approvedUsers = loadedApproved;
+    if (loadedPending && Array.isArray(loadedPending)) {
+      window.pendingUsers = loadedPending;
+      pendingUsers = window.pendingUsers;
+    }
+    if (loadedApproved && Array.isArray(loadedApproved)) {
+      window.approvedUsers = loadedApproved;
+      approvedUsers = window.approvedUsers;
+    }
     console.log('회원 데이터 로드 완료 - 승인대기:', pendingUsers.length, '승인완료:', approvedUsers.length);
   } catch(e) {
     console.error('회원 데이터 로드 실패:', e);
@@ -31,14 +42,15 @@ if (typeof LS !== 'undefined') {
 
 
 // 로그인 폼 표시
-function showLoginForm() {
-  const loginForm = document.getElementById('login-form');
-  const signupExtra = document.getElementById('signup-extra');
-  const forgotForm = document.getElementById('forgot-form');
-  const loginErr = document.getElementById('login-err');
-  const pendingMsg = document.getElementById('pending-msg');
-  const authTabLogin = document.getElementById('auth-tab-login');
-  const authTabSignup = document.getElementById('auth-tab-signup');
+window.showLoginForm = function() {
+  console.log('showLoginForm 호출됨');
+  var loginForm = document.getElementById('login-form');
+  var signupExtra = document.getElementById('signup-extra');
+  var forgotForm = document.getElementById('forgot-form');
+  var loginErr = document.getElementById('login-err');
+  var pendingMsg = document.getElementById('pending-msg');
+  var authTabLogin = document.getElementById('auth-tab-login');
+  var authTabSignup = document.getElementById('auth-tab-signup');
   
   if (loginForm) loginForm.style.display = 'block';
   if (signupExtra) signupExtra.style.display = 'none';
@@ -51,36 +63,40 @@ function showLoginForm() {
   if (authTabSignup) {
     authTabSignup.style.cssText = 'flex:1;padding:10px;border:none;border-radius:10px;background:transparent;color:rgba(255,255,255,0.6);font-size:13px;font-weight:600;';
   }
-  authMode = 'login';
-}
+  window.authMode = 'login';
+  authMode = window.authMode;
+};
 
 
 // 비밀번호 찾기 폼 표시
-function showForgotPw() {
-  const loginForm = document.getElementById('login-form');
-  const signupExtra = document.getElementById('signup-extra');
-  const forgotForm = document.getElementById('forgot-form');
-  const loginErr = document.getElementById('login-err');
+window.showForgotPw = function() {
+  console.log('showForgotPw 호출됨');
+  var loginForm = document.getElementById('login-form');
+  var signupExtra = document.getElementById('signup-extra');
+  var forgotForm = document.getElementById('forgot-form');
+  var loginErr = document.getElementById('login-err');
   
   if (loginForm) loginForm.style.display = 'none';
   if (signupExtra) signupExtra.style.display = 'none';
   if (forgotForm) forgotForm.style.display = 'block';
   if (loginErr) loginErr.style.display = 'none';
-}
+};
 
 
 // 로그인/회원가입 탭 전환
-function switchAuthTab(mode) {
-  authMode = mode;
-  const isLogin = mode === 'login';
-  const authTabLogin = document.getElementById('auth-tab-login');
-  const authTabSignup = document.getElementById('auth-tab-signup');
-  const loginForm = document.getElementById('login-form');
-  const signupExtra = document.getElementById('signup-extra');
-  const forgotForm = document.getElementById('forgot-form');
-  const loginErr = document.getElementById('login-err');
-  const pendingMsg = document.getElementById('pending-msg');
-  const idCheckMsg = document.getElementById('id-check-msg');
+window.switchAuthTab = function(mode) {
+  console.log('switchAuthTab 호출됨:', mode);
+  window.authMode = mode;
+  authMode = window.authMode;
+  var isLogin = mode === 'login';
+  var authTabLogin = document.getElementById('auth-tab-login');
+  var authTabSignup = document.getElementById('auth-tab-signup');
+  var loginForm = document.getElementById('login-form');
+  var signupExtra = document.getElementById('signup-extra');
+  var forgotForm = document.getElementById('forgot-form');
+  var loginErr = document.getElementById('login-err');
+  var pendingMsg = document.getElementById('pending-msg');
+  var idCheckMsg = document.getElementById('id-check-msg');
   
   if (authTabLogin) {
     authTabLogin.style.cssText = isLogin ? 
@@ -98,29 +114,31 @@ function switchAuthTab(mode) {
   if (loginErr) loginErr.style.display = 'none';
   if (pendingMsg) pendingMsg.style.display = 'none';
   if (idCheckMsg) idCheckMsg.textContent = '';
-}
+};
 
 
 // 로그인/회원가입 제출
-function doAuthSubmit() {
-  if (authMode === 'login') doLogin();
-  else doSignup();
-}
+window.doAuthSubmit = function() {
+  console.log('doAuthSubmit 호출됨, authMode:', authMode);
+  if (authMode === 'login') window.doLogin();
+  else window.doSignup();
+};
 
 
 // 로그인 처리
-function doLogin() {
-  const idInput = document.getElementById('li-id');
-  const pwInput = document.getElementById('li-pw');
-  const errDiv = document.getElementById('login-err');
+window.doLogin = function() {
+  console.log('doLogin 호출됨');
+  var idInput = document.getElementById('li-id');
+  var pwInput = document.getElementById('li-pw');
+  var errDiv = document.getElementById('login-err');
   
   if (!idInput || !pwInput || !errDiv) {
     console.error('로그인 폼 요소를 찾을 수 없습니다');
     return;
   }
   
-  const id = idInput.value.trim();
-  const pw = pwInput.value;
+  var id = idInput.value.trim();
+  var pw = pwInput.value;
   errDiv.style.display = 'none';
   
   if (!id || !pw) {
@@ -129,144 +147,127 @@ function doLogin() {
     return;
   }
   
-  // 관리자 계정 확인
-  const admin = ADMIN_ACCOUNTS.find(a => a.id === id && a.pw === pw);
-  if (admin) {
-    loginSuccess(admin);
-    return;
+  // ADMIN_ACCOUNTS 확인 (js_confige.js에서 선언됨)
+  if (typeof ADMIN_ACCOUNTS !== 'undefined') {
+    var admin = ADMIN_ACCOUNTS.find(function(a) { return a.id === id && a.pw === pw; });
+    if (admin) {
+      window.loginSuccess(admin);
+      return;
+    }
   }
   
   // 승인된 일반 회원 확인
-  const user = approvedUsers.find(u => u.id === id && u.pw === pw);
+  var user = window.approvedUsers.find(function(u) { return u.id === id && u.pw === pw; });
   if (user) {
-    loginSuccess(user);
+    window.loginSuccess(user);
     return;
   }
   
   // 승인 대기 중인 회원 확인
-  const pending = pendingUsers.find(u => u.id === id && u.pw === pw);
+  var pending = window.pendingUsers.find(function(u) { return u.id === id && u.pw === pw; });
   if (pending) {
-    const pendingMsg = document.getElementById('pending-msg');
+    var pendingMsg = document.getElementById('pending-msg');
     if (pendingMsg) pendingMsg.style.display = 'block';
     return;
   }
   
   errDiv.textContent = '아이디 또는 비밀번호가 일치하지 않습니다';
   errDiv.style.display = 'block';
-}
+};
 
 
-// 아이디 중복 확인
-function checkIdDuplicate(val) {
-  const msg = document.getElementById('id-check-msg');
-  if (!msg) return;
-  if (!val) {
-    msg.textContent = '';
-    return;
-  }
-  if (val.length < 4) {
-    msg.style.color = '#fca5a5';
-    msg.textContent = '아이디는 4자 이상 입력해주세요';
-    return;
-  }
+// 로그인 성공 처리
+window.loginSuccess = function(acc) {
+  console.log('loginSuccess 실행:', acc.name);
   
-  clearTimeout(idCheckTimer);
-  idCheckTimer = setTimeout(() => {
-    const taken = ADMIN_ACCOUNTS.find(a => a.id === val) || 
-                  pendingUsers.find(u => u.id === val) || 
-                  approvedUsers.find(u => u.id === val);
-    if (taken) {
-      msg.style.color = '#fca5a5';
-      msg.textContent = '❌ 이미 사용 중인 아이디입니다';
-    } else {
-      msg.style.color = '#86efac';
-      msg.textContent = '✅ 사용 가능한 아이디입니다';
-    }
-  }, 400);
-}
-
-
-// 비밀번호 재설정
-function doResetPassword() {
-  const idInput = document.getElementById('forgot-id');
-  const emailInput = document.getElementById('forgot-email');
-  const phoneInput = document.getElementById('forgot-phone');
-  const errDiv = document.getElementById('login-err');
+  window.currentUser = {
+    id: acc.id,
+    name: acc.name,
+    role: acc.role || 'member',
+    email: acc.email || '',
+    phone: acc.phone || '',
+    birth: acc.birth || ''
+  };
+  currentUser = window.currentUser;
   
-  if (!idInput || !emailInput || !phoneInput || !errDiv) return;
-  
-  const id = idInput.value.trim();
-  const email = emailInput.value.trim();
-  const phoneRaw = phoneInput.value.trim();
-  const phone = phoneRaw.replace(/-/g, '');
-  
-  errDiv.style.display = 'none';
-  
-  if (!id || !email || !phone) {
-    errDiv.textContent = '아이디, 이메일, 전화번호를 모두 입력하세요';
-    errDiv.style.display = 'block';
-    return;
-  }
-  
-  // 관리자 계정 검색
-  const admin = ADMIN_ACCOUNTS.find(a => a.id === id && a.email === email && (a.phone || '').replace(/-/g, '') === phone);
-  if (admin) {
-    const tmpPw = 'gajwajeil' + Math.floor(1000 + Math.random() * 9000);
-    admin.pw = tmpPw;
-    showLoginForm();
-    setTimeout(() => {
-      errDiv.style.background = 'rgba(134,239,172,0.15)';
-      errDiv.style.color = '#86efac';
-      errDiv.textContent = '임시 비밀번호: ' + tmpPw + ' (로그인 후 변경하세요)';
-      errDiv.style.display = 'block';
-    }, 300);
-    return;
-  }
-  
-  // 일반 회원 검색
-  const user = approvedUsers.find(u => u.id === id && u.email === email && (u.phone || '').replace(/-/g, '') === phone);
-  if (!user) {
-    errDiv.textContent = '입력한 정보와 일치하는 회원이 없습니다';
-    errDiv.style.display = 'block';
-    return;
-  }
-  
-  const tmpPw = 'gajwajeil' + Math.floor(1000 + Math.random() * 9000);
-  user.pw = tmpPw;
   if (typeof LS !== 'undefined') {
-    LS.save('approvedUsers', approvedUsers);
+    LS.save('logged', {
+      id: acc.id,
+      ts: Date.now(),
+      email: acc.email || '',
+      phone: acc.phone || '',
+      birth: acc.birth || '',
+      name: acc.name
+    });
   }
-  showLoginForm();
-  setTimeout(() => {
-    errDiv.style.background = 'rgba(134,239,172,0.15)';
-    errDiv.style.color = '#86efac';
-    errDiv.textContent = '임시 비밀번호: ' + tmpPw + ' (로그인 후 변경하세요)';
-    errDiv.style.display = 'block';
-  }, 300);
-}
+  
+  var loginScreen = document.getElementById('screen-login');
+  if (loginScreen) loginScreen.style.display = 'none';
+  
+  var roleText = (typeof roleLabel !== 'undefined' && roleLabel[window.currentUser.role]) ? roleLabel[window.currentUser.role] : (window.currentUser.role === 'admin' ? '관리자' : '일반성도');
+  var userNameSpan = document.getElementById('user-name-display');
+  var userRoleSpan = document.getElementById('user-role-display');
+  var settingInfoSpan = document.getElementById('setting-user-info');
+  
+  if (userNameSpan) userNameSpan.textContent = acc.name;
+  if (userRoleSpan) userRoleSpan.textContent = roleText;
+  if (settingInfoSpan) settingInfoSpan.textContent = acc.name + ' (' + roleText + ')';
+  
+  if (typeof applyRole === 'function') {
+    applyRole(window.currentUser.role);
+  }
+  
+  window.currentTab = -1;
+  
+  for (var i = 0; i < 7; i++) {
+    var page = document.getElementById('p' + i);
+    if (page) page.classList.remove('show');
+  }
+  
+  document.querySelectorAll('.tab').forEach(function(t) { return t.classList.remove('active'); });
+  
+  setTimeout(function() {
+    if (typeof showTab === 'function') showTab(0);
+  }, 50);
+  
+  if (window.FB_READY && typeof fbLoadAll === 'function') {
+    fbLoadAll().catch(function(e) { console.error('Firebase 데이터 로드 실패:', e); });
+  }
+  
+  setTimeout(function() {
+    if (typeof renderServiceView === 'function') renderServiceView();
+    if (typeof renderScheduleView === 'function') renderScheduleView();
+    if (typeof renderTodayVerse === 'function') renderTodayVerse();
+    if (typeof renderHomeNotices === 'function') renderHomeNotices();
+  }, 100);
+  
+  if (typeof showToast === 'function') showToast('✅ ' + acc.name + '님 환영합니다');
+  else alert('✅ ' + acc.name + '님 환영합니다');
+};
 
 
 // 회원가입 신청
-function doSignup() {
-  const suIdEl = document.getElementById('su-id');
-  const suPwEl = document.getElementById('su-pw');
-  const suPw2El = document.getElementById('su-pw2');
-  const suNameEl = document.getElementById('su-name');
-  const suPhoneEl = document.getElementById('su-phone');
-  const suBirthEl = document.getElementById('su-birth');
-  const suEmailEl = document.getElementById('su-email');
-  const errDiv = document.getElementById('login-err');
-  const msg = document.getElementById('id-check-msg');
+window.doSignup = function() {
+  console.log('doSignup 호출됨');
+  var suIdEl = document.getElementById('su-id');
+  var suPwEl = document.getElementById('su-pw');
+  var suPw2El = document.getElementById('su-pw2');
+  var suNameEl = document.getElementById('su-name');
+  var suPhoneEl = document.getElementById('su-phone');
+  var suBirthEl = document.getElementById('su-birth');
+  var suEmailEl = document.getElementById('su-email');
+  var errDiv = document.getElementById('login-err');
+  var msg = document.getElementById('id-check-msg');
   
   if (!suIdEl || !suPwEl || !suPw2El || !suNameEl || !errDiv) return;
   
-  const signupId = suIdEl.value.trim();
-  const pw = suPwEl.value;
-  const pw2 = suPw2El.value;
-  const name = suNameEl.value.trim();
-  const phone = suPhoneEl ? suPhoneEl.value.trim() : '';
-  const birth = suBirthEl ? suBirthEl.value : '';
-  const email = suEmailEl ? suEmailEl.value.trim() : '';
+  var signupId = suIdEl.value.trim();
+  var pw = suPwEl.value;
+  var pw2 = suPw2El.value;
+  var name = suNameEl.value.trim();
+  var phone = suPhoneEl ? suPhoneEl.value.trim() : '';
+  var birth = suBirthEl ? suBirthEl.value : '';
+  var email = suEmailEl ? suEmailEl.value.trim() : '';
   
   errDiv.style.display = 'none';
   
@@ -295,25 +296,28 @@ function doSignup() {
     errDiv.style.display = 'block';
     return;
   }
-  if (ADMIN_ACCOUNTS.find(a => a.id === signupId) || 
-      pendingUsers.find(u => u.id === signupId) || 
-      approvedUsers.find(u => u.id === signupId)) {
+  
+  // ADMIN_ACCOUNTS 확인
+  var idExists = false;
+  if (typeof ADMIN_ACCOUNTS !== 'undefined') {
+    idExists = ADMIN_ACCOUNTS.some(function(a) { return a.id === signupId; });
+  }
+  if (idExists || window.pendingUsers.some(function(u) { return u.id === signupId; }) || window.approvedUsers.some(function(u) { return u.id === signupId; })) {
     errDiv.textContent = '이미 사용 중인 아이디입니다';
     errDiv.style.display = 'block';
     return;
   }
   
-  const joinDate = new Date().toISOString().slice(0, 10);
-  pendingUsers.push({
+  var joinDate = new Date().toISOString().slice(0, 10);
+  window.pendingUsers.push({
     id: signupId, pw: pw, name: name, email: email, phone: phone, birth: birth,
     role: 'member', status: 'pending', ts: Date.now(), joinDate: joinDate
   });
   
   if (typeof LS !== 'undefined') {
-    LS.save('pendingUsers', pendingUsers);
+    LS.save('pendingUsers', window.pendingUsers);
   }
   
-  // 입력 필드 초기화
   suIdEl.value = '';
   if (suPwEl) suPwEl.value = '';
   if (suPw2El) suPw2El.value = '';
@@ -322,350 +326,146 @@ function doSignup() {
   if (suPhoneEl) suPhoneEl.value = '';
   if (suBirthEl) suBirthEl.value = '';
   
-  switchAuthTab('login');
-  const pendingMsg = document.getElementById('pending-msg');
+  window.switchAuthTab('login');
+  var pendingMsg = document.getElementById('pending-msg');
   if (pendingMsg) pendingMsg.style.display = 'block';
-  showToast('✅ 가입 신청이 완료되었습니다');
-}
+  if (typeof showToast === 'function') showToast('✅ 가입 신청이 완료되었습니다');
+  else alert('✅ 가입 신청이 완료되었습니다');
+};
 
 
-async function loginSuccess(acc) {
-  currentUser = {
-    id: acc.id, name: acc.name, role: acc.role || 'member',
-    email: acc.email, phone: acc.phone, birth: acc.birth
-  };
-  LS.save('logged', {
-    id: acc.id, ts: Date.now(), email: acc.email,
-    phone: acc.phone, birth: acc.birth, name: acc.name
-  });
-  document.getElementById('screen-login').style.display = 'none';
-  const roleText = roleLabel[currentUser.role] || '회원';
-  document.getElementById('user-name-display').textContent = acc.name;
-  document.getElementById('user-role-display').textContent = roleText;
-  document.getElementById('setting-user-info').textContent = acc.name + ' (' + roleText + ')';
-  applyRole(currentUser.role);
-  if(window.FB_READY && window.FB) {
-    await fbLoadAll();
-    await forceRefreshData();
+// 비밀번호 재설정
+window.doResetPassword = function() {
+  console.log('doResetPassword 호출됨');
+  var idInput = document.getElementById('forgot-id');
+  var emailInput = document.getElementById('forgot-email');
+  var phoneInput = document.getElementById('forgot-phone');
+  var errDiv = document.getElementById('login-err');
+  
+  if (!idInput || !emailInput || !phoneInput || !errDiv) return;
+  
+  var id = idInput.value.trim();
+  var email = emailInput.value.trim();
+  var phoneRaw = phoneInput.value.trim();
+  var phone = phoneRaw.replace(/-/g, '');
+  
+  errDiv.style.display = 'none';
+  
+  if (!id || !email || !phone) {
+    errDiv.textContent = '아이디, 이메일, 전화번호를 모두 입력하세요';
+    errDiv.style.display = 'block';
+    return;
   }
-  currentTab = 0;
-  showTab(0);
-  if(typeof renderServiceView === 'function') renderServiceView();
-  if(typeof renderScheduleView === 'function') renderScheduleView();
-  if(typeof renderTodayVerse === 'function') renderTodayVerse();
-  if(acc.role === 'manager') {
-    setTimeout(() => { if(typeof renderApprovalsAccord === 'function') renderApprovalsAccord(); }, 150);
+  
+  // 관리자 계정 검색
+  if (typeof ADMIN_ACCOUNTS !== 'undefined') {
+    var admin = ADMIN_ACCOUNTS.find(function(a) { return a.id === id && a.email === email && (a.phone || '').replace(/-/g, '') === phone; });
+    if (admin) {
+      var tmpPw = 'gajwajeil' + Math.floor(1000 + Math.random() * 9000);
+      admin.pw = tmpPw;
+      window.showLoginForm();
+      setTimeout(function() {
+        errDiv.style.background = 'rgba(134,239,172,0.15)';
+        errDiv.style.color = '#86efac';
+        errDiv.textContent = '임시 비밀번호: ' + tmpPw + ' (로그인 후 변경하세요)';
+        errDiv.style.display = 'block';
+      }, 300);
+      return;
+    }
   }
-  showToast('✅ ' + acc.name + '님 환영합니다');
-}
+  
+  // 일반 회원 검색
+  var user = window.approvedUsers.find(function(u) { return u.id === id && u.email === email && (u.phone || '').replace(/-/g, '') === phone; });
+  if (!user) {
+    errDiv.textContent = '입력한 정보와 일치하는 회원이 없습니다';
+    errDiv.style.display = 'block';
+    return;
+  }
+  
+  var tmpPw = 'gajwajeil' + Math.floor(1000 + Math.random() * 9000);
+  user.pw = tmpPw;
+  if (typeof LS !== 'undefined') {
+    LS.save('approvedUsers', window.approvedUsers);
+  }
+  window.showLoginForm();
+  setTimeout(function() {
+    errDiv.style.background = 'rgba(134,239,172,0.15)';
+    errDiv.style.color = '#86efac';
+    errDiv.textContent = '임시 비밀번호: ' + tmpPw + ' (로그인 후 변경하세요)';
+    errDiv.style.display = 'block';
+  }, 300);
+};
+
+
+// 아이디 중복 확인
+window.checkIdDuplicate = function(val) {
+  var msg = document.getElementById('id-check-msg');
+  if (!msg) return;
+  if (!val) {
+    msg.textContent = '';
+    return;
+  }
+  if (val.length < 4) {
+    msg.style.color = '#fca5a5';
+    msg.textContent = '아이디는 4자 이상 입력해주세요';
+    return;
+  }
+  
+  clearTimeout(window.idCheckTimer);
+  window.idCheckTimer = setTimeout(function() {
+    var taken = false;
+    if (typeof ADMIN_ACCOUNTS !== 'undefined') {
+      taken = ADMIN_ACCOUNTS.some(function(a) { return a.id === val; });
+    }
+    taken = taken || window.pendingUsers.some(function(u) { return u.id === val; }) || window.approvedUsers.some(function(u) { return u.id === val; });
+    if (taken) {
+      msg.style.color = '#fca5a5';
+      msg.textContent = '❌ 이미 사용 중인 아이디입니다';
+    } else {
+      msg.style.color = '#86efac';
+      msg.textContent = '✅ 사용 가능한 아이디입니다';
+    }
+  }, 400);
+};
+
+
 // 로그아웃
-function doLogout() {
+window.doLogout = function() {
   if (!confirm('로그아웃하시겠습니까?')) return;
   
   if (typeof LS !== 'undefined') {
     LS.del('logged');
   }
   
-  currentUser = null;
   window.currentUser = null;
+  currentUser = null;
   
-  if (typeof switchAuthTab === 'function') {
-    switchAuthTab('login');
-  }
+  window.switchAuthTab('login');
   
-  const loginScreen = document.getElementById('screen-login');
+  var loginScreen = document.getElementById('screen-login');
   if (loginScreen) loginScreen.style.display = 'flex';
   
   if (typeof showTab === 'function') {
     showTab(0);
   }
   
-  showToast('로그아웃되었습니다');
-}
+  if (typeof showToast === 'function') showToast('로그아웃되었습니다');
+  else alert('로그아웃되었습니다');
+};
 
 
-// ==================== 로그인 상태 복원 (페이지 로드 시) ====================
-
-
-function restoreLogin() {
-  console.log('🔍 restoreLogin 실행 - 로그인 상태 복원 시도');
-  
-  // 1. localStorage에서 저장된 로그인 정보 확인
-  let savedLogin = null;
-  if (typeof LS !== 'undefined' && typeof LS.load === 'function') {
-    savedLogin = LS.load('logged', null);
-  } else {
-    try {
-      const saved = localStorage.getItem('ch2_logged');
-      if (saved) savedLogin = JSON.parse(saved);
-    } catch(e) {}
-  }
-  
-  if (!savedLogin || !savedLogin.id) {
-    console.log('⚠️ 저장된 로그인 정보 없음');
-    return false;
-  }
-  
-  console.log('📁 저장된 로그인 정보:', savedLogin.id);
-  
-  // 2. 관리자 계정에서 찾기
-  let user = ADMIN_ACCOUNTS.find(a => a.id === savedLogin.id);
-  if (user) {
-    console.log('✅ 관리자 계정 복원:', user.name);
-    currentUser = {
-      id: user.id,
-      name: user.name,
-      role: user.role || 'admin',
-      email: user.email || '',
-      phone: user.phone || '',
-      birth: user.birth || ''
-    };
-    window.currentUser = currentUser;
-    
-    // UI 업데이트
-    const userNameSpan = document.getElementById('user-name-display');
-    const userRoleSpan = document.getElementById('user-role-display');
-    if (userNameSpan) userNameSpan.textContent = user.name;
-    if (userRoleSpan) userRoleSpan.textContent = '관리자';
-    
-    if (typeof applyRole === 'function') applyRole(currentUser.role);
-    return true;
-  }
-  
-  // 3. 일반 회원에서 찾기
-  if (Array.isArray(approvedUsers)) {
-    user = approvedUsers.find(u => u.id === savedLogin.id);
-    if (user) {
-      console.log('✅ 일반 회원 복원:', user.name);
-      currentUser = {
-        id: user.id,
-        name: user.name,
-        role: user.role || 'member',
-        email: user.email || '',
-        phone: user.phone || '',
-        birth: user.birth || ''
-      };
-      window.currentUser = currentUser;
-      
-      const userNameSpan = document.getElementById('user-name-display');
-      const userRoleSpan = document.getElementById('user-role-display');
-      if (userNameSpan) userNameSpan.textContent = user.name;
-      if (userRoleSpan) userRoleSpan.textContent = '일반성도';
-      
-      if (typeof applyRole === 'function') applyRole(currentUser.role);
-      return true;
-    }
-  }
-  
-  console.log('❌ 복원할 사용자 없음');
-  return false;
-}
-
-
-// 프로필 드롭다운 토글
-function toggleProfileDropdown() {
-  const dropdown = document.getElementById('profile-dropdown');
-  if (!dropdown) return;
-  
-  dropdown.classList.toggle('show');
-  
-  setTimeout(() => {
-    const closeDropdown = function(e) {
-      if (!dropdown.contains(e.target) && !e.target.closest('.user-badge')) {
-        dropdown.classList.remove('show');
-        document.removeEventListener('click', closeDropdown);
-      }
-    };
-    document.addEventListener('click', closeDropdown);
-  }, 0);
-}
-
-
-// 내 정보 보기
-function openMyProfile() {
-  if (!currentUser) {
-    showToast('로그인이 필요합니다');
-    return;
-  }
-  
-  let userInfo = ADMIN_ACCOUNTS.find(a => a.id === currentUser.id) || 
-                 approvedUsers.find(u => u.id === currentUser.id);
-  
-  if (!userInfo) {
-    showToast('사용자 정보를 찾을 수 없습니다');
-    return;
-  }
-  
-  const nameSpan = document.getElementById('my-pv-name');
-  const emailSpan = document.getElementById('my-pv-email');
-  const phoneSpan = document.getElementById('my-pv-phone');
-  const birthSpan = document.getElementById('my-pv-birth');
-  const viewDiv = document.getElementById('my-profile-view');
-  const editDiv = document.getElementById('my-profile-edit');
-  const modal = document.getElementById('modal-my-profile');
-  
-  if (nameSpan) nameSpan.textContent = userInfo.name || currentUser.name;
-  if (emailSpan) emailSpan.textContent = userInfo.email || '등록된 이메일 없음';
-  if (phoneSpan) phoneSpan.textContent = userInfo.phone || '등록된 전화번호 없음';
-  if (birthSpan) birthSpan.textContent = userInfo.birth || '등록된 생년월일 없음';
-  if (viewDiv) viewDiv.style.display = 'block';
-  if (editDiv) editDiv.style.display = 'none';
-  if (modal) modal.style.display = 'flex';
-}
-
-
-// 내 정보 수정 모드 열기
-function openEditMyProfile() {
-  if (!currentUser) return;
-  
-  let userInfo = ADMIN_ACCOUNTS.find(a => a.id === currentUser.id) || 
-                 approvedUsers.find(u => u.id === currentUser.id);
-  
-  if (!userInfo) return;
-  
-  const nameInput = document.getElementById('my-em-name');
-  const phoneInput = document.getElementById('my-em-phone');
-  const birthInput = document.getElementById('my-em-birth');
-  const viewDiv = document.getElementById('my-profile-view');
-  const editDiv = document.getElementById('my-profile-edit');
-  
-  if (nameInput) nameInput.value = userInfo.name || '';
-  if (phoneInput) phoneInput.value = userInfo.phone || '';
-  if (birthInput) birthInput.value = userInfo.birth || '';
-  if (viewDiv) viewDiv.style.display = 'none';
-  if (editDiv) editDiv.style.display = 'block';
-}
-
-
-// 내 정보 저장
-function saveMyProfile() {
-  if (!currentUser) return;
-  
-  const newName = document.getElementById('my-em-name') ? document.getElementById('my-em-name').value.trim() : '';
-  const newPhone = document.getElementById('my-em-phone') ? document.getElementById('my-em-phone').value.trim() : '';
-  const newBirth = document.getElementById('my-em-birth') ? document.getElementById('my-em-birth').value : '';
-  
-  if (!newName) {
-    showToast('이름을 입력하세요');
-    return;
-  }
-  
-  const adminIdx = ADMIN_ACCOUNTS.findIndex(a => a.id === currentUser.id);
-  if (adminIdx !== -1) {
-    ADMIN_ACCOUNTS[adminIdx].name = newName;
-    ADMIN_ACCOUNTS[adminIdx].phone = newPhone;
-    ADMIN_ACCOUNTS[adminIdx].birth = newBirth;
-    currentUser.name = newName;
-  } else {
-    const userIdx = approvedUsers.findIndex(u => u.id === currentUser.id);
-    if (userIdx !== -1) {
-      approvedUsers[userIdx].name = newName;
-      approvedUsers[userIdx].phone = newPhone;
-      approvedUsers[userIdx].birth = newBirth;
-      if (typeof LS !== 'undefined') {
-        LS.save('approvedUsers', approvedUsers);
-      }
-      currentUser.name = newName;
-    }
-  }
-  
-  // 화면 표시 업데이트
-  const userNameSpan = document.getElementById('user-name-display');
-  const settingInfoSpan = document.getElementById('setting-user-info');
-  const roleText = currentUser.role === 'admin' ? '관리자' : '일반성도';
-  
-  if (userNameSpan) userNameSpan.textContent = newName;
-  if (settingInfoSpan) settingInfoSpan.textContent = newName + ' (' + roleText + ')';
-  
-  const modal = document.getElementById('modal-my-profile');
-  if (modal) modal.style.display = 'none';
-  
-  showToast('✅ 내 정보가 수정되었습니다');
-}
-
-
-// 내 정보 수정 취소
-function cancelEditMyProfile() {
-  const viewDiv = document.getElementById('my-profile-view');
-  const editDiv = document.getElementById('my-profile-edit');
-  
-  if (viewDiv) viewDiv.style.display = 'block';
-  if (editDiv) editDiv.style.display = 'none';
-}
-
-
-// 비밀번호 변경 모달 열기
-function openChangePassword() {
-  if (!currentUser) {
-    showToast('로그인이 필요합니다');
-    return;
-  }
-  
-  const currentInput = document.getElementById('cpw-current');
-  const newInput = document.getElementById('cpw-new');
-  const confirmInput = document.getElementById('cpw-confirm');
-  const modal = document.getElementById('modal-change-pw');
-  
-  if (currentInput) currentInput.value = '';
-  if (newInput) newInput.value = '';
-  if (confirmInput) confirmInput.value = '';
-  if (modal) modal.style.display = 'flex';
-}
-
-
-// 비밀번호 변경
-function changePassword() {
-  const currentPw = document.getElementById('cpw-current') ? document.getElementById('cpw-current').value : '';
-  const newPw = document.getElementById('cpw-new') ? document.getElementById('cpw-new').value : '';
-  const confirmPw = document.getElementById('cpw-confirm') ? document.getElementById('cpw-confirm').value : '';
-  
-  if (!currentPw || !newPw || !confirmPw) {
-    showToast('모든 항목을 입력하세요');
-    return;
-  }
-  if (newPw.length < 4) {
-    showToast('새 비밀번호는 4자 이상이어야 합니다');
-    return;
-  }
-  if (newPw !== confirmPw) {
-    showToast('새 비밀번호가 일치하지 않습니다');
-    return;
-  }
-  
-  // 관리자 계정 비밀번호 변경
-  const admin = ADMIN_ACCOUNTS.find(a => a.id === currentUser.id && a.pw === currentPw);
-  if (admin) {
-    admin.pw = newPw;
-    showToast('✅ 비밀번호가 변경되었습니다');
-    const modal = document.getElementById('modal-change-pw');
-    if (modal) modal.style.display = 'none';
-    return;
-  }
-  
-  // 일반 회원 비밀번호 변경
-  const user = approvedUsers.find(u => u.id === currentUser.id && u.pw === currentPw);
-  if (user) {
-    user.pw = newPw;
-    if (typeof LS !== 'undefined') {
-      LS.save('approvedUsers', approvedUsers);
-    }
-    showToast('✅ 비밀번호가 변경되었습니다');
-    const modal = document.getElementById('modal-change-pw');
-    if (modal) modal.style.display = 'none';
-    return;
-  }
-  
-  showToast('현재 비밀번호가 일치하지 않습니다');
-}
-
-
-// ==================== 페이지 로드 시 자동 복원 ====================
+// 페이지 로드 시 자동 복원
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(restoreLogin, 100);
+    setTimeout(function() {
+      if (typeof restoreLogin === 'function') restoreLogin();
+      else console.log('restoreLogin 함수 없음');
+    }, 100);
   });
 } else {
-  setTimeout(restoreLogin, 100);
+  setTimeout(function() {
+    if (typeof restoreLogin === 'function') restoreLogin();
+  }, 100);
 }
 
 

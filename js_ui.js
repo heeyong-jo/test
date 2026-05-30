@@ -1,14 +1,7 @@
-﻿// ==================== 전역 변수 선언 ====================
-let toastTimer = null;
-let currentBibleSection = null;
-
-
-// ==================== UI 관련 (탭, 스와이프, 시계, 토스트, 모달) ====================
-
-
-// 전역 변수 (필요시 초기화)
-let currentTab = 0;
-const TOTAL_TABS = 7;
+﻿if (typeof toastTimer === 'undefined') var toastTimer = null;
+if (typeof currentBibleSection === 'undefined') var currentBibleSection = null;
+if (typeof currentTab === 'undefined') var currentTab = 0;
+if (typeof TOTAL_TABS === 'undefined') var TOTAL_TABS = 7;
 
 
 // 시계 업데이트

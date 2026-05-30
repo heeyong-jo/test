@@ -16,16 +16,6 @@ if (typeof idCheckTimer === 'undefined') {
 }
 
 
-// ADMIN_ACCOUNTS가 없으면 직접 정의 (js_confige.js 누락 대비)
-if (typeof ADMIN_ACCOUNTS === 'undefined') {
-  var ADMIN_ACCOUNTS = [
-    { id: 'gajwajeil', pw: 'gajwajeil123', name: '김명서 담임목사', role: 'admin', email: 'pastor@hamkke.church', phone: '032-581-4048', birth: '1955-03-29' },
-    { id: 'reodrino', pw: '232735a', name: '조희용 관리자', role: 'admin', email: 'reodrino@gmail.com', phone: '010-9797-1408', birth: '1981-08-27' }
-  ];
-  console.log('ADMIN_ACCOUNTS 직접 정의됨');
-}
-
-
 // LS가 정의되어 있을 때만 데이터 로드
 if (typeof LS !== 'undefined') {
   try {

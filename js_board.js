@@ -65,16 +65,7 @@ function openBoardCategory() {
   if (titleEl) {
     titleEl.textContent = getCategoryLabel(currentBoardCategory);
   }
-  
-  // 글쓰기 버튼 표시
-  updateBoardWriteBtn();
-  
-  // 담당자 정보
-  loadBoardManager();
-  
-  // 게시글 로드
-  loadPosts();
-}
+  }
 
 
 // 카테고리 이름 반환

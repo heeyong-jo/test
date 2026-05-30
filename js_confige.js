@@ -1,4 +1,7 @@
-﻿// ==================== Firebase 설정 ====================
+﻿window.__FIXED__ = true;
+
+
+// ==================== Firebase 설정 ====================
 const firebaseConfig = {
   apiKey: "AIzaSyDLn693_LIAnQWyWDzpLjPukJ2joYpndPw",
   authDomain: "gajwajeil-add45.firebaseapp.com",

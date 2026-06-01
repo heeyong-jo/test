@@ -234,3 +234,182 @@ function changeBibleReadingFontSize(delta) {
     content.style.fontSize = bibleReadingFontSize + 'px';
   }
 }
+// ==================== 성경 검색 기능 ====================
+
+
+let searchResults = [];
+let currentSearchPage = 1;
+const SEARCH_RESULTS_PER_PAGE = 20;
+
+
+function openBibleSearch() {
+  const searchArea = document.getElementById('bibleSearchArea');
+  const bibleMain = document.getElementById('bibleMain');
+  const bibleScriptureView = document.getElementById('bibleScriptureView');
+  
+  if (bibleMain) bibleMain.style.display = 'none';
+  if (bibleScriptureView) bibleScriptureView.style.display = 'block';
+  if (searchArea) {
+    searchArea.style.display = 'block';
+    document.getElementById('bibleSearchInput').value = '';
+    document.getElementById('searchResultArea').style.display = 'none';
+  }
+}
+
+
+function closeBibleSearch() {
+  const searchArea = document.getElementById('bibleSearchArea');
+  const bibleMain = document.getElementById('bibleMain');
+  if (searchArea) searchArea.style.display = 'none';
+  if (bibleMain) bibleMain.style.display = 'flex';
+}
+
+
+async function searchBible() {
+  const keyword = document.getElementById('bibleSearchInput').value.trim();
+  if (!keyword || keyword.length < 2) {
+    alert('검색어는 2글자 이상 입력하세요');
+    return;
+  }
+  
+  const resultArea = document.getElementById('searchResultArea');
+  const resultList = document.getElementById('searchResultList');
+  resultArea.style.display = 'block';
+  resultList.innerHTML = '<div style="text-align:center;padding:40px;"><div class="splash-spinner"></div><div>검색 중...</div></div>';
+  
+  searchResults = [];
+  const books = getAllBooks();
+  const lowerKeyword = keyword.toLowerCase();
+  
+  for (const book of books) {
+    try {
+      const bookRef = firebase.database().ref(`bible/${book.name}`);
+      const snapshot = await bookRef.once('value');
+      if (snapshot.exists()) {
+        const chapters = snapshot.val();
+        for (const [chapterNum, verses] of Object.entries(chapters)) {
+          for (const [verseNum, text] of Object.entries(verses)) {
+            if (text && text.toLowerCase().includes(lowerKeyword)) {
+              searchResults.push({ book: book.name, chapter: chapterNum, verse: verseNum, text: text });
+            }
+          }
+        }
+      }
+    } catch(e) { console.warn(book.name, e); }
+  }
+  
+  if (searchResults.length === 0) {
+    resultList.innerHTML = `<div style="text-align:center;padding:40px;">🔍 "${escapeHtml(keyword)}" 검색 결과가 없습니다.</div>`;
+  } else {
+    currentSearchPage = 1;
+    displaySearchResults();
+  }
+}
+
+
+function displaySearchResults() {
+  const resultList = document.getElementById('searchResultList');
+  const keyword = document.getElementById('bibleSearchInput').value.trim();
+  const start = (currentSearchPage - 1) * SEARCH_RESULTS_PER_PAGE;
+  const pageResults = searchResults.slice(start, start + SEARCH_RESULTS_PER_PAGE);
+  const totalPages = Math.ceil(searchResults.length / SEARCH_RESULTS_PER_PAGE);
+  
+  let html = '';
+  pageResults.forEach(r => {
+    let text = escapeHtml(r.text);
+    if (keyword) {
+      const regex = new RegExp(`(${escapeRegex(keyword)})`, 'gi');
+      text = text.replace(regex, '<mark>$1</mark>');
+    }
+    html += `<div onclick="goToVerse('${r.book}',${r.chapter},${r.verse})" style="background:#fdf8f0;border-radius:12px;padding:12px;margin-bottom:8px;cursor:pointer;border:1px solid #e8dcc8;">
+      <div style="font-size:13px;font-weight:700;color:#d4a840;">📖 ${r.book} ${r.chapter}장 ${r.verse}절</div>
+      <div style="font-size:14px;line-height:1.6;">${text}</div>
+    </div>`;
+  });
+  
+  if (totalPages > 1) {
+    html += `<div style="display:flex;justify-content:center;gap:8px;margin-top:16px;">`;
+    for (let i = 1; i <= totalPages; i++) {
+      html += `<button onclick="goToSearchPage(${i})" style="background:${currentSearchPage===i?'#d4a840':'#2a1a08'};border:1px solid #d4a840;border-radius:8px;padding:6px 12px;color:${currentSearchPage===i?'#2a1a08':'#d4a840'};cursor:pointer;">${i}</button>`;
+    }
+    html += `</div>`;
+  }
+  resultList.innerHTML = html;
+}
+
+
+function goToSearchPage(page) { currentSearchPage = page; displaySearchResults(); }
+function escapeRegex(str) { return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+
+async function goToVerse(bookName, chapter, verse) {
+  showTab(5);
+  setTimeout(async () => {
+    await selectBook(bookName);
+    await loadChapter(parseInt(chapter));
+    setTimeout(() => {
+      const els = document.querySelectorAll('#verseContent > div');
+      if (els[verse-1]) {
+        els[verse-1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        els[verse-1].style.backgroundColor = '#f0d060';
+        setTimeout(() => els[verse-1].style.backgroundColor = '', 2000);
+      }
+    }, 300);
+  }, 100);
+  closeBibleSearch();
+}
+
+
+// ==================== 성경 탭 초기화 ====================
+
+
+function initBible() {
+  console.log('✅ initBible() 실행 - 성경 탭 초기화');
+  
+  const bibleMain = document.getElementById('bibleMain');
+  if (!bibleMain) {
+    console.error('❌ bibleMain 요소 없음');
+    return;
+  }
+  
+  // 초기 상태 설정
+  bibleMain.style.display = 'flex';
+  
+  // 성경 관련 뷰 초기화
+  const views = ['bibleScriptureView', 'bibleHymnView', 'bibleAppendixView'];
+  views.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.display = 'none';
+    }
+  });
+  
+  // 찬송가 제목 로드
+  loadHymnTitles();
+  
+  console.log('✅ 성경 탭 초기화 완료');
+}
+
+
+async function loadHymnTitles() {
+  if (hymnTitlesLoaded) {
+    console.log('⚠️ 찬송가 제목 이미 로드됨');
+    return;
+  }
+  
+  try {
+    const response = await fetch('https://raw.githubusercontent.com/heeyong-jo/bible-data/main/hymn_titles.json');
+    if (!response.ok) {
+      throw new Error('HTTP ' + response.status);
+    }
+    hymnTitles = await response.json();
+    hymnTitlesLoaded = true;
+    console.log('✅ 찬송가 제목 로드 완료:', Object.keys(hymnTitles).length + '개');
+  } catch (error) {
+    console.error('❌ 찬송가 제목 로드 실패:', error.message);
+    hymnTitlesLoaded = false;
+  }
+}
+
+
+console.log('✅ js_bible.js 로드 완료 - initBible() 함수 준비됨');

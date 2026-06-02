@@ -109,7 +109,6 @@ function afterTab(n) {
       if (typeof renderApprovalsAccord === 'function') renderApprovalsAccord();
     }
   }
-}
 
 
   if (n === 6) {

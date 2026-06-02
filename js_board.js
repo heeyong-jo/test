@@ -446,11 +446,14 @@ function closeBoardWrite() {
 }
 
 
+// ==================== 게시글 저장 ====================
 async function submitBoardPost() {
   console.log('submitBoardPost 시작');
   
+  // Firebase 확인
   if (typeof firebase === 'undefined' || !firebase.apps.length) {
-    showToast('서버 연결에 실패했습니다.');
+    console.error('Firebase 연결 안됨');
+    showToast('서버 연결에 실패했습니다. 새로고침 후 다시 시도하세요.');
     return;
   }
   
@@ -476,12 +479,12 @@ async function submitBoardPost() {
     showToast('제목을 입력하세요.');
     return;
   }
-  
   if (!content) {
     showToast('내용을 입력하세요.');
     return;
   }
   
+  // 사진 처리
   let photos = [];
   if (window._boardResizedPhotos && window._boardResizedPhotos.length) {
     photos = window._boardResizedPhotos;
@@ -502,20 +505,26 @@ async function submitBoardPost() {
     comments: {}
   };
   
+  console.log('📝 저장할 데이터:', newPost);
+  console.log('📂 저장 경로:', `boards/${currentBoardCategory}/posts/${newPost.id}`);
+  
   try {
-    const postsRef = firebase.database().ref(`boards/${currentBoardCategory}/posts`);
-    const newPostRef = postsRef.push();
-    await newPostRef.set(newPost);
+    // Firebase에 저장 (기존 경로 유지)
+    const postRef = firebase.database().ref(`boards/${currentBoardCategory}/posts/${newPost.id}`);
+    await postRef.set(newPost);
     
+    console.log('✅ 저장 성공!');
     showToast('✅ 게시물이 등록되었습니다.');
     closeBoardWrite();
     
+    // 캐시 초기화 및 목록 새로고침
+    boardPostCache[currentBoardCategory] = null;
     currentBoardPage = 1;
     loadPosts();
     
   } catch (err) {
-    console.error('등록 실패:', err);
-    showToast('등록 중 오류가 발생했습니다: ' + err.message);
+    console.error('❌ 저장 실패:', err);
+    showToast('저장 중 오류가 발생했습니다: ' + err.message);
   }
 }
 

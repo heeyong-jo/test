@@ -1,11 +1,9 @@
 ﻿// =====================================================================
 // js_staff.js — 섬기는 분들
-// - 사진: base64 → Firebase Realtime DB 저장
-// - 수정/추가/삭제: admin 전용
-// - Firebase 경로: /staff
 // =====================================================================
 
 
+// 기본 스태프 데이터
 const DEFAULT_STAFF = [
   {
     groupKey: "pastor", label: "담임목사",
@@ -75,35 +73,66 @@ const DEFAULT_STAFF = [
 ];
 
 
+
+
 // ── 상태 ──────────────────────────────────────────────────────────
 let staffData        = null;
 let staffPendingPhoto = "";
 let staffEditGroup   = "";
 let staffEditIdx     = -1;
-let staffEditAction  = "";   // "add" | "edit"
+let staffEditAction  = "";
 
 
-// ── Firebase 로드 ─────────────────────────────────────────────────
+
+
+// ── Firebase 로드 (안전하게 수정) ─────────────────────────────────
 function loadStaff() {
-  firebase.database().ref('staff').once('value', snap => {
-    if (snap.exists()) {
-      const raw = snap.val();
-      staffData = Array.isArray(raw) ? raw : Object.values(raw);
-    } else {
-      staffData = JSON.parse(JSON.stringify(DEFAULT_STAFF));
-    }
-    renderStaff();
-  }).catch(() => {
+  console.log('📋 loadStaff 실행');
+  
+  const container = document.getElementById('staff-container');
+  if (!container) {
+    console.warn('staff-container 요소 없음');
+    return;
+  }
+  
+  container.innerHTML = '<div style="text-align:center;padding:20px;"><div class="splash-spinner" style="width:24px;height:24px;"></div><div>불러오는 중...</div></div>';
+  
+  // Firebase가 없으면 기본 데이터로 즉시 렌더링
+  if (typeof firebase === 'undefined' || !firebase.database) {
+    console.warn('Firebase 연결 안됨, 기본 데이터 사용');
     staffData = JSON.parse(JSON.stringify(DEFAULT_STAFF));
     renderStaff();
-  });
+    return;
+  }
+  
+  firebase.database().ref('staff').once('value')
+    .then(snap => {
+      if (snap.exists()) {
+        const raw = snap.val();
+        staffData = Array.isArray(raw) ? raw : Object.values(raw);
+        console.log('✅ Firebase staff 로드 성공');
+      } else {
+        staffData = JSON.parse(JSON.stringify(DEFAULT_STAFF));
+        console.log('📁 기본 staff 데이터 사용');
+      }
+      renderStaff();
+    })
+    .catch(err => {
+      console.error('staff 로드 실패:', err);
+      staffData = JSON.parse(JSON.stringify(DEFAULT_STAFF));
+      renderStaff();
+    });
 }
+
+
 
 
 // ── 관리자 여부 ───────────────────────────────────────────────────
 function staffIsAdmin() {
   return typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'admin';
 }
+
+
 
 
 // ── 렌더링 ────────────────────────────────────────────────────────
@@ -114,13 +143,17 @@ function renderStaff() {
   let html = '';
 
 
+
+
   staffData.forEach(group => {
     html += `
     <div class="sf-group">
       <div class="sf-group-header">
-        <span>${group.label}</span>
+        <span>${escapeHtml(group.label)}</span>
         ${isAdmin ? `<button class="sf-btn-add" onclick="staffOpenAdd('${group.groupKey}')">➕ 추가</button>` : ''}
       </div>`;
+
+
 
 
     if (group.groupKey === 'pastor') {
@@ -133,13 +166,13 @@ function renderStaff() {
               ${isAdmin ? `<label class="sf-cam-btn" title="사진 변경">📷<input type="file" accept="image/*" onchange="staffInlinePhoto(this,'${group.groupKey}',${mIdx})" style="display:none"></label>` : ''}
             </div>
             <div class="sf-pastor-info">
-              <div class="sf-pastor-name">${m.name}</div>
+              <div class="sf-pastor-name">${escapeHtml(m.name)}</div>
               ${isAdmin ? `<div class="sf-actions"><button onclick="staffOpenEdit('${group.groupKey}',${mIdx})">✏️ 수정</button><button class="sf-del" onclick="staffDeleteMember('${group.groupKey}',${mIdx})">🗑 삭제</button></div>` : ''}
             </div>
           </div>
           ${(m.books && m.books.length) ? `
           <div class="sf-books-label">📚 저서</div>
-          <div class="sf-books">${m.books.map(b=>`<div class="sf-book">${b}</div>`).join('')}</div>` : ''}
+          <div class="sf-books">${m.books.map(b=>`<div class="sf-book">${escapeHtml(b)}</div>`).join('')}</div>` : ''}
         </div>`;
       });
     } else {
@@ -152,8 +185,8 @@ function renderStaff() {
             ${isAdmin ? `<label class="sf-cam-btn" title="사진 변경">📷<input type="file" accept="image/*" onchange="staffInlinePhoto(this,'${group.groupKey}',${mIdx})" style="display:none"></label>` : ''}
           </div>
           <div class="sf-card-body">
-            <div class="sf-name">${m.name}</div>
-            ${(m.roles && m.roles.length) ? `<ul class="sf-roles">${m.roles.map(r=>`<li>${r}</li>`).join('')}</ul>` : ''}
+            <div class="sf-name">${escapeHtml(m.name)}</div>
+            ${(m.roles && m.roles.length) ? `<ul class="sf-roles">${m.roles.map(r=>`<li>${escapeHtml(r)}</li>`).join('')}</ul>` : ''}
             ${isAdmin ? `<div class="sf-actions"><button onclick="staffOpenEdit('${group.groupKey}',${mIdx})">✏️ 수정</button><button class="sf-del" onclick="staffDeleteMember('${group.groupKey}',${mIdx})">🗑 삭제</button></div>` : ''}
           </div>
         </div>`;
@@ -164,15 +197,19 @@ function renderStaff() {
   });
 
 
+
+
   wrap.innerHTML = html;
 }
+
+
 
 
 // ── 카드에서 바로 사진 교체 ──────────────────────────────────────
 function staffInlinePhoto(input, groupKey, mIdx) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 1.5 * 1024 * 1024) { // 리사이즈 하므로 원본 1.5MB까지 허용
+  if (file.size > 1.5 * 1024 * 1024) {
     alert('사진은 1.5MB 이하로 올려주세요.');
     return;
   }
@@ -185,7 +222,9 @@ function staffInlinePhoto(input, groupKey, mIdx) {
 }
 
 
-// ── 모달: 추가 열기 ───────────────────────────────────────────────
+
+
+// ── 모달 관련 함수 (추가/수정/삭제) ───────────────────────────────
 function staffOpenAdd(groupKey) {
   staffEditGroup  = groupKey;
   staffEditIdx    = -1;
@@ -201,7 +240,8 @@ function staffOpenAdd(groupKey) {
 }
 
 
-// ── 모달: 수정 열기 ───────────────────────────────────────────────
+
+
 function staffOpenEdit(groupKey, mIdx) {
   staffEditGroup  = groupKey;
   staffEditIdx    = mIdx;
@@ -214,7 +254,6 @@ function staffOpenEdit(groupKey, mIdx) {
   document.getElementById('sf-input-name').value          = m.name;
   document.getElementById('sf-input-content').value       = isPastor ? (m.books||[]).join('\n') : (m.roles||[]).join('\n');
   document.getElementById('sf-content-label').textContent = isPastor ? '저서 (줄바꿈으로 구분)' : '담당사역 (줄바꿈으로 구분)';
-  // 사진 미리보기
   if (m.photo) {
     document.getElementById('sf-modal-prev').src           = m.photo;
     document.getElementById('sf-modal-prev').style.display = 'block';
@@ -226,7 +265,8 @@ function staffOpenEdit(groupKey, mIdx) {
 }
 
 
-// ── 모달 사진 선택 ────────────────────────────────────────────────
+
+
 function staffModalPhotoChange(input) {
   const file = input.files[0];
   if (!file) return;
@@ -243,7 +283,17 @@ function staffModalPhotoChange(input) {
 }
 
 
-// ── 모달 저장 ─────────────────────────────────────────────────────
+
+
+function staffModalPhotoClear() {
+  document.getElementById('sf-modal-prev').src = '';
+  document.getElementById('sf-modal-prev').style.display = 'none';
+  document.getElementById('sf-modal-ph').style.display = 'flex';
+}
+
+
+
+
 function staffSave() {
   const name    = document.getElementById('sf-input-name').value.trim();
   const content = document.getElementById('sf-input-content').value.trim();
@@ -275,7 +325,8 @@ function staffSave() {
 }
 
 
-// ── 삭제 ──────────────────────────────────────────────────────────
+
+
 function staffDeleteMember(groupKey, mIdx) {
   if (!confirm('삭제하시겠습니까?')) return;
   const group = staffData.find(g => g.groupKey === groupKey);
@@ -285,20 +336,29 @@ function staffDeleteMember(groupKey, mIdx) {
 }
 
 
-// ── Firebase 저장 ─────────────────────────────────────────────────
+
+
 function saveStaff(cb) {
-  firebase.database().ref('staff').set(staffData)
-    .then(() => { if (cb) cb(); })
-    .catch(err => { console.error('staff 저장 실패', err); alert('저장 중 오류가 발생했습니다.'); });
+  if (typeof firebase !== 'undefined' && firebase.database) {
+    firebase.database().ref('staff').set(staffData)
+      .then(() => { if (cb) cb(); })
+      .catch(err => { console.error('staff 저장 실패', err); alert('저장 중 오류가 발생했습니다.'); });
+  } else {
+    if (cb) cb();
+  }
 }
 
 
-// ── 모달 닫기 ─────────────────────────────────────────────────────
+
+
 function staffCloseModal() {
   document.getElementById('modal-staff').style.display = 'none';
   staffPendingPhoto = '';
 }
-// ── 사진 리사이즈 (최대 가로 400px, 세로 480px, JPEG 품질 0.85) ────
+
+
+
+
 function resizeStaffImage(file, maxW = 400, maxH = 480, quality = 0.85) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -312,8 +372,6 @@ function resizeStaffImage(file, maxW = 400, maxH = 480, quality = 0.85) {
           const ratio = Math.min(maxW / width, maxH / height);
           width  = Math.round(width * ratio);
           height = Math.round(height * ratio);
-        } else {
-          // 작은 사진은 그대로 유지
         }
         const canvas = document.createElement('canvas');
         canvas.width  = width;
@@ -329,3 +387,6 @@ function resizeStaffImage(file, maxW = 400, maxH = 480, quality = 0.85) {
     reader.readAsDataURL(file);
   });
 }
+
+
+console.log('✅ js_staff.js 로드 완료');

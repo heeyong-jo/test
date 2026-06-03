@@ -1,70 +1,89 @@
 ﻿// ==================== 앱 초기화 ====================
 
 
-// Firebase 초기화 (전역 FB 객체는 config.js에서 이미 정의됨)
-window.addEventListener('load', () => {
-  // 1. Firebase 데이터 로드 (로컬 또는 실시간)
-  setTimeout(async () => {
-    if (window.FB_READY && window.FB) {
-      await fbLoadAll();
-      fbSync();
-    } else {
-      console.log('로컬 모드: localStorage 데이터만 사용합니다');
-      FB_KEYS.forEach(key => {
-        try {
-          const data = localStorage.getItem('ch2_' + key);
-          if (data) fbUpdateUI(key, JSON.parse(data));
-        } catch(e) {}
-      });
-    }
-  }, 300);
-
-
-  // 2. 스플래시 제거 및 초기 렌더링, 자동 로그인 처리
-  setTimeout(() => {
-    const splash = document.getElementById('splash');
-    if (splash) {
-      splash.style.opacity = '0';
-      setTimeout(() => { splash.style.display = 'none'; }, 500);
-    }
-
-
-    // 기본 UI 렌더링
+// ✅ Firebase 초기화 후 실행되는 함수들
+async function initializeApp() {
+  // Firebase 준비 대기
+  const firebaseReady = await waitForFirebase();
+  
+  if (!firebaseReady) {
+    console.warn('Firebase 연결 실패, 일부 기능 제한됨');
+    showToast('서버 연결에 실패했습니다. 오프라인 모드로 실행합니다.');
+  }
+  
+  // 나머지 초기화 진행
+  setTimeout(function() {
     if (typeof renderServiceView === 'function') renderServiceView();
     if (typeof renderScheduleView === 'function') renderScheduleView();
     if (typeof renderTodayVerse === 'function') renderTodayVerse();
+    if (typeof renderMeditations === 'function') renderMeditations();
+    if (typeof renderPrayers === 'function') renderPrayers();
     if (typeof renderPosts === 'function') renderPosts();
-
-
-    // 자동 로그인 체크 (7일 이내)
-    const logged = LS.load('logged', null);
-    if (logged && (Date.now() - logged.ts < 86400000 * 7)) {
-      const admin = ADMIN_ACCOUNTS.find(a => a.id === logged.id);
-      const member = approvedUsers.find(u => u.id === logged.id);
-      const acc = admin || member;
-      if (acc) {
-        loginSuccess(acc);
-        return;
-      }
-    }
-
-
-    // 로그인 화면 표시
-    showTab(0);
-  }, 1000);
-});
-
-
-// ✅ 지연 평가 함수 (js_confige.js보다 먼저 로드되어도 안전)
-function getAllBooks() {
-  if (typeof OT_BOOKS !== 'undefined' && typeof NT_BOOKS !== 'undefined') {
-    return [...OT_BOOKS, ...NT_BOOKS];
-  }
-  return [];
+    if (typeof loadChurchInfo === 'function') loadChurchInfo();
+  }, 800);
 }
 
 
-const TOTAL_BIBLE_CHAPTERS = 1189;
+// ✅ 수정된 loadChurchInfo
+async function loadChurchInfo() {
+  const firebaseReady = await waitForFirebase();
+  if (!firebaseReady) {
+    console.warn('Firebase 미연결, 기본값 사용');
+    renderGreeting(defaultGreeting);
+    renderHistory(defaultHistory);
+    return;
+  }
+  
+  firebase.database().ref('churchInfo').once('value', snap => {
+    if (snap.exists()) {
+      const d = snap.val();
+      if (typeof renderGreeting === 'function') renderGreeting(d.greeting || defaultGreeting);
+      if (typeof renderHistory === 'function') renderHistory(d.history || defaultHistory);
+    } else {
+      if (typeof renderGreeting === 'function') renderGreeting(defaultGreeting);
+      if (typeof renderHistory === 'function') renderHistory(defaultHistory);
+    }
+    if (currentUser && currentUser.role === 'admin') {
+      const greetingBtn = document.getElementById('greeting-edit-btn');
+      const historyBtn = document.getElementById('history-edit-btn');
+      if (greetingBtn) greetingBtn.style.display = 'inline-block';
+      if (historyBtn) historyBtn.style.display = 'inline-block';
+    }
+  }).catch(err => {
+    console.error('교회 정보 로드 실패:', err);
+    renderGreeting(defaultGreeting);
+    renderHistory(defaultHistory);
+  });
+}
+
+
+// window.load 이벤트 수정
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    var splash = document.getElementById('splash');
+    if (splash) {
+      splash.style.opacity = '0';
+      setTimeout(function() { splash.style.display = 'none'; }, 500);
+    }
+  }, 1500);
+  
+  // ✅ Firebase 준비 후 초기화
+  initializeApp();
+});
+  
+  setTimeout(function() {
+    if (typeof renderServiceView === 'function') renderServiceView();
+    if (typeof renderScheduleView === 'function') renderScheduleView();
+    if (typeof renderTodayVerse === 'function') renderTodayVerse();
+    if (typeof renderMeditations === 'function') renderMeditations();
+    if (typeof renderPrayers === 'function') renderPrayers();
+    if (typeof renderPosts === 'function') renderPosts();
+  }, 800);
+});
+
+
+// ✅ 게시판 관련 함수는 js_board.js에만 정의 (여기서 제거)
+// updateBoardWriteBtn, updateBoardCommentArea는 js_board.js 사용
 
 
 // ── 교회 정보 (인사말/연혁) Firebase 연동 ──────────────────────
@@ -214,14 +233,12 @@ function showPrivacyPolicy() {
 
 
 // ── 성경 읽기 기능 ──
-if (typeof bibleReadingState === 'undefined') {
-  var bibleReadingState = {
-    bookIndex: 0,
-    chapter: 1,
-    todayPagesRead: 0,
-    lastReadDate: ''
-  };
-}
+let bibleReadingState = {
+  bookIndex: 0,
+  chapter: 1,
+  todayPagesRead: 0,
+  lastReadDate: ''
+};
 
 
 async function openBibleReading() {
@@ -324,12 +341,15 @@ async function completeCurrentChapter() {
   const today = new Date().toISOString().slice(0, 10);
   const userRef = firebase.database().ref(`bibleReading/${currentUser.id}`);
   
+  // ✅ 트랜잭션 결과 저장
+  let transactionResult = null;
+  
   await userRef.transaction((data) => {
     if (!data) data = { name: currentUser.name, totalPages: 0, completions: 0, history: {}, currentBookIndex: 0, currentChapter: 1 };
     if (!data.history) data.history = {};
     
     const todayCount = (data.history[today] || 0) + 1;
-    if (todayCount > 10) return; // 10장 초과 방지
+    if (todayCount > 10) return; // abort
     
     data.history[today] = todayCount;
     
@@ -338,14 +358,21 @@ async function completeCurrentChapter() {
     data.totalPages = total;
     data.completions = Math.floor(total / TOTAL_BIBLE_CHAPTERS);
     
+    transactionResult = { todayCount, total, completions: data.completions };
     return data;
   });
-
-
-  // 상태 업데이트
-  bibleReadingState.todayPagesRead++;
-  const todayCount = document.getElementById('bible-reading-today-count');
-  if (todayCount) todayCount.textContent = `오늘 ${bibleReadingState.todayPagesRead} / 10 장`;
+  
+  // ✅ 트랜잭션이 abort되었는지 확인
+  if (!transactionResult) {
+    alert('오늘 10장을 모두 읽으셨습니다.');
+    return;
+  }
+  
+  // ✅ 트랜잭션 결과로 상태 업데이트
+  bibleReadingState.todayPagesRead = transactionResult.todayCount;
+  
+  const todayCountEl = document.getElementById('bible-reading-today-count');
+  if (todayCountEl) todayCountEl.textContent = `오늘 ${bibleReadingState.todayPagesRead} / 10 장`;
 
 
   if (bibleReadingState.todayPagesRead >= 10) {
@@ -386,6 +413,14 @@ function closeBibleReading() {
   const readerHome = document.getElementById('bible-reader-home');
   if (readerScreen) readerScreen.style.display = 'none';
   if (readerHome) readerHome.style.display = 'block';
+  
+  // ✅ 현재 읽기 위치 DB에 저장
+  if (currentUser && typeof firebase !== 'undefined') {
+    firebase.database().ref(`bibleReading/${currentUser.id}`).update({
+      currentBookIndex: bibleReadingState.bookIndex,
+      currentChapter: bibleReadingState.chapter
+    }).catch(err => console.error('위치 저장 실패:', err));
+  }
 }
 
 

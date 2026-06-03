@@ -1,8 +1,4 @@
-﻿// ==================== 로그인/회원가입/비밀번호 찾기 ====================
-// 최종 수정 버전 - 모든 함수를 window에 직접 등록
-
-
-(function() {
+﻿(function() {
   console.log('🔥 js_auth.js 초기화 시작');
   
   // 전역 변수 초기화 (window 객체 사용)
@@ -153,9 +149,8 @@
   
   // ========== 로그인 성공 ==========
   window.loginSuccess = function(acc) {
-    console.log('✅ loginSuccess 실행:', acc.name);
+    console.log('✅ loginSuccess:', acc.name);
     
-    // ⭐ 중요: 전역 변수에 여러 방식으로 할당
     window.currentUser = {
       id: acc.id,
       name: acc.name,
@@ -165,19 +160,9 @@
       birth: acc.birth || ''
     };
     
-    // ⭐ 추가: 일반 변수에도 할당 (다른 파일과의 호환성)
-    currentUser = window.currentUser;
-    
-    // ⭐ 추가: localStorage에도 저장
     if (typeof LS !== 'undefined') {
-      LS.save('logged', { 
-        id: acc.id, 
-        ts: Date.now(), 
-        name: acc.name,
-        role: acc.role || 'member'
-      });
+      LS.save('logged', { id: acc.id, ts: Date.now(), name: acc.name });
     }
-    localStorage.setItem('ch2_currentUser', JSON.stringify(window.currentUser));
     
     // 로그인 화면 닫기
     var loginScreen = document.getElementById('screen-login');
@@ -190,24 +175,14 @@
     if (userNameSpan) userNameSpan.textContent = acc.name;
     if (userRoleSpan) userRoleSpan.textContent = roleText;
     
-    // ⭐ 중요: setting-user-info 업데이트
-    var settingInfoSpan = document.getElementById('setting-user-info');
-    if (settingInfoSpan) settingInfoSpan.textContent = acc.name + ' (' + roleText + ')';
-    
     // 권한 적용
     if (typeof applyRole === 'function') applyRole(window.currentUser.role);
     
-    // ⭐ 중요: 모든 페이지에서 currentUser가 인식되도록 강제刷新
-    setTimeout(function() {
-      console.log('로그인 후 홈 탭으로 이동, currentUser:', window.currentUser);
-      if (typeof showTab === 'function') showTab(0);
-    }, 100);
+    // 홈 탭으로 이동
+    if (typeof showTab === 'function') showTab(0);
     
     if (typeof showToast === 'function') showToast('✅ ' + acc.name + '님 환영합니다');
     else alert('✅ ' + acc.name + '님 환영합니다');
-    
-    // ⭐ 추가: body에 data 속성으로 로그인 상태 표시
-    document.body.setAttribute('data-logged-in', 'true');
   };
   
   // ========== 회원가입 ==========
@@ -345,8 +320,6 @@
     if (!confirm('로그아웃하시겠습니까?')) return;
     if (typeof LS !== 'undefined') LS.del('logged');
     window.currentUser = null;
-    currentUser = null;
-    localStorage.removeItem('ch2_currentUser');
     if (typeof applyRole === 'function') applyRole('member');
     var loginScreen = document.getElementById('screen-login');
     if (loginScreen) loginScreen.style.display = 'flex';
@@ -357,40 +330,13 @@
   // ========== 로그인 상태 복원 ==========
   window.restoreLogin = function() {
     console.log('🔄 restoreLogin 실행');
-    
-    // 1. LS에서 확인
     var savedLogin = null;
     if (typeof LS !== 'undefined') {
       savedLogin = LS.load('logged', null);
-    }
-    
-    // 2. localStorage에서 직접 확인
-    if (!savedLogin) {
+    } else {
       try {
         var saved = localStorage.getItem('ch2_logged');
         if (saved) savedLogin = JSON.parse(saved);
-      } catch(e) {}
-    }
-    
-    // 3. currentUser 직접 확인
-    if (!savedLogin) {
-      try {
-        var savedUser = localStorage.getItem('ch2_currentUser');
-        if (savedUser) {
-          var user = JSON.parse(savedUser);
-          console.log('ch2_currentUser에서 복원:', user);
-          window.currentUser = user;
-          currentUser = user;
-          if (typeof applyRole === 'function') applyRole(user.role);
-          
-          // UI 업데이트
-          var roleText = (user.role === 'admin' ? '관리자' : (user.role === 'manager' ? '매니저' : '일반성도'));
-          var userNameSpan = document.getElementById('user-name-display');
-          var userRoleSpan = document.getElementById('user-role-display');
-          if (userNameSpan) userNameSpan.textContent = user.name;
-          if (userRoleSpan) userRoleSpan.textContent = roleText;
-          return true;
-        }
       } catch(e) {}
     }
     
@@ -399,7 +345,6 @@
       return false;
     }
     
-    // 사용자 정보 찾기
     var user = null;
     if (typeof ADMIN_ACCOUNTS !== 'undefined') {
       for (var i = 0; i < ADMIN_ACCOUNTS.length; i++) {
@@ -422,17 +367,11 @@
         phone: user.phone || '',
         birth: user.birth || ''
       };
-      currentUser = window.currentUser;
-      
-      // localStorage에 저장
-      localStorage.setItem('ch2_currentUser', JSON.stringify(window.currentUser));
-      
       var roleText = (window.currentUser.role === 'admin' ? '관리자' : (window.currentUser.role === 'manager' ? '매니저' : '일반성도'));
       var userNameSpan = document.getElementById('user-name-display');
       var userRoleSpan = document.getElementById('user-role-display');
       if (userNameSpan) userNameSpan.textContent = user.name;
       if (userRoleSpan) userRoleSpan.textContent = roleText;
-      
       if (typeof applyRole === 'function') applyRole(window.currentUser.role);
       return true;
     }
@@ -477,6 +416,7 @@
       return;
     }
     
+    // 비밀번호 변경 로직 (간단히)
     if (typeof showToast === 'function') showToast('✅ 비밀번호가 변경되었습니다');
     else alert('✅ 비밀번호가 변경되었습니다');
     var modal = document.getElementById('modal-change-pw');

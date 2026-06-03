@@ -92,7 +92,6 @@ function afterTab(n) {
   if (n === 4) {
     if (typeof renderServiceView === 'function') renderServiceView();
     if (typeof renderScheduleView === 'function') renderScheduleView();
-  if (typeof loadStaff === 'function') loadStaff(); 
   }
   // ⭐ 수정: 성경책 탭 (n === 5) - initBible 함수 대신 성경 목록 초기화
   if (n === 5) {

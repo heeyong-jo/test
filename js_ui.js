@@ -17,8 +17,6 @@ setInterval(tick, 1000);
 tick();
 
 
-
-
 // 토스트 메시지
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -30,15 +28,11 @@ function showToast(msg) {
 }
 
 
-
-
 // 모달 닫기 공통 함수
 function closeModal(id) {
   const modal = document.getElementById(id);
   if (modal) modal.style.display = 'none';
 }
-
-
 
 
 // 탭 전환
@@ -80,12 +74,9 @@ function showTab(n) {
         page.style.display = 'none';
       }
     }
-  }
-  
+  }  
   afterTab(n);
 }
-
-
 
 
 // 탭 전환 후 추가 작업
@@ -109,20 +100,7 @@ function afterTab(n) {
       if (typeof renderApprovalsAccord === 'function') renderApprovalsAccord();
     }
   }
-
-
-  if (n === 6) {
-    if (currentUser && currentUser.role === 'admin') {
-      if (typeof renderMembersAccord === 'function') renderMembersAccord();
-      if (typeof renderOfferingsAccord === 'function') renderOfferingsAccord();
-      if (typeof renderApprovalsAccord === 'function') renderApprovalsAccord();
-    } else if (currentUser && currentUser.role === 'manager') {
-      if (typeof renderApprovalsAccord === 'function') renderApprovalsAccord();
-    }
-  }
 }
-
-
 
 
 // 스와이프 제스처 (터치 슬라이드)
@@ -224,6 +202,8 @@ el.addEventListener('touchmove', e => {
     }
   }
 }, { passive: false });
+
+
 
 
   function cleanup(finalIdx) {
@@ -347,6 +327,8 @@ el.addEventListener('touchmove', e => {
 }, { passive: true });
 
 
+
+
 // XSS 방지 함수 (간단한 이스케이프)
 function escapeHtml(str) {
   if (!str) return '';
@@ -359,10 +341,16 @@ function escapeHtml(str) {
 }
 
 
+
+
 // 권한에 따라 관리자 전용 요소 표시/숨김
 function applyRole(role) {
   const isAdmin = role === 'admin';
   const isAdminOrManager = role === 'admin' || role === 'manager';
+
+
+
+
 
 
 
@@ -383,6 +371,10 @@ function applyRole(role) {
     el.classList.remove('visible', 'visible-inline');
     el.setAttribute('style', 'display:none !important');
   }
+
+
+
+
 
 
 

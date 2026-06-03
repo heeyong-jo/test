@@ -88,13 +88,13 @@ function afterTab(n) {
   }
   if (n === 2 && typeof renderPrayers === 'function') renderPrayers();
   if (n === 3 && typeof renderPosts === 'function') renderPosts();
-   (n === 4) {
+  if (n === 4) {   // ⭐ 'if' 추가됨
     if (typeof renderServiceView === 'function') renderServiceView();
     if (typeof renderScheduleView === 'function') renderScheduleView();
-    if (typeof loadStaff === 'function') loadStaff();
+    if (typeof loadStaff === 'function') loadStaff();  // ⭐ 섬기는 분들 로드
   }
   if (n === 5 && typeof initBible === 'function') initBible();
-    if (n === 6) {
+  if (n === 6) {
     if (currentUser && currentUser.role === 'admin') {
       if (typeof renderMembersAccord === 'function') renderMembersAccord();
       if (typeof renderOfferingsAccord === 'function') renderOfferingsAccord();

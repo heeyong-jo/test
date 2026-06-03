@@ -65,7 +65,16 @@ function openBoardCategory() {
   if (titleEl) {
     titleEl.textContent = getCategoryLabel(currentBoardCategory);
   }
-  }
+  
+  // 글쓰기 버튼 표시
+  updateBoardWriteBtn();
+  
+  // 담당자 정보
+  loadBoardManager();
+  
+  // 게시글 로드
+  loadPosts();
+}
 
 
 // 카테고리 이름 반환
@@ -335,10 +344,9 @@ function openBoardDetail(postId) {
 
 
 function closeBoardDetail() {
-  document.getElementById('board-detail-overlay').style.display = 'none';
-}
-function closeBoardWrite() {
-  document.getElementById('board-write-overlay').style.display = 'none';
+  const modal = document.getElementById('board-detail-overlay');
+  if (modal) modal.style.display = 'none';
+  currentPostId = null;
 }
 
 
@@ -446,14 +454,11 @@ function closeBoardWrite() {
 }
 
 
-// ==================== 게시글 저장 ====================
 async function submitBoardPost() {
   console.log('submitBoardPost 시작');
   
-  // Firebase 확인
   if (typeof firebase === 'undefined' || !firebase.apps.length) {
-    console.error('Firebase 연결 안됨');
-    showToast('서버 연결에 실패했습니다. 새로고침 후 다시 시도하세요.');
+    showToast('서버 연결에 실패했습니다.');
     return;
   }
   
@@ -479,12 +484,12 @@ async function submitBoardPost() {
     showToast('제목을 입력하세요.');
     return;
   }
+  
   if (!content) {
     showToast('내용을 입력하세요.');
     return;
   }
   
-  // 사진 처리
   let photos = [];
   if (window._boardResizedPhotos && window._boardResizedPhotos.length) {
     photos = window._boardResizedPhotos;
@@ -505,26 +510,20 @@ async function submitBoardPost() {
     comments: {}
   };
   
-  console.log('📝 저장할 데이터:', newPost);
-  console.log('📂 저장 경로:', `boards/${currentBoardCategory}/posts/${newPost.id}`);
-  
   try {
-    // Firebase에 저장 (기존 경로 유지)
-    const postRef = firebase.database().ref(`boards/${currentBoardCategory}/posts/${newPost.id}`);
-    await postRef.set(newPost);
+    const postsRef = firebase.database().ref(`boards/${currentBoardCategory}/posts`);
+    const newPostRef = postsRef.push();
+    await newPostRef.set(newPost);
     
-    console.log('✅ 저장 성공!');
     showToast('✅ 게시물이 등록되었습니다.');
     closeBoardWrite();
     
-    // 캐시 초기화 및 목록 새로고침
-    boardPostCache[currentBoardCategory] = null;
     currentBoardPage = 1;
     loadPosts();
     
   } catch (err) {
-    console.error('❌ 저장 실패:', err);
-    showToast('저장 중 오류가 발생했습니다: ' + err.message);
+    console.error('등록 실패:', err);
+    showToast('등록 중 오류가 발생했습니다: ' + err.message);
   }
 }
 
@@ -593,57 +592,6 @@ function resizeStaffImage(file, maxW = 400, maxH = 480, quality = 0.85) {
     reader.readAsDataURL(file);
   });
 }
-// ==================== 게시판 보조 함수 ====================
 
 
-function updateBoardWriteBtn() {
-  const writeBtn = document.getElementById('board-write-btn');
-  if (!writeBtn) return;
-  
-  if (!currentUser) {
-    writeBtn.style.display = 'none';
-  } else if (currentUser.role === 'admin' || currentUser.role === 'manager') {
-    writeBtn.style.display = 'block';
-  } else {
-    writeBtn.style.display = 'none';
-  }
-}
-
-
-
-
-function loadBoardManager() {
-  // 카테고리별 담당자 정보 로드 (추후 Firebase에서 로드 가능)
-  const managerDiv = document.getElementById('board-manager-info');
-  if (managerDiv) {
-    const managers = {
-      '일반성도': '담당: 전체 관리자',
-      '꿈지락': '담당: 유아부',
-      '꿈트리': '담당: 유아부',
-      '꿈마루': '담당: 초등부',
-      '꿈하나': '담당: 청소년부',
-      '새이플러스': '담당: 청년부'
-    };
-    managerDiv.textContent = managers[currentBoardCategory] || '담당자 정보';
-  }
-}
-
-
-
-
-function loadPosts() {
-  console.log('loadPosts 실행, 카테고리:', currentBoardCategory, '페이지:', currentBoardPage);
-  
-  // Firebase 또는 localStorage에서 해당 카테고리 게시글 로드
-  const postsDiv = document.getElementById('board-posts-list');
-  if (!postsDiv) return;
-  
-  postsDiv.innerHTML = '';
-  
-  // 임시: 게시글 없음 표시
-  const emptyDiv = document.createElement('div');
-  emptyDiv.style.cssText = 'padding:30px;text-align:center;color:var(--text2);';
-  emptyDiv.textContent = '게시글이 없습니다.';
-  postsDiv.appendChild(emptyDiv);
-}
 console.log('✅ js_board.js 로드 완료');

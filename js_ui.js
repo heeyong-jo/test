@@ -17,8 +17,6 @@ setInterval(tick, 1000);
 tick();
 
 
-
-
 // 토스트 메시지
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -30,15 +28,11 @@ function showToast(msg) {
 }
 
 
-
-
 // 모달 닫기 공통 함수
 function closeModal(id) {
   const modal = document.getElementById(id);
   if (modal) modal.style.display = 'none';
 }
-
-
 
 
 // 탭 전환
@@ -86,8 +80,6 @@ function showTab(n) {
 }
 
 
-
-
 // 탭 전환 후 추가 작업
 function afterTab(n) {
   if (n === 0 && typeof renderHomeNotices === 'function') renderHomeNotices();
@@ -100,6 +92,7 @@ function afterTab(n) {
   if (n === 4) {
     if (typeof renderServiceView === 'function') renderServiceView();
     if (typeof renderScheduleView === 'function') renderScheduleView();
+  if (typeof loadStaff === 'function') loadStaff(); 
   }
   // ⭐ 수정: 성경책 탭 (n === 5) - initBible 함수 대신 성경 목록 초기화
   if (n === 5) {
@@ -132,8 +125,6 @@ function afterTab(n) {
     }
   }
 }
-
-
 
 
 // 스와이프 제스처 (터치 슬라이드)
@@ -261,6 +252,8 @@ function afterTab(n) {
 }, { passive: true });
 
 
+
+
 // XSS 방지 함수 (간단한 이스케이프)
 function escapeHtml(str) {
   if (!str) return '';
@@ -273,10 +266,16 @@ function escapeHtml(str) {
 }
 
 
+
+
 // 권한에 따라 관리자 전용 요소 표시/숨김
 function applyRole(role) {
   const isAdmin = role === 'admin';
   const isAdminOrManager = role === 'admin' || role === 'manager';
+
+
+
+
 
 
 
@@ -297,6 +296,10 @@ function applyRole(role) {
     el.classList.remove('visible', 'visible-inline');
     el.setAttribute('style', 'display:none !important');
   }
+
+
+
+
 
 
 

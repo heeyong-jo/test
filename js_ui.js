@@ -97,6 +97,9 @@ function afterTab(n) {
   if (n === 6) {
     if (currentUser && currentUser.role === 'admin') {
       if (typeof renderMembersAccord === 'function') renderMembersAccord();
+      if (typeof renderOfferingsAccord === 'function') renderOfferingsAccord();
+      if (typeof renderApprovalsAccord === 'function') renderApprovalsAccord();
+    } else if (currentUser && currentUser.role === 'manager') {
       if (typeof renderApprovalsAccord === 'function') renderApprovalsAccord();
     }
   }

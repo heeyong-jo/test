@@ -105,8 +105,41 @@ header {
 
 
 /* ── 페이지 ── */
-.page{display:none !important;padding:14px;padding-bottom:100px;}
-.page.show{display:block !important;}
+.page{
+  display:none !important;
+  padding:14px;
+  padding-bottom:100px;
+  animation: slideInRight 0.3s ease-out;
+}
+.page.show{
+  display:block !important;
+  animation: slideInRight 0.3s ease-out;
+}
+
+
+/* 슬라이드 애니메이션 추가 */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+
+@keyframes slideOutLeft {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
 #swipe-container{touch-action:pan-x pan-y pinch-zoom;user-select:none;-webkit-user-select:none;}
 
 

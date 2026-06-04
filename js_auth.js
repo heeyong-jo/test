@@ -1,5 +1,8 @@
 ﻿// ==================== 로그인/회원가입/비밀번호 찾기 ====================
 // 최종 수정 버전 - 모든 함수를 window에 직접 등록
+// 수정 내역: 비밀번호 변경 기능 구현, restoreLogin UI 업데이트 추가
+
+
 
 
 (function() {
@@ -389,6 +392,13 @@
           var userRoleSpan = document.getElementById('user-role-display');
           if (userNameSpan) userNameSpan.textContent = user.name;
           if (userRoleSpan) userRoleSpan.textContent = roleText;
+          
+          // ✅ 수정: setting-user-info 업데이트 추가
+          var settingInfoSpan = document.getElementById('setting-user-info');
+          if (settingInfoSpan) {
+            settingInfoSpan.textContent = user.name + ' (' + roleText + ')';
+          }
+          
           return true;
         }
       } catch(e) {}
@@ -433,6 +443,12 @@
       if (userNameSpan) userNameSpan.textContent = user.name;
       if (userRoleSpan) userRoleSpan.textContent = roleText;
       
+      // ✅ 수정: setting-user-info 업데이트 추가
+      var settingInfoSpan = document.getElementById('setting-user-info');
+      if (settingInfoSpan) {
+        settingInfoSpan.textContent = user.name + ' (' + roleText + ')';
+      }
+      
       if (typeof applyRole === 'function') applyRole(window.currentUser.role);
       return true;
     }
@@ -459,6 +475,7 @@
     if (modal) modal.style.display = 'flex';
   };
   
+  // ========== 비밀번호 변경 (실제 저장 기능 추가) ==========
   window.changePassword = function() {
     var currentPw = document.getElementById('cpw-current') ? document.getElementById('cpw-current').value : '';
     var newPw = document.getElementById('cpw-new') ? document.getElementById('cpw-new').value : '';
@@ -477,16 +494,181 @@
       return;
     }
     
-    if (typeof showToast === 'function') showToast('✅ 비밀번호가 변경되었습니다');
-    else alert('✅ 비밀번호가 변경되었습니다');
-    var modal = document.getElementById('modal-change-pw');
-    if (modal) modal.style.display = 'none';
+    // ✅ 수정: 실제 비밀번호 변경 로직 추가
+    var userId = window.currentUser.id;
+    var changed = false;
+    
+    // 관리자 계정 체크
+    if (typeof ADMIN_ACCOUNTS !== 'undefined') {
+      for (var i = 0; i < ADMIN_ACCOUNTS.length; i++) {
+        if (ADMIN_ACCOUNTS[i].id === userId && ADMIN_ACCOUNTS[i].pw === currentPw) {
+          ADMIN_ACCOUNTS[i].pw = newPw;
+          changed = true;
+          break;
+        }
+      }
+    }
+    
+    // 일반 회원 체크
+    if (!changed) {
+      for (var i = 0; i < window.approvedUsers.length; i++) {
+        if (window.approvedUsers[i].id === userId && window.approvedUsers[i].pw === currentPw) {
+          window.approvedUsers[i].pw = newPw;
+          changed = true;
+          break;
+        }
+      }
+    }
+    
+    if (changed) {
+      // 저장
+      if (typeof LS !== 'undefined') {
+        LS.save('approvedUsers', window.approvedUsers);
+      }
+      localStorage.setItem('ch2_approvedUsers', JSON.stringify(window.approvedUsers));
+      
+      // 현재 사용자 정보 업데이트
+      window.currentUser.pw = newPw;
+      localStorage.setItem('ch2_currentUser', JSON.stringify(window.currentUser));
+      
+      if (typeof showToast === 'function') showToast('✅ 비밀번호가 변경되었습니다');
+      else alert('✅ 비밀번호가 변경되었습니다');
+      
+      // 모달 닫기 및 입력 필드 초기화
+      var modal = document.getElementById('modal-change-pw');
+      if (modal) modal.style.display = 'none';
+      document.getElementById('cpw-current').value = '';
+      document.getElementById('cpw-new').value = '';
+      document.getElementById('cpw-confirm').value = '';
+    } else {
+      if (typeof showToast === 'function') showToast('❌ 현재 비밀번호가 일치하지 않습니다');
+      else alert('❌ 현재 비밀번호가 일치하지 않습니다');
+    }
   };
+  
+  // ========== 내 정보 수정 관련 함수 추가 ==========
+  window.openEditMyProfile = function() {
+    if (!window.currentUser) {
+      if (typeof showToast === 'function') showToast('로그인이 필요합니다');
+      return;
+    }
+    
+    var user = window.currentUser;
+    document.getElementById('my-em-name').value = user.name || '';
+    document.getElementById('my-em-phone').value = user.phone || '';
+    document.getElementById('my-em-birth').value = user.birth || '';
+    
+    document.getElementById('my-profile-view').style.display = 'none';
+    document.getElementById('my-profile-edit').style.display = 'block';
+  };
+  
+  window.saveMyProfile = function() {
+    if (!window.currentUser) {
+      if (typeof showToast === 'function') showToast('로그인이 필요합니다');
+      return;
+    }
+    
+    var newName = document.getElementById('my-em-name').value.trim();
+    var newPhone = document.getElementById('my-em-phone').value.trim();
+    var newBirth = document.getElementById('my-em-birth').value;
+    
+    if (!newName) {
+      if (typeof showToast === 'function') showToast('이름을 입력하세요');
+      return;
+    }
+    
+    var userId = window.currentUser.id;
+    var updated = false;
+    
+    // 일반 회원 정보 업데이트
+    for (var i = 0; i < window.approvedUsers.length; i++) {
+      if (window.approvedUsers[i].id === userId) {
+        window.approvedUsers[i].name = newName;
+        window.approvedUsers[i].phone = newPhone;
+        window.approvedUsers[i].birth = newBirth;
+        updated = true;
+        break;
+      }
+    }
+    
+    // 관리자 계정 체크
+    if (!updated && typeof ADMIN_ACCOUNTS !== 'undefined') {
+      for (var i = 0; i < ADMIN_ACCOUNTS.length; i++) {
+        if (ADMIN_ACCOUNTS[i].id === userId) {
+          ADMIN_ACCOUNTS[i].name = newName;
+          ADMIN_ACCOUNTS[i].phone = newPhone;
+          ADMIN_ACCOUNTS[i].birth = newBirth;
+          updated = true;
+          break;
+        }
+      }
+    }
+    
+    if (updated) {
+      // 현재 사용자 정보 업데이트
+      window.currentUser.name = newName;
+      window.currentUser.phone = newPhone;
+      window.currentUser.birth = newBirth;
+      currentUser = window.currentUser;
+      
+      // 저장
+      if (typeof LS !== 'undefined') {
+        LS.save('approvedUsers', window.approvedUsers);
+      }
+      localStorage.setItem('ch2_approvedUsers', JSON.stringify(window.approvedUsers));
+      localStorage.setItem('ch2_currentUser', JSON.stringify(window.currentUser));
+      
+      // UI 업데이트
+      var userNameSpan = document.getElementById('user-name-display');
+      if (userNameSpan) userNameSpan.textContent = newName;
+      
+      var settingInfoSpan = document.getElementById('setting-user-info');
+      if (settingInfoSpan) {
+        var roleText = (window.currentUser.role === 'admin' ? '관리자' : (window.currentUser.role === 'manager' ? '매니저' : '일반성도'));
+        settingInfoSpan.textContent = newName + ' (' + roleText + ')';
+      }
+      
+      if (typeof showToast === 'function') showToast('✅ 내 정보가 수정되었습니다');
+      
+      // 모달 닫기
+      document.getElementById('modal-my-profile').style.display = 'none';
+      document.getElementById('my-profile-view').style.display = 'block';
+      document.getElementById('my-profile-edit').style.display = 'none';
+    } else {
+      if (typeof showToast === 'function') showToast('❌ 정보 수정에 실패했습니다');
+    }
+  };
+  
+  window.cancelEditMyProfile = function() {
+    document.getElementById('my-profile-view').style.display = 'block';
+    document.getElementById('my-profile-edit').style.display = 'none';
+  };
+  
+  // ========== 프로필 드롭다운 토글 ==========
+  window.toggleProfileDropdown = function() {
+    var dropdown = document.getElementById('profile-dropdown');
+    if (!dropdown) return;
+    
+    if (dropdown.classList.contains('show')) {
+      dropdown.classList.remove('show');
+    } else {
+      dropdown.classList.add('show');
+    }
+  };
+  
+  // 드롭다운 외부 클릭 시 닫기
+  document.addEventListener('click', function(e) {
+    var dropdown = document.getElementById('profile-dropdown');
+    var userBadge = document.querySelector('.user-badge');
+    if (dropdown && dropdown.classList.contains('show') && userBadge && !userBadge.contains(e.target)) {
+      dropdown.classList.remove('show');
+    }
+  });
   
   // 자동 실행
   setTimeout(function() {
     window.restoreLogin();
   }, 200);
   
-  console.log('✅ js_auth.js 로드 완료');
+  console.log('✅ js_auth.js 로드 완료 (수정본)');
 })();

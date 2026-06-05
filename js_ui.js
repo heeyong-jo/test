@@ -1,4 +1,6 @@
 ﻿// ==================== UI 및 스와이프 제스처 (js_ui.js) ====================
+
+
 if (typeof toastTimer === 'undefined') var toastTimer = null;
 if (typeof currentBibleSection === 'undefined') var currentBibleSection = null;
 if (typeof currentTab === 'undefined') var currentTab = 0;
@@ -52,7 +54,6 @@ function showTab(n) {
   const needLoginTabs = [2, 3, 6];
   const user = getCurrentUser();
   
-  // 로그인 필요 체크
   if (!user && needLoginTabs.includes(n)) {
     console.log('로그인 필요 탭 접근:', n);
     const loginScreen = document.getElementById('screen-login');
@@ -60,32 +61,26 @@ function showTab(n) {
     return;
   }
   
-  // 관리탭(6) 권한 체크
   if (n === 6 && user) {
     const role = user.role;
     if (role !== 'admin' && role !== 'manager') {
       console.log('권한 없음 - 관리탭 접근 불가:', role);
-      if (typeof showToast === 'function') {
-        showToast('⚠️ 관리자 또는 매니저만 접근 가능합니다');
-      }
+      if (typeof showToast === 'function') showToast('⚠️ 관리자 또는 매니저만 접근 가능합니다');
       showTab(0);
       return;
     }
   }
   
-  // 현재 스크롤 위치 저장
   const currentScroll = window.scrollY || document.documentElement.scrollTop;
   sessionStorage.setItem(`scrollPos_${currentTab}`, currentScroll);
   
   currentTab = n;
   
-  // 탭 스타일 업데이트
   document.querySelectorAll('.tab').forEach((t, i) => {
     if (i === n) t.classList.add('active');
     else t.classList.remove('active');
   });
   
-  // 페이지 표시/숨김
   for (let i = 0; i < TOTAL_TABS; i++) {
     const page = document.getElementById('p' + i);
     if (page) {
@@ -99,7 +94,6 @@ function showTab(n) {
     }
   }
   
-  // 관리탭 권한에 따라 요소 강제 표시
   if (n === 6 && user) {
     const role = user.role;
     if (role === 'admin' || role === 'manager') {
@@ -113,12 +107,9 @@ function showTab(n) {
     }
   }
   
-  // 저장된 스크롤 위치 복원
   const savedScroll = sessionStorage.getItem(`scrollPos_${n}`);
   if (savedScroll && !isNaN(parseInt(savedScroll))) {
-    setTimeout(() => {
-      window.scrollTo(0, parseInt(savedScroll));
-    }, 50);
+    setTimeout(() => window.scrollTo(0, parseInt(savedScroll)), 50);
   }
   
   afterTab(n);
@@ -156,14 +147,9 @@ function afterTab(n) {
     
     if (user && user.role === 'admin') {
       if (typeof renderMembersAccord === 'function') renderMembersAccord();
-      if (typeof renderOfferingsAccord === 'function') renderOfferingsAccord();
-      const memberBody = document.getElementById('ac-member-body');
-      if (memberBody) memberBody.classList.add('open');
     } 
     else if (user && user.role === 'manager') {
       if (typeof renderApprovalsAccord === 'function') renderApprovalsAccord();
-      const approvalBody = document.getElementById('ac-approval-body');
-      if (approvalBody) approvalBody.classList.add('open');
     }
     
     const settingInfoSpan = document.getElementById('setting-user-info');
@@ -173,6 +159,184 @@ function afterTab(n) {
     }
   }
 }
+
+
+// ==================== 관리탭 렌더링 함수들 ====================
+
+
+// 성도 관리 렌더링
+window.renderMembersAccord = function() {
+  console.log('renderMembersAccord 실행');
+  const container = document.getElementById('accord-member-list');
+  if (!container) {
+    console.warn('accord-member-list 요소 없음');
+    return;
+  }
+  
+  const user = getCurrentUser();
+  if (!user || user.role !== 'admin') {
+    container.innerHTML = '<div style="padding:20px;text-align:center;">⚠️ 관리자만 접근 가능합니다.</div>';
+    return;
+  }
+  
+  container.innerHTML = '<div style="text-align:center;padding:40px;"><div class="splash-spinner"></div><div>로딩 중...</div></div>';
+  
+  if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
+    firebase.database().ref('members').once('value')
+      .then(snap => {
+        const data = snap.val();
+        const members = data ? Object.values(data) : [];
+        
+        if (members.length === 0) {
+          container.innerHTML = '<div style="padding:20px;text-align:center;">📋 등록된 성도가 없습니다.</div>';
+          return;
+        }
+        
+        let html = '';
+        members.forEach(m => {
+          html += `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid var(--border);">
+              <div>
+                <div style="font-weight:700;">${escapeHtml(m.name || '이름 없음')}</div>
+                <div style="font-size:12px;color:var(--text2);">${escapeHtml(m.dept || '직책 없음')}</div>
+              </div>
+              <div style="font-size:12px;">${escapeHtml(m.phone || '-')}</div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+        
+        const totalSpan = document.getElementById('am-total');
+        const newSpan = document.getElementById('am-new');
+        const monthSpan = document.getElementById('am-month');
+        if (totalSpan) totalSpan.textContent = members.length;
+      })
+      .catch(err => {
+        console.error('멤버 로드 실패:', err);
+        container.innerHTML = '<div style="padding:20px;color:red;">⚠️ 데이터를 불러올 수 없습니다.</div>';
+      });
+  } else {
+    container.innerHTML = '<div style="padding:20px;color:red;">⚠️ Firebase 연결이 필요합니다.</div>';
+  }
+};
+
+
+// 가입 승인 관리 렌더링
+window.renderApprovalsAccord = function() {
+  console.log('renderApprovalsAccord 실행');
+  const container = document.getElementById('accord-approval-list');
+  if (!container) return;
+  
+  const user = getCurrentUser();
+  if (!user || (user.role !== 'admin' && user.role !== 'manager')) {
+    container.innerHTML = '<div style="padding:20px;text-align:center;">⚠️ 관리자/매니저만 접근 가능합니다.</div>';
+    return;
+  }
+  
+  container.innerHTML = '<div style="text-align:center;padding:40px;"><div class="splash-spinner"></div><div>로딩 중...</div></div>';
+  
+  if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
+    firebase.database().ref('pendingUsers').once('value')
+      .then(snap => {
+        const data = snap.val();
+        const pending = data ? Object.values(data) : [];
+        
+        const subEl = document.getElementById('ac-approval-sub');
+        if (subEl) subEl.textContent = `대기 ${pending.length}명`;
+        
+        if (pending.length === 0) {
+          container.innerHTML = '<div style="padding:20px;text-align:center;">✅ 승인 대기자가 없습니다.</div>';
+          return;
+        }
+        
+        let html = '';
+        pending.forEach(p => {
+          html += `
+            <div style="padding:14px;background:rgba(255,215,0,0.1);border-radius:12px;margin-bottom:10px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <div style="font-weight:700;">${escapeHtml(p.name || '이름 없음')}</div>
+                  <div style="font-size:12px;color:var(--text2);">아이디: ${escapeHtml(p.id || '-')}</div>
+                  <div style="font-size:11px;color:var(--text2);">${escapeHtml(p.email || '-')} / ${escapeHtml(p.phone || '-')}</div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                  <button onclick="approveUser('${p.id}')" style="background:#10b981;border:none;border-radius:20px;padding:5px 12px;color:white;cursor:pointer;">승인</button>
+                  <button onclick="rejectUser('${p.id}')" style="background:#ef4444;border:none;border-radius:20px;padding:5px 12px;color:white;cursor:pointer;">거절</button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      })
+      .catch(err => {
+        console.error('승인 대기자 로드 실패:', err);
+        container.innerHTML = '<div style="padding:20px;color:red;">⚠️ 데이터를 불러올 수 없습니다.</div>';
+      });
+  } else {
+    container.innerHTML = '<div style="padding:20px;color:red;">⚠️ Firebase 연결이 필요합니다.</div>';
+  }
+};
+
+
+// 승인 함수
+window.approveUser = function(userId) {
+  if (!confirm('이 사용자를 승인하시겠습니까?')) return;
+  
+  const user = getCurrentUser();
+  if (!user || (user.role !== 'admin' && user.role !== 'manager')) {
+    showToast('권한이 없습니다.');
+    return;
+  }
+  
+  firebase.database().ref(`pendingUsers/${userId}`).once('value')
+    .then(snap => {
+      const userData = snap.val();
+      if (!userData) {
+        showToast('사용자 정보를 찾을 수 없습니다.');
+        return;
+      }
+      
+      userData.status = 'approved';
+      userData.approvedAt = Date.now();
+      delete userData.status;
+      
+      firebase.database().ref(`approvedUsers/${userId}`).set(userData)
+        .then(() => {
+          firebase.database().ref(`pendingUsers/${userId}`).remove()
+            .then(() => {
+              showToast('✅ 승인 완료되었습니다.');
+              if (typeof renderApprovalsAccord === 'function') renderApprovalsAccord();
+            });
+        });
+    })
+    .catch(err => {
+      console.error('승인 처리 실패:', err);
+      showToast('처리 중 오류가 발생했습니다.');
+    });
+};
+
+
+// 거절 함수
+window.rejectUser = function(userId) {
+  if (!confirm('이 사용자를 거절하시겠습니까?')) return;
+  
+  const user = getCurrentUser();
+  if (!user || (user.role !== 'admin' && user.role !== 'manager')) {
+    showToast('권한이 없습니다.');
+    return;
+  }
+  
+  firebase.database().ref(`pendingUsers/${userId}`).remove()
+    .then(() => {
+      showToast('🗑 거절 처리되었습니다.');
+      if (typeof renderApprovalsAccord === 'function') renderApprovalsAccord();
+    })
+    .catch(err => {
+      console.error('거절 처리 실패:', err);
+      showToast('처리 중 오류가 발생했습니다.');
+    });
+};
 
 
 // ==================== 탭 스타일 복원 ====================
@@ -242,7 +406,6 @@ function applyRole(role) {
     else hideEl(el);
   });
   
-  // 현재 탭이 관리탭(6)이고 권한이 있으면 내용물 표시
   if (currentTab === 6 && isAdminOrManager) {
     const p6 = document.getElementById('p6');
     if (p6) {
@@ -337,29 +500,22 @@ function applyRole(role) {
     
     const savedScrollPos = sessionStorage.getItem(`scrollPos_${finalIdx}`);
     if (savedScrollPos && !isNaN(parseInt(savedScrollPos))) {
-      setTimeout(() => {
-        window.scrollTo(0, parseInt(savedScrollPos));
-      }, 50);
+      setTimeout(() => window.scrollTo(0, parseInt(savedScrollPos)), 50);
     }
     
-    // 관리탭 권한 체크
     const user = getCurrentUser();
     if (finalIdx === 6 && user) {
       const role = user.role;
       if (role !== 'admin' && role !== 'manager') {
         setTimeout(() => {
           showTab(0);
-          if (typeof showToast === 'function') {
-            showToast('⚠️ 관리자 또는 매니저만 접근 가능합니다');
-          }
+          if (typeof showToast === 'function') showToast('⚠️ 관리자 또는 매니저만 접근 가능합니다');
         }, 50);
         return;
       }
     }
     
-    setTimeout(() => {
-      afterTab(finalIdx);
-    }, 50);
+    setTimeout(() => afterTab(finalIdx), 50);
   }
   
   el.addEventListener('touchstart', (e) => {
@@ -524,14 +680,11 @@ function applyRole(role) {
         } else {
           const user = getCurrentUser();
           
-          // 관리탭 권한 체크
           if (ni === 6 && user) {
             const role = user.role;
             if (role !== 'admin' && role !== 'manager') {
               cleanup(currentTab);
-              if (typeof showToast === 'function') {
-                showToast('⚠️ 관리자 또는 매니저만 접근 가능합니다');
-              }
+              if (typeof showToast === 'function') showToast('⚠️ 관리자 또는 매니저만 접근 가능합니다');
               restoreTabStyles();
               return;
             }

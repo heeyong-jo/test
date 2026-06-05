@@ -289,8 +289,10 @@ if (typeof bibleReadingState === 'undefined') {
 }
 
 
+// openBibleReading 함수 수정
 async function openBibleReading() {
-  // ✅ currentUser 가져오기 (window 객체 우선)
+  console.log('openBibleReading 실행');
+  
   const currentUserObj = (typeof window.currentUser !== 'undefined') ? window.currentUser : 
                          (typeof currentUser !== 'undefined') ? currentUser : null;
   
@@ -300,35 +302,98 @@ async function openBibleReading() {
     } else {
       alert('로그인이 필요합니다.');
     }
+    const loginScreen = document.getElementById('screen-login');
+    if (loginScreen) loginScreen.style.display = 'flex';
     return; 
   }
-  if (typeof firebase === 'undefined' || !firebase.apps.length) { 
-    alert('데이터베이스 연결 오류'); 
-    return; 
+  
+  // ✅ Firebase 연결 확인
+  if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) {
+    console.warn('Firebase 미연결, 로컬 모드로 실행');
+    // Firebase 없이도 읽기 가능하도록 로컬 모드 지원
+    startLocalBibleReading(currentUserObj);
+    return;
   }
-
-
-  const userRef = firebase.database().ref(`bibleReading/${currentUserObj.id}`);
-  const snap = await userRef.once('value');
-  const data = snap.val() || {};
-
-
-  const today = new Date().toISOString().slice(0, 10);
-  bibleReadingState.todayPagesRead = data.history && data.history[today] ? data.history[today] : 0;
-  bibleReadingState.lastReadDate = today;
-
-
-  if (data.currentBookIndex !== undefined && data.currentChapter !== undefined) {
-    bibleReadingState.bookIndex = data.currentBookIndex;
-    bibleReadingState.chapter = data.currentChapter;
-  } else {
-    bibleReadingState.bookIndex = 0;
-    bibleReadingState.chapter = 1;
+  
+  try {
+    const userRef = firebase.database().ref(`bibleReading/${currentUserObj.id}`);
+    const snap = await userRef.once('value').catch(err => {
+      console.warn('Firebase 읽기 실패, 로컬 모드로 전환:', err);
+      return null;
+    });
+    
+    const data = snap ? (snap.val() || {}) : {};
+    
+    const today = new Date().toISOString().slice(0, 10);
+    bibleReadingState.todayPagesRead = data.history && data.history[today] ? data.history[today] : 0;
+    bibleReadingState.lastReadDate = today;
+    
+    if (data.currentBookIndex !== undefined && data.currentChapter !== undefined) {
+      bibleReadingState.bookIndex = data.currentBookIndex;
+      bibleReadingState.chapter = data.currentChapter;
+    } else {
+      bibleReadingState.bookIndex = 0;
+      bibleReadingState.chapter = 1;
+    }
+    
+    if (bibleReadingState.todayPagesRead >= 10) {
+      if (typeof showToast === 'function') {
+        showToast('오늘은 이미 10장을 모두 읽으셨습니다!');
+      } else {
+        alert('오늘은 이미 10장을 모두 읽으셨습니다!');
+      }
+      return;
+    }
+    
+    const readerHome = document.getElementById('bible-reader-home');
+    const readerScreen = document.getElementById('bible-reader-screen');
+    if (readerHome) readerHome.style.display = 'none';
+    if (readerScreen) readerScreen.style.display = 'block';
+    
+    const todayCount = document.getElementById('bible-reading-today-count');
+    if (todayCount) todayCount.textContent = `오늘 ${bibleReadingState.todayPagesRead} / 10 장`;
+    
+    loadBibleChapterContent();
+    
+  } catch (error) {
+    console.error('openBibleReading 오류:', error);
+    if (typeof showToast === 'function') {
+      showToast('데이터베이스 연결 오류, 로컬 모드로 실행합니다');
+    }
+    // 오류 시 로컬 모드로 실행
+    startLocalBibleReading(currentUserObj);
   }
+}
 
 
+// ✅ 로컬 모드 성경 읽기 함수 추가
+function startLocalBibleReading(user) {
+  console.log('로컬 모드 성경 읽기 시작');
+  
+  // 로컬 스토리지에서 상태 복원
+  try {
+    const saved = localStorage.getItem(`bibleReading_${user.id}`);
+    if (saved) {
+      const data = JSON.parse(saved);
+      bibleReadingState.bookIndex = data.bookIndex || 0;
+      bibleReadingState.chapter = data.chapter || 1;
+      bibleReadingState.todayPagesRead = data.todayPagesRead || 0;
+      
+      // 오늘 날짜 확인 (자정 초기화)
+      const today = new Date().toISOString().slice(0, 10);
+      if (data.lastReadDate !== today) {
+        bibleReadingState.todayPagesRead = 0;
+      }
+      bibleReadingState.lastReadDate = today;
+    }
+  } catch(e) {}
+  
   if (bibleReadingState.todayPagesRead >= 10) {
-    alert('오늘은 이미 10장을 모두 읽으셨습니다!');
+    if (typeof showToast === 'function') {
+      showToast('오늘은 이미 10장을 모두 읽으셨습니다!');
+    } else {
+      alert('오늘은 이미 10장을 모두 읽으셨습니다!');
+    }
     return;
   }
   
@@ -336,104 +401,93 @@ async function openBibleReading() {
   const readerScreen = document.getElementById('bible-reader-screen');
   if (readerHome) readerHome.style.display = 'none';
   if (readerScreen) readerScreen.style.display = 'block';
-
-
+  
   const todayCount = document.getElementById('bible-reading-today-count');
-  if (todayCount) todayCount.textContent = `오늘 ${bibleReadingState.todayPagesRead} / 10 장`;
-
-
+  if (todayCount) todayCount.textContent = `오늘 ${bibleReadingState.todayPagesRead} / 10 장 (로컬 모드)`;
+  
   loadBibleChapterContent();
 }
 
 
-async function loadBibleChapterContent() {
-  const books = getAllBooks();
-  if (books.length === 0) {
-    console.error('성경 데이터가 없습니다. OT_BOOKS, NT_BOOKS 확인 필요');
-    return;
-  }
-  const book = books[bibleReadingState.bookIndex];
-  const titleEl = document.getElementById('bible-reading-title');
-  if (titleEl) titleEl.textContent = `📖 ${book.name} ${bibleReadingState.chapter}장`;
-
-
-  const contentDiv = document.getElementById('bible-reading-content');
-  if (!contentDiv) return;
-  contentDiv.innerHTML = '<div style="text-align:center; padding:40px;">불러오는 중...</div>';
-
-
-  try {
-    const res = await fetch(`${BIBLE_CDN}/${book.file}`);
-    const data = await res.json();
-    const bookData = data[book.name] || data[book.abbr] || Object.values(data)[0];
-    const verses = bookData[bibleReadingState.chapter];
-    
-    if (!verses) {
-      contentDiv.innerHTML = '<div style="text-align:center; padding:40px; color:var(--red);">데이터를 불러올 수 없습니다</div>';
-      return;
-    }
-
-
-    let html = '';
-    Object.entries(verses).forEach(([num, text]) => {
-      html += `<div style="display:flex; gap:10px; padding:6px 0; border-bottom:1px solid var(--border);">
-        <span style="font-weight:700; color:var(--purple); min-width:28px;">${num}</span>
-        <span>${escapeHtml(text)}</span>
-      </div>`;
-    });
-    contentDiv.innerHTML = html;
-  } catch (e) {
-    console.error('성경 로드 오류:', e);
-    contentDiv.innerHTML = '<div style="text-align:center; padding:40px; color:var(--red);">오류가 발생했습니다</div>';
-  }
-}
-
-
+// ✅ completeCurrentChapter 함수 수정 (로컬 저장 추가)
 async function completeCurrentChapter() {
-  // ✅ currentUser 가져오기
   const currentUserObj = (typeof window.currentUser !== 'undefined') ? window.currentUser : 
                          (typeof currentUser !== 'undefined') ? currentUser : null;
   
   if (bibleReadingState.todayPagesRead >= 10) {
-    alert('오늘은 이미 10장을 모두 읽으셨습니다!');
+    if (typeof showToast === 'function') {
+      showToast('오늘은 이미 10장을 모두 읽으셨습니다!');
+    } else {
+      alert('오늘은 이미 10장을 모두 읽으셨습니다!');
+    }
     return;
   }
-
-
-  if (!currentUserObj || typeof firebase === 'undefined') return;
-
-
-  const today = new Date().toISOString().slice(0, 10);
-  const userRef = firebase.database().ref(`bibleReading/${currentUserObj.id}`);
   
-  await userRef.transaction((data) => {
-    if (!data) data = { name: currentUserObj.name, totalPages: 0, completions: 0, history: {}, currentBookIndex: 0, currentChapter: 1 };
-    if (!data.history) data.history = {};
-    
-    const todayCount = (data.history[today] || 0) + 1;
-    if (todayCount > 10) return;
-    
-    data.history[today] = todayCount;
-    
-    let total = 0;
-    Object.values(data.history).forEach(v => total += v);
-    data.totalPages = total;
-    data.completions = Math.floor(total / TOTAL_BIBLE_CHAPTERS);
-    
-    return data;
-  });
-
-
+  const today = new Date().toISOString().slice(0, 10);
+  
+  // 상태 업데이트
   bibleReadingState.todayPagesRead++;
+  bibleReadingState.lastReadDate = today;
+  
   const todayCount = document.getElementById('bible-reading-today-count');
   if (todayCount) todayCount.textContent = `오늘 ${bibleReadingState.todayPagesRead} / 10 장`;
-
-
+  
+  // 다음 장/책으로 이동
+  const books = getAllBooks();
+  const book = books[bibleReadingState.bookIndex];
+  
+  if (bibleReadingState.chapter < book.chapters) {
+    bibleReadingState.chapter++;
+  } else {
+    if (bibleReadingState.bookIndex < books.length - 1) {
+      bibleReadingState.bookIndex++;
+      bibleReadingState.chapter = 1;
+    } else {
+      if (typeof showToast === 'function') {
+        showToast('🎉 성경 1독을 완료하셨습니다! 축하드립니다!');
+      } else {
+        alert('🎉 성경 1독을 완료하셨습니다! 축하드립니다!');
+      }
+      bibleReadingState.bookIndex = 0;
+      bibleReadingState.chapter = 1;
+    }
+  }
+  
+  // ✅ Firebase에 저장 (가능한 경우)
+  if (currentUserObj && typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
+    try {
+      await firebase.database().ref(`bibleReading/${currentUserObj.id}`).update({
+        currentBookIndex: bibleReadingState.bookIndex,
+        currentChapter: bibleReadingState.chapter,
+        [`history/${today}`]: bibleReadingState.todayPagesRead
+      }).catch(e => console.warn('Firebase 저장 실패:', e));
+    } catch(e) {
+      console.warn('Firebase 저장 오류:', e);
+    }
+  }
+  
+  // ✅ 로컬 스토리지에 항상 저장 (백업)
+  if (currentUserObj) {
+    try {
+      localStorage.setItem(`bibleReading_${currentUserObj.id}`, JSON.stringify({
+        bookIndex: bibleReadingState.bookIndex,
+        chapter: bibleReadingState.chapter,
+        todayPagesRead: bibleReadingState.todayPagesRead,
+        lastReadDate: today
+      }));
+    } catch(e) {}
+  }
+  
   if (bibleReadingState.todayPagesRead >= 10) {
-    alert('🎉 오늘 10장을 모두 읽으셨습니다! 내일 또 도전하세요.');
+    if (typeof showToast === 'function') {
+      showToast('🎉 오늘 10장을 모두 읽으셨습니다! 내일 또 도전하세요.');
+    }
     closeBibleReading();
     return;
   }
+  
+  loadBibleChapterContent();
+}
 
 
   const books = getAllBooks();

@@ -141,11 +141,10 @@ function fbUpdateUI(key, data) {
       if (typeof renderTodayVerse === 'function') renderTodayVerse();
       break;
       
-    case 'serviceList':
-      window.serviceList = arr || [];
-      serviceList = window.serviceList;
-      if (typeof renderServiceView === 'function') renderServiceView();
-      break;
+case 'serviceList':
+  serviceList = arr || [];
+  if (typeof renderServiceView === 'function') renderServiceView();
+  break;
       
     case 'scheduleList':
       window.scheduleList = arr || [];

@@ -1,6 +1,5 @@
-﻿// =====================================================================
-// js_staff.js — 섬기는 분들
-// =====================================================================
+﻿// ==================== 섬기는 분들 (js_staff.js) ====================
+// 수정본 - 전역 변수 일관성 유지, 에러 처리 개선
 
 
 // 기본 스태프 데이터
@@ -73,19 +72,30 @@ const DEFAULT_STAFF = [
 ];
 
 
-
-
 // ── 상태 ──────────────────────────────────────────────────────────
-let staffData        = null;
+let staffData = null;
 let staffPendingPhoto = "";
-let staffEditGroup   = "";
-let staffEditIdx     = -1;
-let staffEditAction  = "";
+let staffEditGroup = "";
+let staffEditIdx = -1;
+let staffEditAction = "";
 
 
+// ── 현재 사용자 가져오기 (통합 함수) ──────────────────────────────
+function getCurrentUserForStaff() {
+  if (typeof window.currentUser !== 'undefined' && window.currentUser) return window.currentUser;
+  if (typeof currentUser !== 'undefined' && currentUser) return currentUser;
+  return null;
+}
 
 
-// ── Firebase 로드 (안전하게 수정) ─────────────────────────────────
+// ── 관리자 여부 ───────────────────────────────────────────────────
+function staffIsAdmin() {
+  const user = getCurrentUserForStaff();
+  return user && user.role === 'admin';
+}
+
+
+// ── Firebase 로드 (개선) ─────────────────────────────────────────
 function loadStaff() {
   console.log('📋 loadStaff 실행');
   
@@ -98,16 +108,23 @@ function loadStaff() {
   container.innerHTML = '<div style="text-align:center;padding:20px;"><div class="splash-spinner" style="width:24px;height:24px;"></div><div>불러오는 중...</div></div>';
   
   // Firebase가 없으면 기본 데이터로 즉시 렌더링
-  if (typeof firebase === 'undefined' || !firebase.database) {
+  if (typeof firebase === 'undefined' || !firebase.database || !window.FB_READY) {
     console.warn('Firebase 연결 안됨, 기본 데이터 사용');
     staffData = JSON.parse(JSON.stringify(DEFAULT_STAFF));
     renderStaff();
     return;
   }
   
-  firebase.database().ref('staff').once('value')
+  // 타임아웃 추가 (5초)
+  const timeoutPromise = new Promise((_, reject) => 
+    setTimeout(() => reject(new Error('Firebase 로드 타임아웃')), 5000)
+  );
+  
+  const loadPromise = firebase.database().ref('staff').once('value');
+  
+  Promise.race([loadPromise, timeoutPromise])
     .then(snap => {
-      if (snap.exists()) {
+      if (snap && snap.exists()) {
         const raw = snap.val();
         staffData = Array.isArray(raw) ? raw : Object.values(raw);
         console.log('✅ Firebase staff 로드 성공');
@@ -121,18 +138,11 @@ function loadStaff() {
       console.error('staff 로드 실패:', err);
       staffData = JSON.parse(JSON.stringify(DEFAULT_STAFF));
       renderStaff();
+      if (typeof showToast === 'function') {
+        showToast('⚠️ 서버 연결 실패, 기본 데이터를 표시합니다');
+      }
     });
 }
-
-
-
-
-// ── 관리자 여부 ───────────────────────────────────────────────────
-function staffIsAdmin() {
-  return typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'admin';
-}
-
-
 
 
 // ── 렌더링 ────────────────────────────────────────────────────────
@@ -141,8 +151,6 @@ function renderStaff() {
   if (!wrap || !staffData) return;
   const isAdmin = staffIsAdmin();
   let html = '';
-
-
 
 
   staffData.forEach(group => {
@@ -154,15 +162,13 @@ function renderStaff() {
       </div>`;
 
 
-
-
     if (group.groupKey === 'pastor') {
       group.members.forEach((m, mIdx) => {
         html += `
         <div class="sf-pastor-card">
           <div class="sf-pastor-top">
             <div class="sf-photo-wrap sf-photo-wrap--lg">
-              ${m.photo ? `<img src="${m.photo}" class="sf-photo">` : `<div class="sf-photo-ph">👤</div>`}
+              ${m.photo ? `<img src="${m.photo}" class="sf-photo" loading="lazy">` : `<div class="sf-photo-ph">👤</div>`}
               ${isAdmin ? `<label class="sf-cam-btn" title="사진 변경">📷<input type="file" accept="image/*" onchange="staffInlinePhoto(this,'${group.groupKey}',${mIdx})" style="display:none"></label>` : ''}
             </div>
             <div class="sf-pastor-info">
@@ -181,7 +187,7 @@ function renderStaff() {
         html += `
         <div class="sf-card">
           <div class="sf-photo-wrap">
-            ${m.photo ? `<img src="${m.photo}" class="sf-photo">` : `<div class="sf-photo-ph">👤</div>`}
+            ${m.photo ? `<img src="${m.photo}" class="sf-photo" loading="lazy">` : `<div class="sf-photo-ph">👤</div>`}
             ${isAdmin ? `<label class="sf-cam-btn" title="사진 변경">📷<input type="file" accept="image/*" onchange="staffInlinePhoto(this,'${group.groupKey}',${mIdx})" style="display:none"></label>` : ''}
           </div>
           <div class="sf-card-body">
@@ -197,12 +203,8 @@ function renderStaff() {
   });
 
 
-
-
   wrap.innerHTML = html;
 }
-
-
 
 
 // ── 카드에서 바로 사진 교체 ──────────────────────────────────────
@@ -210,7 +212,11 @@ function staffInlinePhoto(input, groupKey, mIdx) {
   const file = input.files[0];
   if (!file) return;
   if (file.size > 1.5 * 1024 * 1024) {
-    alert('사진은 1.5MB 이하로 올려주세요.');
+    if (typeof showToast === 'function') {
+      showToast('사진은 1.5MB 이하로 올려주세요');
+    } else {
+      alert('사진은 1.5MB 이하로 올려주세요.');
+    }
     return;
   }
   resizeStaffImage(file).then(dataUrl => {
@@ -218,90 +224,152 @@ function staffInlinePhoto(input, groupKey, mIdx) {
     if (!group) return;
     group.members[mIdx].photo = dataUrl;
     saveStaff(() => renderStaff());
-  }).catch(() => alert('사진 처리 중 오류가 발생했습니다.'));
+  }).catch(() => {
+    if (typeof showToast === 'function') {
+      showToast('사진 처리 중 오류가 발생했습니다');
+    } else {
+      alert('사진 처리 중 오류가 발생했습니다.');
+    }
+  });
 }
-
-
 
 
 // ── 모달 관련 함수 (추가/수정/삭제) ───────────────────────────────
 function staffOpenAdd(groupKey) {
-  staffEditGroup  = groupKey;
-  staffEditIdx    = -1;
+  const isAdmin = staffIsAdmin();
+  if (!isAdmin) {
+    if (typeof showToast === 'function') showToast('관리자만 추가할 수 있습니다');
+    return;
+  }
+  
+  staffEditGroup = groupKey;
+  staffEditIdx = -1;
   staffEditAction = 'add';
   staffPendingPhoto = '';
   const isPastor = (groupKey === 'pastor');
-  document.getElementById('sf-modal-title').textContent   = '➕ 인원 추가';
-  document.getElementById('sf-input-name').value          = '';
-  document.getElementById('sf-input-content').value       = '';
-  document.getElementById('sf-content-label').textContent = isPastor ? '저서 (줄바꿈으로 구분)' : '담당사역 (줄바꿈으로 구분)';
+  
+  const titleEl = document.getElementById('sf-modal-title');
+  const nameEl = document.getElementById('sf-input-name');
+  const contentEl = document.getElementById('sf-input-content');
+  const contentLabelEl = document.getElementById('sf-content-label');
+  
+  if (titleEl) titleEl.textContent = '➕ 인원 추가';
+  if (nameEl) nameEl.value = '';
+  if (contentEl) contentEl.value = '';
+  if (contentLabelEl) contentLabelEl.textContent = isPastor ? '저서 (줄바꿈으로 구분)' : '담당사역 (줄바꿈으로 구분)';
+  
   staffModalPhotoClear();
-  document.getElementById('modal-staff').style.display = 'flex';
+  
+  const modal = document.getElementById('modal-staff');
+  if (modal) modal.style.display = 'flex';
 }
-
-
 
 
 function staffOpenEdit(groupKey, mIdx) {
-  staffEditGroup  = groupKey;
-  staffEditIdx    = mIdx;
+  const isAdmin = staffIsAdmin();
+  if (!isAdmin) {
+    if (typeof showToast === 'function') showToast('관리자만 수정할 수 있습니다');
+    return;
+  }
+  
+  staffEditGroup = groupKey;
+  staffEditIdx = mIdx;
   staffEditAction = 'edit';
+  
   const group = staffData.find(g => g.groupKey === groupKey);
+  if (!group) return;
+  
   const m = group.members[mIdx];
   staffPendingPhoto = m.photo || '';
   const isPastor = (groupKey === 'pastor');
-  document.getElementById('sf-modal-title').textContent   = '✏️ 정보 수정';
-  document.getElementById('sf-input-name').value          = m.name;
-  document.getElementById('sf-input-content').value       = isPastor ? (m.books||[]).join('\n') : (m.roles||[]).join('\n');
-  document.getElementById('sf-content-label').textContent = isPastor ? '저서 (줄바꿈으로 구분)' : '담당사역 (줄바꿈으로 구분)';
+  
+  const titleEl = document.getElementById('sf-modal-title');
+  const nameEl = document.getElementById('sf-input-name');
+  const contentEl = document.getElementById('sf-input-content');
+  const contentLabelEl = document.getElementById('sf-content-label');
+  
+  if (titleEl) titleEl.textContent = '✏️ 정보 수정';
+  if (nameEl) nameEl.value = m.name;
+  if (contentEl) contentEl.value = isPastor ? (m.books || []).join('\n') : (m.roles || []).join('\n');
+  if (contentLabelEl) contentLabelEl.textContent = isPastor ? '저서 (줄바꿈으로 구분)' : '담당사역 (줄바꿈으로 구분)';
+  
   if (m.photo) {
-    document.getElementById('sf-modal-prev').src           = m.photo;
-    document.getElementById('sf-modal-prev').style.display = 'block';
-    document.getElementById('sf-modal-ph').style.display   = 'none';
+    const prevEl = document.getElementById('sf-modal-prev');
+    const phEl = document.getElementById('sf-modal-ph');
+    if (prevEl) {
+      prevEl.src = m.photo;
+      prevEl.style.display = 'block';
+    }
+    if (phEl) phEl.style.display = 'none';
   } else {
     staffModalPhotoClear();
   }
-  document.getElementById('modal-staff').style.display = 'flex';
+  
+  const modal = document.getElementById('modal-staff');
+  if (modal) modal.style.display = 'flex';
 }
-
-
 
 
 function staffModalPhotoChange(input) {
   const file = input.files[0];
   if (!file) return;
   if (file.size > 1.5 * 1024 * 1024) {
-    alert('사진은 1.5MB 이하로 올려주세요.');
+    if (typeof showToast === 'function') {
+      showToast('사진은 1.5MB 이하로 올려주세요');
+    } else {
+      alert('사진은 1.5MB 이하로 올려주세요.');
+    }
     return;
   }
   resizeStaffImage(file).then(dataUrl => {
     staffPendingPhoto = dataUrl;
-    document.getElementById('sf-modal-prev').src           = staffPendingPhoto;
-    document.getElementById('sf-modal-prev').style.display = 'block';
-    document.getElementById('sf-modal-ph').style.display   = 'none';
-  }).catch(() => alert('사진 처리 중 오류가 발생했습니다.'));
+    const prevEl = document.getElementById('sf-modal-prev');
+    const phEl = document.getElementById('sf-modal-ph');
+    if (prevEl) {
+      prevEl.src = staffPendingPhoto;
+      prevEl.style.display = 'block';
+    }
+    if (phEl) phEl.style.display = 'none';
+  }).catch(() => {
+    if (typeof showToast === 'function') {
+      showToast('사진 처리 중 오류가 발생했습니다');
+    } else {
+      alert('사진 처리 중 오류가 발생했습니다.');
+    }
+  });
 }
-
-
 
 
 function staffModalPhotoClear() {
-  document.getElementById('sf-modal-prev').src = '';
-  document.getElementById('sf-modal-prev').style.display = 'none';
-  document.getElementById('sf-modal-ph').style.display = 'flex';
+  const prevEl = document.getElementById('sf-modal-prev');
+  const phEl = document.getElementById('sf-modal-ph');
+  if (prevEl) {
+    prevEl.src = '';
+    prevEl.style.display = 'none';
+  }
+  if (phEl) phEl.style.display = 'flex';
 }
 
 
-
-
 function staffSave() {
-  const name    = document.getElementById('sf-input-name').value.trim();
-  const content = document.getElementById('sf-input-content').value.trim();
-  if (!name) { alert('이름을 입력하세요.'); return; }
+  const nameEl = document.getElementById('sf-input-name');
+  const contentEl = document.getElementById('sf-input-content');
+  
+  const name = nameEl ? nameEl.value.trim() : '';
+  const content = contentEl ? contentEl.value.trim() : '';
+  
+  if (!name) {
+    if (typeof showToast === 'function') {
+      showToast('이름을 입력하세요');
+    } else {
+      alert('이름을 입력하세요.');
+    }
+    return;
+  }
 
 
   const isPastor = (staffEditGroup === 'pastor');
-  const lines = content ? content.split('\n').map(s=>s.trim()).filter(Boolean) : [];
+  const lines = content ? content.split('\n').map(s => s.trim()).filter(Boolean) : [];
   const entry = {
     name,
     photo: staffPendingPhoto,
@@ -311,7 +379,10 @@ function staffSave() {
 
 
   const group = staffData.find(g => g.groupKey === staffEditGroup);
-  if (!group) return;
+  if (!group) {
+    if (typeof showToast === 'function') showToast('그룹을 찾을 수 없습니다');
+    return;
+  }
 
 
   if (staffEditAction === 'add') {
@@ -321,42 +392,71 @@ function staffSave() {
   }
 
 
-  saveStaff(() => { staffCloseModal(); renderStaff(); });
+  // 저장 후 모달 닫기 (성공 시에만)
+  saveStaff(() => {
+    staffCloseModal();
+    renderStaff();
+    if (typeof showToast === 'function') {
+      showToast('✅ 저장되었습니다');
+    }
+  });
 }
-
-
 
 
 function staffDeleteMember(groupKey, mIdx) {
-  if (!confirm('삭제하시겠습니까?')) return;
+  const isAdmin = staffIsAdmin();
+  if (!isAdmin) {
+    if (typeof showToast === 'function') showToast('관리자만 삭제할 수 있습니다');
+    return;
+  }
+  
+  if (!confirm('정말 삭제하시겠습니까?')) return;
+  
   const group = staffData.find(g => g.groupKey === groupKey);
   if (!group) return;
+  
   group.members.splice(mIdx, 1);
-  saveStaff(() => renderStaff());
+  saveStaff(() => {
+    renderStaff();
+    if (typeof showToast === 'function') {
+      showToast('🗑 삭제되었습니다');
+    }
+  });
 }
 
 
-
-
 function saveStaff(cb) {
-  if (typeof firebase !== 'undefined' && firebase.database) {
+  if (typeof firebase !== 'undefined' && firebase.database && window.FB_READY) {
     firebase.database().ref('staff').set(staffData)
-      .then(() => { if (cb) cb(); })
-      .catch(err => { console.error('staff 저장 실패', err); alert('저장 중 오류가 발생했습니다.'); });
+      .then(() => {
+        if (cb) cb();
+      })
+      .catch(err => {
+        console.error('staff 저장 실패', err);
+        if (typeof showToast === 'function') {
+          showToast('❌ 저장 중 오류가 발생했습니다');
+        } else {
+          alert('저장 중 오류가 발생했습니다.');
+        }
+      });
   } else {
+    // localStorage에 백업 저장
+    try {
+      localStorage.setItem('ch2_staff', JSON.stringify(staffData));
+      console.log('✅ staff 로컬 저장 완료');
+    } catch(e) {
+      console.error('로컬 저장 실패:', e);
+    }
     if (cb) cb();
   }
 }
 
 
-
-
 function staffCloseModal() {
-  document.getElementById('modal-staff').style.display = 'none';
+  const modal = document.getElementById('modal-staff');
+  if (modal) modal.style.display = 'none';
   staffPendingPhoto = '';
 }
-
-
 
 
 function resizeStaffImage(file, maxW = 400, maxH = 480, quality = 0.85) {
@@ -370,11 +470,11 @@ function resizeStaffImage(file, maxW = 400, maxH = 480, quality = 0.85) {
         let { width, height } = img;
         if (width > maxW || height > maxH) {
           const ratio = Math.min(maxW / width, maxH / height);
-          width  = Math.round(width * ratio);
+          width = Math.round(width * ratio);
           height = Math.round(height * ratio);
         }
         const canvas = document.createElement('canvas');
-        canvas.width  = width;
+        canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
@@ -389,4 +489,38 @@ function resizeStaffImage(file, maxW = 400, maxH = 480, quality = 0.85) {
 }
 
 
-console.log('✅ js_staff.js 로드 완료');
+// localStorage에서 staff 데이터 복원 시도
+function loadStaffFromLocal() {
+  try {
+    const saved = localStorage.getItem('ch2_staff');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length) {
+        staffData = parsed;
+        console.log('✅ 로컬에서 staff 데이터 복원 완료');
+        renderStaff();
+        return true;
+      }
+    }
+  } catch(e) {
+    console.error('로컬 staff 복원 실패:', e);
+  }
+  return false;
+}
+
+
+// 초기화: 로컬 데이터 우선, Firebase는 별도 로드
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!loadStaffFromLocal()) {
+      loadStaff();
+    }
+  });
+} else {
+  if (!loadStaffFromLocal()) {
+    loadStaff();
+  }
+}
+
+
+console.log('✅ js_staff.js 로드 완료 (수정본)');

@@ -1,8 +1,4 @@
 ﻿// ==================== UI 및 스와이프 제스처 (js_ui.js) ====================
-// 최종 통합본 - 중복 제거, 스크롤 위치 유지, 민감도 조절
-
-
-// ==================== 전역 변수 초기화 ====================
 if (typeof toastTimer === 'undefined') var toastTimer = null;
 if (typeof currentBibleSection === 'undefined') var currentBibleSection = null;
 if (typeof currentTab === 'undefined') var currentTab = 0;
@@ -56,6 +52,7 @@ function showTab(n) {
   const needLoginTabs = [2, 3, 6];
   const user = getCurrentUser();
   
+  // 로그인 필요 체크
   if (!user && needLoginTabs.includes(n)) {
     console.log('로그인 필요 탭 접근:', n);
     const loginScreen = document.getElementById('screen-login');
@@ -63,11 +60,15 @@ function showTab(n) {
     return;
   }
   
-  // 관리탭 권한 체크
+  // 관리탭(6) 권한 체크
   if (n === 6 && user) {
     const role = user.role;
     if (role !== 'admin' && role !== 'manager') {
-      if (typeof showToast === 'function') showToast('⚠️ 관리자 또는 매니저만 접근 가능합니다');
+      console.log('권한 없음 - 관리탭 접근 불가:', role);
+      if (typeof showToast === 'function') {
+        showToast('⚠️ 관리자 또는 매니저만 접근 가능합니다');
+      }
+      showTab(0);
       return;
     }
   }
@@ -78,11 +79,13 @@ function showTab(n) {
   
   currentTab = n;
   
+  // 탭 스타일 업데이트
   document.querySelectorAll('.tab').forEach((t, i) => {
     if (i === n) t.classList.add('active');
     else t.classList.remove('active');
   });
   
+  // 페이지 표시/숨김
   for (let i = 0; i < TOTAL_TABS; i++) {
     const page = document.getElementById('p' + i);
     if (page) {
@@ -93,6 +96,20 @@ function showTab(n) {
         page.classList.remove('show');
         page.style.display = 'none';
       }
+    }
+  }
+  
+  // 관리탭 권한에 따라 요소 강제 표시
+  if (n === 6 && user) {
+    const role = user.role;
+    if (role === 'admin' || role === 'manager') {
+      document.querySelectorAll('.admin-only, .admin-manager-only').forEach(el => {
+        if (role === 'admin' && el.classList.contains('admin-only')) {
+          el.style.display = 'block';
+        } else if (el.classList.contains('admin-manager-only')) {
+          el.style.display = 'block';
+        }
+      });
     }
   }
   
@@ -135,11 +152,24 @@ function afterTab(n) {
   }
   else if (n === 6) {
     const user = getCurrentUser();
+    console.log('관리탭 렌더링, role:', user ? user.role : 'none');
+    
     if (user && user.role === 'admin') {
       if (typeof renderMembersAccord === 'function') renderMembersAccord();
       if (typeof renderOfferingsAccord === 'function') renderOfferingsAccord();
-    } else if (user && user.role === 'manager') {
+      const memberBody = document.getElementById('ac-member-body');
+      if (memberBody) memberBody.classList.add('open');
+    } 
+    else if (user && user.role === 'manager') {
       if (typeof renderApprovalsAccord === 'function') renderApprovalsAccord();
+      const approvalBody = document.getElementById('ac-approval-body');
+      if (approvalBody) approvalBody.classList.add('open');
+    }
+    
+    const settingInfoSpan = document.getElementById('setting-user-info');
+    if (settingInfoSpan && user) {
+      const roleText = user.role === 'admin' ? '관리자' : (user.role === 'manager' ? '매니저' : '일반성도');
+      settingInfoSpan.textContent = `${user.name} (${roleText})`;
     }
   }
 }
@@ -177,6 +207,8 @@ function escapeHtml(str) {
 
 // ==================== 권한 적용 ====================
 function applyRole(role) {
+  console.log('applyRole 실행:', role);
+  
   const isAdmin = role === 'admin';
   const isAdminOrManager = role === 'admin' || role === 'manager';
 
@@ -186,17 +218,17 @@ function applyRole(role) {
     if (tag === 'button') {
       el.classList.add('visible-inline');
       el.classList.remove('visible');
-      el.setAttribute('style', 'display:inline-block !important');
+      el.style.cssText = 'display:inline-block !important';
     } else {
       el.classList.add('visible');
       el.classList.remove('visible-inline');
-      el.setAttribute('style', 'display:block !important');
+      el.style.cssText = 'display:block !important';
     }
   }
   
   function hideEl(el) {
     el.classList.remove('visible', 'visible-inline');
-    el.setAttribute('style', 'display:none !important');
+    el.style.cssText = 'display:none !important';
   }
 
 
@@ -209,10 +241,19 @@ function applyRole(role) {
     if (isAdminOrManager) showEl(el);
     else hideEl(el);
   });
+  
+  // 현재 탭이 관리탭(6)이고 권한이 있으면 내용물 표시
+  if (currentTab === 6 && isAdminOrManager) {
+    const p6 = document.getElementById('p6');
+    if (p6) {
+      p6.style.display = 'block';
+      p6.classList.add('show');
+    }
+  }
 }
 
 
-// ==================== 스와이프 제스처 (수정본) ====================
+// ==================== 스와이프 제스처 ====================
 (function() {
   const el = document.getElementById('swipe-container');
   if (!el) return;
@@ -269,6 +310,11 @@ function applyRole(role) {
     return nxt;
   }
   
+  function saveCurrentScrollPosition() {
+    const currentScroll = window.scrollY || document.documentElement.scrollTop;
+    sessionStorage.setItem(`scrollPos_${currentTab}`, currentScroll);
+  }
+  
   function cleanup(finalIdx) {
     const f = getPage(finalIdx);
     if (!f) return;
@@ -296,14 +342,24 @@ function applyRole(role) {
       }, 50);
     }
     
+    // 관리탭 권한 체크
+    const user = getCurrentUser();
+    if (finalIdx === 6 && user) {
+      const role = user.role;
+      if (role !== 'admin' && role !== 'manager') {
+        setTimeout(() => {
+          showTab(0);
+          if (typeof showToast === 'function') {
+            showToast('⚠️ 관리자 또는 매니저만 접근 가능합니다');
+          }
+        }, 50);
+        return;
+      }
+    }
+    
     setTimeout(() => {
       afterTab(finalIdx);
     }, 50);
-  }
-  
-  function saveCurrentScrollPosition() {
-    const currentScroll = window.scrollY || document.documentElement.scrollTop;
-    sessionStorage.setItem(`scrollPos_${currentTab}`, currentScroll);
   }
   
   el.addEventListener('touchstart', (e) => {
@@ -467,6 +523,20 @@ function applyRole(role) {
           requestAnimationFrame(frame);
         } else {
           const user = getCurrentUser();
+          
+          // 관리탭 권한 체크
+          if (ni === 6 && user) {
+            const role = user.role;
+            if (role !== 'admin' && role !== 'manager') {
+              cleanup(currentTab);
+              if (typeof showToast === 'function') {
+                showToast('⚠️ 관리자 또는 매니저만 접근 가능합니다');
+              }
+              restoreTabStyles();
+              return;
+            }
+          }
+          
           if (ni !== 0 && !user) {
             cleanup(currentTab);
             document.getElementById('screen-login').style.display = 'flex';
@@ -528,4 +598,4 @@ function applyRole(role) {
 })();
 
 
-console.log('✅ js_ui.js 로드 완료 (통합본)');
+console.log('✅ js_ui.js 로드 완료 (최종 수정본)');

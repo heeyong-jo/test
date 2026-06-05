@@ -1,6 +1,8 @@
 ﻿// ==================== 말씀 기능 (오늘의 말씀 등록) ====================
 
 
+
+
 // ------------------- 1. 오늘의 말씀 렌더링 -------------------
 function renderTodayVerse() {
   let todayVerse = null;
@@ -28,6 +30,8 @@ if (el_body) el_body.textContent = bodyText;
 }
 
 
+
+
 // ------------------- 2. 말씀 공유 -------------------
 function shareToday() {
   const tv = (typeof LS !== 'undefined') ? LS.load('todayVerse', null) : null;
@@ -46,12 +50,16 @@ function shareToday() {
 }
 
 
+
+
 // ------------------- 3. 말씀 등록 모달 -------------------
 const VerseTab = {
   selectedBook: null,
   selectedChapter: 1,
   currentVerseText: '',
   maxVerses: 150,
+
+
 
 
   initializeBibleBooks: function() {
@@ -98,6 +106,8 @@ const VerseTab = {
 ];
 
 
+
+
     window.NT_BOOKS = [
   {name: '마태복음', abbr: '마', chapters: 28, file: 'nt01_matthew.json'},
   {name: '마가복음', abbr: '막', chapters: 16, file: 'nt02_mark.json'},
@@ -130,6 +140,8 @@ const VerseTab = {
   },
 
 
+
+
   showStep: function(step) {
     const step1 = document.getElementById('vstep1');
     const step2 = document.getElementById('vstep2');
@@ -151,6 +163,8 @@ const VerseTab = {
     if (chapterDiv) chapterDiv.style.display = step === 'chapter' ? 'block' : 'none';
     if (verseDiv) verseDiv.style.display = step === 'verse' ? 'block' : 'none';
   },
+
+
 
 
   loadBooks: function() {
@@ -188,6 +202,8 @@ const VerseTab = {
   },
 
 
+
+
   pickBook: function(bookName) {
     this.selectedBook = OT_BOOKS.find(b => b.name === bookName) || NT_BOOKS.find(b => b.name === bookName);
     if (!this.selectedBook) return;
@@ -206,6 +222,8 @@ const VerseTab = {
     }
     this.showStep('chapter');
   },
+
+
 
 
   pickChapter: function(chapter) {
@@ -260,6 +278,8 @@ const VerseTab = {
   },
 
 
+
+
   loadVersePreview: function() {
     const previewDiv = document.getElementById('vs-preview');
     if (!previewDiv || !this.selectedBook) return;
@@ -308,6 +328,8 @@ const VerseTab = {
   },
 
 
+
+
   applyTodayVerse: function() {
     if (!this.selectedBook || !this.selectedChapter) {
       alert('책과 장을 선택해주세요');
@@ -339,6 +361,8 @@ const todayVerseData = { text: `"${verseText}"`, ref: ref, body: cleanText };
   },
 
 
+
+
   goBack: function(step) {
     if (step === 'book') {
       this.showStep('book');
@@ -348,6 +372,8 @@ const todayVerseData = { text: `"${verseText}"`, ref: ref, body: cleanText };
     }
   }
 };
+
+
 
 
 // 전역 함수 연결
@@ -382,14 +408,20 @@ window.openVerseSelector = function() {
 };
 
 
+
+
 window.closeVerseSelector = function() {
   const modal = document.getElementById('modal-verse-selector');
   if (modal) modal.style.display = 'none';
 };
 
 
+
+
 window.vsGoBack = function(step) { VerseTab.goBack(step); };
 window.applyTodayVerse = function() { VerseTab.applyTodayVerse(); };
+
+
 
 
 console.log('✅ 말씀 등록 기능 로드 완료');

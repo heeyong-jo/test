@@ -1,5 +1,5 @@
 ﻿// ==================== UI 및 스와이프 제스처 (js_ui.js) ====================
-// 최종 수정본 - 스크롤 위치 유지 + 로그인 체크 통일
+// 최종 수정본 - 슬라이드 겹침 버그 완전 해결
 
 
 if (typeof toastTimer === 'undefined') var toastTimer = null;
@@ -11,7 +11,7 @@ if (typeof tabScrollStartX === 'undefined') var tabScrollStartX = 0;
 if (typeof tabOriginalScroll === 'undefined') var tabOriginalScroll = 0;
 
 
-// ==================== 현재 사용자 가져오기 ====================
+// ==================== 현재 사용자 가져오기 (통합) ====================
 window.getCurrentUser = window.getCurrentUser || function() {
   if (typeof window.currentUser !== 'undefined' && window.currentUser) return window.currentUser;
   if (typeof currentUser !== 'undefined' && currentUser) return currentUser;
@@ -115,7 +115,6 @@ function showTab(n) {
   const needLoginTabs = [2, 3, 6];
   const user = getCurrentUser();
   
-  // 로그인 필요 체크 (클릭 시)
   if (!user && needLoginTabs.includes(n)) {
     console.log('로그인 필요 탭 접근:', n);
     const loginScreen = document.getElementById('screen-login');
@@ -123,7 +122,6 @@ function showTab(n) {
     return;
   }
   
-  // 관리탭 권한 체크
   if (n === 6 && user) {
     const role = user.role;
     if (role !== 'admin' && role !== 'manager') {
@@ -134,19 +132,16 @@ function showTab(n) {
     }
   }
   
-  // 현재 스크롤 위치 저장
   const currentScroll = window.scrollY || document.documentElement.scrollTop;
   sessionStorage.setItem(`scrollPos_${currentTab}`, currentScroll);
   
   currentTab = n;
   
-  // 탭 스타일 업데이트
   document.querySelectorAll('.tab').forEach((t, i) => {
     if (i === n) t.classList.add('active');
     else t.classList.remove('active');
   });
   
-  // 페이지 표시/숨김
   for (let i = 0; i < TOTAL_TABS; i++) {
     const page = document.getElementById('p' + i);
     if (page) {
@@ -160,7 +155,6 @@ function showTab(n) {
     }
   }
   
-  // 관리탭 권한 요소 표시
   if (n === 6 && user) {
     const role = user.role;
     if (role === 'admin' || role === 'manager') {
@@ -174,7 +168,6 @@ function showTab(n) {
     }
   }
   
-  // 저장된 스크롤 위치 복원
   const savedScroll = sessionStorage.getItem(`scrollPos_${n}`);
   if (savedScroll && !isNaN(parseInt(savedScroll))) {
     setTimeout(() => window.scrollTo(0, parseInt(savedScroll)), 50);
@@ -213,6 +206,7 @@ function afterTab(n) {
     const user = getCurrentUser();
     console.log('관리탭 렌더링, role:', user ? user.role : 'none');
     
+    // p6 페이지 강제 표시
     const p6 = document.getElementById('p6');
     if (p6) {
       p6.style.cssText = 'display: block !important; position: static; z-index: auto;';
@@ -223,15 +217,18 @@ function afterTab(n) {
       setTimeout(function() {
         if (typeof renderMembersAccord === 'function') {
           renderMembersAccord();
+        } else {
+          var container = document.getElementById('accord-member-list');
+          if (container) container.innerHTML = '<div style="padding:20px;">관리자 모드 로딩 중...</div>';
         }
-      }, 100);
+      }, 50);
     } 
     else if (user && user.role === 'manager') {
       setTimeout(function() {
         if (typeof renderApprovalsAccord === 'function') {
           renderApprovalsAccord();
         }
-      }, 100);
+      }, 50);
     }
     
     var settingInfoSpan = document.getElementById('setting-user-info');
@@ -246,13 +243,14 @@ function afterTab(n) {
 // ==================== 관리탭 렌더링 함수들 ====================
 
 
+// 성도 관리 렌더링
 window.renderMembersAccord = function() {
   console.log('renderMembersAccord 실행');
   
   var container = document.getElementById('accord-member-list');
   if (!container) {
     console.warn('accord-member-list 요소 없음, 재시도');
-    setTimeout(window.renderMembersAccord, 200);
+    setTimeout(window.renderMembersAccord, 100);
     return;
   }
   
@@ -301,13 +299,14 @@ window.renderMembersAccord = function() {
 };
 
 
+// 가입 승인 관리 렌더링
 window.renderApprovalsAccord = function() {
   console.log('renderApprovalsAccord 실행');
   
   var container = document.getElementById('accord-approval-list');
   if (!container) {
     console.warn('accord-approval-list 요소 없음, 재시도');
-    setTimeout(window.renderApprovalsAccord, 200);
+    setTimeout(window.renderApprovalsAccord, 100);
     return;
   }
   
@@ -362,6 +361,7 @@ window.renderApprovalsAccord = function() {
 };
 
 
+// 승인 함수
 window.approveUser = function(userId) {
   if (!confirm('이 사용자를 승인하시겠습니까?')) return;
   
@@ -398,6 +398,7 @@ window.approveUser = function(userId) {
 };
 
 
+// 거절 함수
 window.rejectUser = function(userId) {
   if (!confirm('이 사용자를 거절하시겠습니까?')) return;
   
@@ -470,19 +471,16 @@ function restoreTabStyles() {
     return -1;
   }
   
-  // ✅ prepareNext: 스크롤 위치 유지를 위해 top: 현재 스크롤 위치 사용
+  // ✅ 수정: position: fixed → absolute (겹침 방지)
   function prepareNext(dir) {
     var ni = getNext(dir);
     if (ni < 0) return null;
     var nxt = getPage(ni);
     if (!nxt) return null;
     
-    // 현재 스크롤 위치 저장
-    var currentScroll = window.scrollY || document.documentElement.scrollTop;
-    
     nxt.style.cssText = 'display: block !important;' +
       'position: absolute;' +
-      'top: ' + currentScroll + 'px;' +  // ✅ 현재 스크롤 위치로 설정
+      'top: 0;' +
       'left: 0;' +
       'right: 0;' +
       'width: 100%;' +
@@ -500,13 +498,10 @@ function restoreTabStyles() {
     sessionStorage.setItem('scrollPos_' + currentTab, currentScroll);
   }
   
+  // ✅ 수정: 명시적 CSS 설정 (겹침 완전 제거)
   function cleanup(finalIdx) {
     var f = getPage(finalIdx);
     if (!f) return;
-    
-    // 저장된 스크롤 위치 가져오기
-    var savedScrollPos = sessionStorage.getItem('scrollPos_' + finalIdx);
-    var scrollPos = (savedScrollPos && !isNaN(parseInt(savedScrollPos))) ? parseInt(savedScrollPos) : 0;
     
     f.style.cssText = 'display: block !important; position: static; z-index: auto;';
     f.classList.add('show');
@@ -524,8 +519,10 @@ function restoreTabStyles() {
     nxtEl = null;
     dragDir = 0;
     
-    // 스크롤 위치 복원
-    setTimeout(function() { window.scrollTo(0, scrollPos); }, 50);
+    var savedScrollPos = sessionStorage.getItem('scrollPos_' + finalIdx);
+    if (savedScrollPos && !isNaN(parseInt(savedScrollPos))) {
+      setTimeout(function() { window.scrollTo(0, parseInt(savedScrollPos)); }, 50);
+    }
     
     var user = getCurrentUser();
     if (finalIdx === 6 && user) {
@@ -539,6 +536,7 @@ function restoreTabStyles() {
       }
     }
     
+    // ✅ 지연 제거 (즉시 afterTab 호출)
     afterTab(finalIdx);
   }
   
@@ -578,6 +576,15 @@ function restoreTabStyles() {
         return;
       }
       
+      var user = getCurrentUser();
+      if (currentTab === 0 && !user && dx > SWIPE_THRESHOLD) {
+        e.preventDefault();
+        document.getElementById('screen-login').style.display = 'flex';
+        dragging = false;
+        locked = true;
+        return;
+      }
+      
       dragging = true;
       dragDir = dx > 0 ? -1 : 1;
       
@@ -585,7 +592,7 @@ function restoreTabStyles() {
         var currentScroll = window.scrollY || document.documentElement.scrollTop;
         curEl.style.cssText = 'display: block !important;' +
           'position: absolute;' +
-          'top: ' + currentScroll + 'px;' +
+          'top: 0;' +
           'left: 0;' +
           'right: 0;' +
           'width: 100%;' +
@@ -691,9 +698,7 @@ function restoreTabStyles() {
           requestAnimationFrame(frame);
         } else {
           var user = getCurrentUser();
-          var needLoginTabs = [2, 3, 6];
           
-          // 관리탭 권한 체크
           if (ni === 6 && user) {
             var role = user.role;
             if (role !== 'admin' && role !== 'manager') {
@@ -704,25 +709,9 @@ function restoreTabStyles() {
             }
           }
           
-          // ✅ 로그인 필요 탭: 슬라이드는 허용하되 비로그인 시 토스트 메시지 (슬라이드 진행)
-          if (ni !== 0 && !user && needLoginTabs.includes(ni)) {
-            // 탭 전환은 진행
-            currentTab = ni;
-            var tabs = document.querySelectorAll('.tab');
-            for (var i = 0; i < tabs.length; i++) {
-              if (i === currentTab) {
-                tabs[i].classList.add('active');
-              } else {
-                tabs[i].classList.remove('active');
-              }
-              tabs[i].style.opacity = '';
-              tabs[i].style.color = '';
-            }
+          if (ni !== 0 && !user) {
             cleanup(currentTab);
-            // 토스트 메시지로 알림 (로그인 필요)
-            if (typeof showToast === 'function') {
-              showToast('🔐 로그인이 필요한 기능입니다');
-            }
+            document.getElementById('screen-login').style.display = 'flex';
           } else {
             currentTab = ni;
             var tabs = document.querySelectorAll('.tab');

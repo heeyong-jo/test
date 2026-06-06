@@ -1,4 +1,5 @@
 ﻿// ==================== 로컬 스토리지 및 Firebase 저장 ====================
+// 최종 수정본 - 전역 변수 정리, serviceList/scheduleList 추가
 
 
 if (typeof FB_KEYS === 'undefined') {
@@ -7,7 +8,7 @@ if (typeof FB_KEYS === 'undefined') {
 }
 
 
-// ✅ 전역 변수 선언 (window 사용으로 통일, let 제거)
+// ✅ 전역 변수 선언 (window 사용으로 통일)
 window.pendingUsers = window.pendingUsers || [];
 window.approvedUsers = window.approvedUsers || [];
 window.currentUser = window.currentUser || null;
@@ -302,6 +303,11 @@ function loadFromLocalStorage() {
       console.log('✅ Firebase 동기화 시작됨');
     } else {
       console.log('⚠️ Firebase 미준비, localStorage만 사용');
+      // Firebase 없을 때도 UI 업데이트
+      if (typeof renderServiceView === 'function') renderServiceView();
+      if (typeof renderHomeNotices === 'function') renderHomeNotices();
+      if (typeof renderMeditations === 'function') renderMeditations();
+      if (typeof renderPrayers === 'function') renderPrayers();
     }
   }, 200);
 })();

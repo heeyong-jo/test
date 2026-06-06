@@ -1,6 +1,4 @@
 ﻿// ==================== UI 및 스와이프 제스처 (js_ui.js) ====================
-
-
 if (typeof toastTimer === 'undefined') var toastTimer = null;
 if (typeof currentBibleSection === 'undefined') var currentBibleSection = null;
 if (typeof currentTab === 'undefined') var currentTab = 0;
@@ -10,12 +8,13 @@ if (typeof tabScrollStartX === 'undefined') var tabScrollStartX = 0;
 if (typeof tabOriginalScroll === 'undefined') var tabOriginalScroll = 0;
 
 
-// ==================== 현재 사용자 가져오기 (통합) ====================
-function getCurrentUser() {
+// ==================== 현재 사용자 가져오기 (통합 - 중복 제거) ====================
+window.getCurrentUser = window.getCurrentUser || function() {
   if (typeof window.currentUser !== 'undefined' && window.currentUser) return window.currentUser;
   if (typeof currentUser !== 'undefined' && currentUser) return currentUser;
   return null;
-}
+};
+var getCurrentUser = window.getCurrentUser;
 
 
 // ==================== 시계 업데이트 ====================
@@ -43,6 +42,65 @@ function showToast(msg) {
 function closeModal(id) {
   const modal = document.getElementById(id);
   if (modal) modal.style.display = 'none';
+}
+
+
+// ==================== XSS 방지 ====================
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
+}
+
+
+// ==================== 권한 적용 ====================
+function applyRole(role) {
+  console.log('applyRole 실행:', role);
+  
+  const isAdmin = role === 'admin';
+  const isAdminOrManager = role === 'admin' || role === 'manager';
+
+
+  function showEl(el) {
+    const tag = el.tagName.toLowerCase();
+    if (tag === 'button') {
+      el.classList.add('visible-inline');
+      el.classList.remove('visible');
+      el.style.cssText = 'display:inline-block !important';
+    } else {
+      el.classList.add('visible');
+      el.classList.remove('visible-inline');
+      el.style.cssText = 'display:block !important';
+    }
+  }
+  
+  function hideEl(el) {
+    el.classList.remove('visible', 'visible-inline');
+    el.style.cssText = 'display:none !important';
+  }
+
+
+  document.querySelectorAll('.admin-only').forEach(el => {
+    if (isAdmin) showEl(el);
+    else hideEl(el);
+  });
+  
+  document.querySelectorAll('.admin-manager-only').forEach(el => {
+    if (isAdminOrManager) showEl(el);
+    else hideEl(el);
+  });
+  
+  if (currentTab === 6 && isAdminOrManager) {
+    const p6 = document.getElementById('p6');
+    if (p6) {
+      p6.style.display = 'block';
+      p6.classList.add('show');
+    }
+  }
 }
 
 
@@ -84,6 +142,8 @@ function showTab(n) {
   for (let i = 0; i < TOTAL_TABS; i++) {
     const page = document.getElementById('p' + i);
     if (page) {
+      page.style.cssText = '';
+      page.style.transform = '';
       if (i === n) {
         page.classList.add('show');
         page.style.display = 'block';
@@ -354,65 +414,6 @@ function restoreTabStyles() {
     tab.style.opacity = '';
     tab.style.color = '';
   });
-}
-
-
-// ==================== XSS 방지 ====================
-function escapeHtml(str) {
-  if (!str) return '';
-  return str.replace(/[&<>]/g, function(m) {
-    if (m === '&') return '&amp;';
-    if (m === '<') return '&lt;';
-    if (m === '>') return '&gt;';
-    return m;
-  });
-}
-
-
-// ==================== 권한 적용 ====================
-function applyRole(role) {
-  console.log('applyRole 실행:', role);
-  
-  const isAdmin = role === 'admin';
-  const isAdminOrManager = role === 'admin' || role === 'manager';
-
-
-  function showEl(el) {
-    const tag = el.tagName.toLowerCase();
-    if (tag === 'button') {
-      el.classList.add('visible-inline');
-      el.classList.remove('visible');
-      el.style.cssText = 'display:inline-block !important';
-    } else {
-      el.classList.add('visible');
-      el.classList.remove('visible-inline');
-      el.style.cssText = 'display:block !important';
-    }
-  }
-  
-  function hideEl(el) {
-    el.classList.remove('visible', 'visible-inline');
-    el.style.cssText = 'display:none !important';
-  }
-
-
-  document.querySelectorAll('.admin-only').forEach(el => {
-    if (isAdmin) showEl(el);
-    else hideEl(el);
-  });
-  
-  document.querySelectorAll('.admin-manager-only').forEach(el => {
-    if (isAdminOrManager) showEl(el);
-    else hideEl(el);
-  });
-  
-  if (currentTab === 6 && isAdminOrManager) {
-    const p6 = document.getElementById('p6');
-    if (p6) {
-      p6.style.display = 'block';
-      p6.classList.add('show');
-    }
-  }
 }
 
 

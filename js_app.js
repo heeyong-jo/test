@@ -504,6 +504,7 @@ function changeBibleReadingFontSize(delta) {
 }
 
 
+// ==================== 초기화 실행 ====================
 setTimeout(() => {
   loadBibleHallOfFame();
   loadBibleStatus();

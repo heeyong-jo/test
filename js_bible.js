@@ -646,25 +646,36 @@ function initBible() {
 // HTML의 onclick 속성에서 호출 가능하도록 전역 등록
 
 
-window.initBible = window.initBible || initBible;
-window.openBibleSection = window.openBibleSection || openBibleSection;
-window.closeBibleSection = window.closeBibleSection || closeBibleSection;
-window.initBibleBooks = window.initBibleBooks || initBibleBooks;
-window.selectBook = window.selectBook || selectBook;
-window.loadChapter = window.loadChapter || loadChapter;
-window.showBibleList = window.showBibleList || showBibleList;
-window.showChapterView = window.showChapterView || showChapterView;
-// window.changeFontSize = window.changeFontSize || changeFontSize;  // ← 함수 없음
-window.toggleAppendix = window.toggleAppendix || toggleAppendix;
-window.changeBibleReadingFontSize = window.changeBibleReadingFontSize || changeBibleReadingFontSize;
-window.openBibleSearch = window.openBibleSearch || openBibleSearch;
-window.closeBibleSearch = window.closeBibleSearch || closeBibleSearch;
-window.searchBible = window.searchBible || searchBible;
-window.goToSearchPage = window.goToSearchPage || goToSearchPage;
-window.goToVerse = window.goToVerse || goToVerse;
-window.loadHymnTitles = window.loadHymnTitles || loadHymnTitles;
-window.initHymn = window.initHymn || initHymn;
-window.selectHymn = window.selectHymn || selectHymn;
-// window.showHymnDetail = window.showHymnDetail || showHymnDetail;  // ← 함수 없음
-// window.changeAppendixFont = window.changeAppendixFont || changeAppendixFont;  // ← 함수 없음
-window.applyAppendixFont = window.applyAppendixFont || applyAppendixFont;
+window.initBible = initBible;
+window.openBibleSection = openBibleSection;
+window.closeBibleSection = closeBibleSection;
+window.initBibleBooks = initBibleBooks;
+window.selectBook = selectBook;
+window.loadChapter = loadChapter;
+window.showBibleList = showBibleList;
+window.showChapterView = showChapterView;
+window.prevChapter = prevChapter;
+window.nextChapter = nextChapter;
+window.changeFontSize = changeFontSize;
+window.changeAppendixFont = changeAppendixFont;
+window.applyAppendixFont = applyAppendixFont;
+window.toggleAppendix = toggleAppendix;
+window.changeBibleReadingFontSize = changeBibleReadingFontSize;
+window.openBibleSearch = openBibleSearch;
+window.closeBibleSearch = closeBibleSearch;
+window.searchBible = searchBible;
+window.goToSearchPage = goToSearchPage;
+window.goToVerse = goToVerse;
+window.loadHymnTitles = loadHymnTitles;
+window.initHymn = initHymn;
+window.openHymn = openHymn;
+window.closeHymnView = closeHymnView;
+window.prevHymnView = prevHymnView;
+window.nextHymnView = nextHymnView;
+window.setHymnRange = setHymnRange;
+window.filterHymns = filterHymns;
+window.selectHymn = openHymn;
+window.showHymnDetail = openHymn;
+
+
+console.log('✅ js_bible.js 로드 완료 - 모든 함수 전역 등록됨');

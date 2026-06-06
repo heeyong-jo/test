@@ -323,6 +323,15 @@
   </div>
 
 
+ <!-- 📢 최근 공지 카드 -->
+  <div class="card">
+    <div class="sec-hd">
+      <div class="card-title">📢 최근 공지</div>
+      <button class="edit-mode-btn admin-only" onclick="openAddNotice()" style="padding:5px 10px; font-size:11px;">➕ 공지 작성</button>
+    </div>
+    <div id="home-notices"></div>
+  </div>
+</div>
 <!-- 공지 작성 모달 -->
 <div id="modal-notice" class="modal-overlay">
   <div class="modal-box">
@@ -357,8 +366,6 @@
     <button class="btn-primary" id="notice-submit-btn" onclick="saveNotice()">등록하기</button>
   </div>
 </div>
-
-
 <!-- ══════════════════════ p1: 말씀 ══════════════════════ -->
 <div id="p1" class="page">
   
@@ -1067,29 +1074,6 @@
     <button class="btn-primary" onclick="confirmAddSchedule()">추가</button>
   </div>
 </div>
-
-
-
-
-<!-- 공지 작성 모달 -->
-<div id="modal-notice" class="modal-overlay">
-  <div class="modal-box">
-    <div class="modal-header"><div class="modal-title" id="notice-modal-title">📢 공지 작성</div><button class="modal-close" onclick="closeModal('modal-notice')">✕</button></div>
-    <div class="input-group"><div class="input-label">제목</div><input class="input-field" id="n-title" placeholder="공지 제목"></div>
-    <div class="input-group"><div class="input-label">카테고리</div><select class="input-field" id="n-cat"><option>📢 일반</option><option>🎉 행사</option><option>📅 주보</option><option>🙏 기도</option><option>⚠️ 중요</option></select></div>
-<div class="input-group">
-  <div class="input-label">사진 첨부</div>
-  <input type="file" id="n-photo" accept="image/*" multiple onchange="noticePhotoPreview(this)">
-  <div id="notice-photo-preview" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:8px;"></div>
-</div>
-    <div class="input-group"><div class="input-label">내용</div><textarea class="input-field" id="n-body" rows="5" placeholder="공지 내용을 입력하세요"></textarea></div>
-    <input type="hidden" id="n-edit-id" value="">
-    <button class="btn-primary" id="notice-submit-btn" onclick="saveNotice()">등록하기</button>
-  </div>
-</div>
-<div id="toast"></div>
-
-
 
 
 <div id="modal-edit-churchinfo" class="modal-overlay">

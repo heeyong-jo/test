@@ -1,4 +1,5 @@
 ﻿// ==================== UI 및 스와이프 제스처 (js_ui.js) ====================
+// 수정본 - 관리탭 오버랩 해결 (슬라이드 정상 유지)
 
 
 if (typeof toastTimer === 'undefined') var toastTimer = null;
@@ -10,7 +11,7 @@ if (typeof tabScrollStartX === 'undefined') var tabScrollStartX = 0;
 if (typeof tabOriginalScroll === 'undefined') var tabOriginalScroll = 0;
 
 
-// ==================== 현재 사용자 가져오기 (통합) ====================
+// ==================== 현재 사용자 가져오기 ====================
 function getCurrentUser() {
   if (typeof window.currentUser !== 'undefined' && window.currentUser) return window.currentUser;
   if (typeof currentUser !== 'undefined' && currentUser) return currentUser;
@@ -164,7 +165,6 @@ function afterTab(n) {
 // ==================== 관리탭 렌더링 함수들 ====================
 
 
-// 성도 관리 렌더링
 window.renderMembersAccord = function() {
   console.log('renderMembersAccord 실행');
   const container = document.getElementById('accord-member-list');
@@ -207,8 +207,6 @@ window.renderMembersAccord = function() {
         container.innerHTML = html;
         
         const totalSpan = document.getElementById('am-total');
-        const newSpan = document.getElementById('am-new');
-        const monthSpan = document.getElementById('am-month');
         if (totalSpan) totalSpan.textContent = members.length;
       })
       .catch(err => {
@@ -221,7 +219,6 @@ window.renderMembersAccord = function() {
 };
 
 
-// 가입 승인 관리 렌더링
 window.renderApprovalsAccord = function() {
   console.log('renderApprovalsAccord 실행');
   const container = document.getElementById('accord-approval-list');
@@ -279,7 +276,6 @@ window.renderApprovalsAccord = function() {
 };
 
 
-// 승인 함수
 window.approveUser = function(userId) {
   if (!confirm('이 사용자를 승인하시겠습니까?')) return;
   
@@ -317,7 +313,6 @@ window.approveUser = function(userId) {
 };
 
 
-// 거절 함수
 window.rejectUser = function(userId) {
   if (!confirm('이 사용자를 거절하시겠습니까?')) return;
   
@@ -449,6 +444,7 @@ function applyRole(role) {
     return -1;
   }
   
+  // ✅ 수정: prepareNext (관리탭 오버랩 방지)
   function prepareNext(dir) {
     const ni = getNext(dir);
     if (ni < 0) return null;
@@ -456,9 +452,11 @@ function applyRole(role) {
     if (!nxt) return null;
     
     const top = curEl ? curEl.getBoundingClientRect().top : 60;
+    const isAdminTab = (ni === 6);
+    
     nxt.style.cssText = `
       display: block !important;
-      position: fixed;
+      position: ${isAdminTab ? 'absolute' : 'fixed'};
       top: ${top}px;
       left: 0;
       width: 100%;
@@ -478,18 +476,19 @@ function applyRole(role) {
     sessionStorage.setItem(`scrollPos_${currentTab}`, currentScroll);
   }
   
+  // ✅ 수정: cleanup (오버랩 완전 제거)
   function cleanup(finalIdx) {
     const f = getPage(finalIdx);
     if (!f) return;
     
-    f.style.cssText = '';
+    f.style.cssText = 'display: block !important; position: static; z-index: auto;';
     f.classList.add('show');
     
     for (let i = 0; i < TOTAL_TABS; i++) {
       if (i === finalIdx) continue;
       const p = getPage(i);
       if (p) {
-        p.style.cssText = '';
+        p.style.cssText = 'display: none !important; position: static; z-index: auto;';
         p.classList.remove('show');
       }
     }
@@ -751,4 +750,4 @@ function applyRole(role) {
 })();
 
 
-console.log('✅ js_ui.js 로드 완료 (최종 수정본)');
+console.log('✅ js_ui.js 로드 완료');

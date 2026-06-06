@@ -1,8 +1,5 @@
-﻿// ==================== 말씀 기능 (오늘의 말씀 등록) ====================
-
-
-
-
+﻿window.meditations = window.meditations || [];
+var meditations = window.meditations;
 // ------------------- 1. 오늘의 말씀 렌더링 -------------------
 function renderTodayVerse() {
   let todayVerse = null;

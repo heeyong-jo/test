@@ -1,13 +1,14 @@
 ﻿// ==================== 게시판 기능 (js_board.js) ====================
-// 수정본 - 중복 함수 제거, 코드 통합
+window.currentBoardCategory = window.currentBoardCategory || '일반성도';
+window.currentPostId = window.currentPostId || null;
+window.currentBoardPage = window.currentBoardPage || 1;
+window.boardPostCache = window.boardPostCache || {};
 
 
-// 전역 변수
-let currentBoardCategory = '일반성도';
-let currentPostId = null;
-let currentBoardPage = 1;
-const POSTS_PER_PAGE = 10;
-let boardPostCache = {};
+var currentBoardCategory = window.currentBoardCategory;
+var currentPostId = window.currentPostId;
+var currentBoardPage = window.currentBoardPage;
+var boardPostCache = window.boardPostCache;
 
 
 // 현재 사용자 가져오기 (통합)

@@ -1,5 +1,5 @@
 ﻿// ==================== 앱 초기화 (js_app.js) ====================
-// 최종 통합본 - getAllBooks 전역 등록, bibleReadingState window 할당
+// 최종 수정본 - getAllBooks 전역 등록
 
 
 window.addEventListener('load', () => {
@@ -62,7 +62,7 @@ window.addEventListener('load', () => {
 });
 
 
-// ✅ getAllBooks 전역 함수 등록
+// ✅ getAllBooks 전역 함수 등록 (외부 호출 가능)
 function getAllBooks() {
   if (typeof OT_BOOKS !== 'undefined' && typeof NT_BOOKS !== 'undefined') {
     return [...OT_BOOKS, ...NT_BOOKS];
@@ -72,7 +72,7 @@ function getAllBooks() {
   }
   return [];
 }
-window.getAllBooks = getAllBooks;
+window.getAllBooks = getAllBooks;  // ✅ 전역 등록
 
 
 const TOTAL_BIBLE_CHAPTERS = 1189;
@@ -504,7 +504,6 @@ function changeBibleReadingFontSize(delta) {
 }
 
 
-// ==================== 초기화 실행 ====================
 setTimeout(() => {
   loadBibleHallOfFame();
   loadBibleStatus();

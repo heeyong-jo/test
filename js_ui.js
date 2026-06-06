@@ -1,5 +1,5 @@
 ﻿// ==================== UI 및 스와이프 제스처 (js_ui.js) ====================
-// 최종 수정본 - 슬라이드 정상 작동 + 관리탭 빈창 해결
+// 최종 수정본 - 스크롤 위치 유지 + 로그인 체크 통일
 
 
 if (typeof toastTimer === 'undefined') var toastTimer = null;
@@ -11,7 +11,7 @@ if (typeof tabScrollStartX === 'undefined') var tabScrollStartX = 0;
 if (typeof tabOriginalScroll === 'undefined') var tabOriginalScroll = 0;
 
 
-// ==================== 현재 사용자 가져오기 (통합) ====================
+// ==================== 현재 사용자 가져오기 ====================
 window.getCurrentUser = window.getCurrentUser || function() {
   if (typeof window.currentUser !== 'undefined' && window.currentUser) return window.currentUser;
   if (typeof currentUser !== 'undefined' && currentUser) return currentUser;
@@ -115,6 +115,7 @@ function showTab(n) {
   const needLoginTabs = [2, 3, 6];
   const user = getCurrentUser();
   
+  // 로그인 필요 체크 (클릭 시)
   if (!user && needLoginTabs.includes(n)) {
     console.log('로그인 필요 탭 접근:', n);
     const loginScreen = document.getElementById('screen-login');
@@ -122,6 +123,7 @@ function showTab(n) {
     return;
   }
   
+  // 관리탭 권한 체크
   if (n === 6 && user) {
     const role = user.role;
     if (role !== 'admin' && role !== 'manager') {
@@ -132,16 +134,19 @@ function showTab(n) {
     }
   }
   
+  // 현재 스크롤 위치 저장
   const currentScroll = window.scrollY || document.documentElement.scrollTop;
   sessionStorage.setItem(`scrollPos_${currentTab}`, currentScroll);
   
   currentTab = n;
   
+  // 탭 스타일 업데이트
   document.querySelectorAll('.tab').forEach((t, i) => {
     if (i === n) t.classList.add('active');
     else t.classList.remove('active');
   });
   
+  // 페이지 표시/숨김
   for (let i = 0; i < TOTAL_TABS; i++) {
     const page = document.getElementById('p' + i);
     if (page) {
@@ -155,6 +160,7 @@ function showTab(n) {
     }
   }
   
+  // 관리탭 권한 요소 표시
   if (n === 6 && user) {
     const role = user.role;
     if (role === 'admin' || role === 'manager') {
@@ -168,6 +174,7 @@ function showTab(n) {
     }
   }
   
+  // 저장된 스크롤 위치 복원
   const savedScroll = sessionStorage.getItem(`scrollPos_${n}`);
   if (savedScroll && !isNaN(parseInt(savedScroll))) {
     setTimeout(() => window.scrollTo(0, parseInt(savedScroll)), 50);
@@ -213,7 +220,6 @@ function afterTab(n) {
     }
     
     if (user && user.role === 'admin') {
-      // 지연 후 렌더링 (DOM 완전 준비 후)
       setTimeout(function() {
         if (typeof renderMembersAccord === 'function') {
           renderMembersAccord();
@@ -240,7 +246,6 @@ function afterTab(n) {
 // ==================== 관리탭 렌더링 함수들 ====================
 
 
-// 성도 관리 렌더링
 window.renderMembersAccord = function() {
   console.log('renderMembersAccord 실행');
   
@@ -296,7 +301,6 @@ window.renderMembersAccord = function() {
 };
 
 
-// 가입 승인 관리 렌더링
 window.renderApprovalsAccord = function() {
   console.log('renderApprovalsAccord 실행');
   
@@ -358,7 +362,6 @@ window.renderApprovalsAccord = function() {
 };
 
 
-// 승인 함수
 window.approveUser = function(userId) {
   if (!confirm('이 사용자를 승인하시겠습니까?')) return;
   
@@ -395,7 +398,6 @@ window.approveUser = function(userId) {
 };
 
 
-// 거절 함수
 window.rejectUser = function(userId) {
   if (!confirm('이 사용자를 거절하시겠습니까?')) return;
   
@@ -468,15 +470,19 @@ function restoreTabStyles() {
     return -1;
   }
   
+  // ✅ prepareNext: 스크롤 위치 유지를 위해 top: 현재 스크롤 위치 사용
   function prepareNext(dir) {
     var ni = getNext(dir);
     if (ni < 0) return null;
     var nxt = getPage(ni);
     if (!nxt) return null;
     
+    // 현재 스크롤 위치 저장
+    var currentScroll = window.scrollY || document.documentElement.scrollTop;
+    
     nxt.style.cssText = 'display: block !important;' +
       'position: absolute;' +
-      'top: 0;' +
+      'top: ' + currentScroll + 'px;' +  // ✅ 현재 스크롤 위치로 설정
       'left: 0;' +
       'right: 0;' +
       'width: 100%;' +
@@ -498,6 +504,10 @@ function restoreTabStyles() {
     var f = getPage(finalIdx);
     if (!f) return;
     
+    // 저장된 스크롤 위치 가져오기
+    var savedScrollPos = sessionStorage.getItem('scrollPos_' + finalIdx);
+    var scrollPos = (savedScrollPos && !isNaN(parseInt(savedScrollPos))) ? parseInt(savedScrollPos) : 0;
+    
     f.style.cssText = 'display: block !important; position: static; z-index: auto;';
     f.classList.add('show');
     
@@ -514,10 +524,8 @@ function restoreTabStyles() {
     nxtEl = null;
     dragDir = 0;
     
-    var savedScrollPos = sessionStorage.getItem('scrollPos_' + finalIdx);
-    if (savedScrollPos && !isNaN(parseInt(savedScrollPos))) {
-      setTimeout(function() { window.scrollTo(0, parseInt(savedScrollPos)); }, 50);
-    }
+    // 스크롤 위치 복원
+    setTimeout(function() { window.scrollTo(0, scrollPos); }, 50);
     
     var user = getCurrentUser();
     if (finalIdx === 6 && user) {
@@ -531,7 +539,6 @@ function restoreTabStyles() {
       }
     }
     
-    // afterTab 호출 (지연 없이)
     afterTab(finalIdx);
   }
   
@@ -571,8 +578,6 @@ function restoreTabStyles() {
         return;
       }
       
-      // 로그인창 표시 로직 제거됨 (광고 승인용)
-      
       dragging = true;
       dragDir = dx > 0 ? -1 : 1;
       
@@ -580,7 +585,7 @@ function restoreTabStyles() {
         var currentScroll = window.scrollY || document.documentElement.scrollTop;
         curEl.style.cssText = 'display: block !important;' +
           'position: absolute;' +
-          'top: 0;' +
+          'top: ' + currentScroll + 'px;' +
           'left: 0;' +
           'right: 0;' +
           'width: 100%;' +
@@ -686,6 +691,7 @@ function restoreTabStyles() {
           requestAnimationFrame(frame);
         } else {
           var user = getCurrentUser();
+          var needLoginTabs = [2, 3, 6];
           
           // 관리탭 권한 체크
           if (ni === 6 && user) {
@@ -698,9 +704,9 @@ function restoreTabStyles() {
             }
           }
           
-          // 로그인 필요 탭: 슬라이드 허용하되, 비로그인 시 토스트만 표시 (슬라이드는 진행)
-          if (ni !== 0 && !user) {
-            // 탭 전환은 허용 (빈 화면 방지)
+          // ✅ 로그인 필요 탭: 슬라이드는 허용하되 비로그인 시 토스트 메시지 (슬라이드 진행)
+          if (ni !== 0 && !user && needLoginTabs.includes(ni)) {
+            // 탭 전환은 진행
             currentTab = ni;
             var tabs = document.querySelectorAll('.tab');
             for (var i = 0; i < tabs.length; i++) {

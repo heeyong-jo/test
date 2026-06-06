@@ -1,5 +1,5 @@
 ﻿// ==================== 로컬 스토리지 및 Firebase 저장 ====================
-// 최종 수정본 - 전역 변수 정리, serviceList/scheduleList 추가
+// 최종 수정본 - 변수 중복 제거, serviceList 정의, 들여쓰기 수정
 
 
 if (typeof FB_KEYS === 'undefined') {
@@ -8,7 +8,7 @@ if (typeof FB_KEYS === 'undefined') {
 }
 
 
-// ✅ 전역 변수 선언 (window 사용으로 통일)
+// ✅ 전역 변수 선언 (let 제거, window만 사용)
 window.pendingUsers = window.pendingUsers || [];
 window.approvedUsers = window.approvedUsers || [];
 window.currentUser = window.currentUser || null;
@@ -19,11 +19,11 @@ window.meditations = window.meditations || [];
 window.prayers = window.prayers || [];
 window.todayVerse = window.todayVerse || null;
 window.posts = window.posts || [];
-window.serviceList = window.serviceList || [];
-window.scheduleList = window.scheduleList || [];
+window.serviceList = window.serviceList || [];   // ✅ 추가
+window.scheduleList = window.scheduleList || []; // ✅ 추가
 
 
-// 로컬 변수 (편의를 위해 window 참조)
+// 로컬 변수 (편의용)
 var members = window.members;
 var notices = window.notices;
 var offerings = window.offerings;
@@ -123,14 +123,8 @@ function fbUpdateUI(key, data) {
       break;
       
     case 'todayVerse':
-      if (data && typeof data === 'object' && !Array.isArray(data)) {
-        window.todayVerse = data;
-      } else if (Array.isArray(data) && data.length > 0) {
-        window.todayVerse = data[0];
-      } else {
-        window.todayVerse = null;
-      }
-      todayVerse = window.todayVerse;
+      // todayVerse는 배열이 아닌 객체로 저장됨
+      todayVerse = (Array.isArray(data) ? data[0] : data) || null;
       if (typeof renderTodayVerse === 'function') renderTodayVerse();
       break;
       
@@ -149,9 +143,7 @@ function fbUpdateUI(key, data) {
     case 'posts':
       window.posts = arr || [];
       posts = window.posts;
-      if (typeof loadPosts === 'function' && window.currentBoardCategory) {
-        loadPosts();
-      }
+      if (typeof renderBoardPosts === 'function') renderBoardPosts();
       break;
       
     case 'prayers':
@@ -227,6 +219,14 @@ function loadFromLocalStorage() {
   console.log('📁 localStorage 데이터 로드 시작');
   
   try {
+    const savedService = localStorage.getItem('ch2_serviceList');
+    if (savedService && typeof serviceList !== 'undefined') {
+      serviceList = JSON.parse(savedService);
+      console.log('serviceList 로드됨:', serviceList.length);
+    }
+  } catch(e) {}
+  
+  try {
     const savedNotices = localStorage.getItem('ch2_notices');
     if (savedNotices) {
       window.notices = JSON.parse(savedNotices);
@@ -236,56 +236,11 @@ function loadFromLocalStorage() {
   } catch(e) {}
   
   try {
-    const savedService = localStorage.getItem('ch2_serviceList');
-    if (savedService) {
-      window.serviceList = JSON.parse(savedService);
-      serviceList = window.serviceList;
-      if (typeof renderServiceView === 'function') renderServiceView();
-    }
-  } catch(e) {}
-  
-  try {
-    const savedSchedule = localStorage.getItem('ch2_scheduleList');
-    if (savedSchedule) {
-      window.scheduleList = JSON.parse(savedSchedule);
-      scheduleList = window.scheduleList;
-      if (typeof renderScheduleView === 'function') renderScheduleView();
-    }
-  } catch(e) {}
-  
-  try {
     const savedPrayers = localStorage.getItem('ch2_prayers');
     if (savedPrayers) {
       window.prayers = JSON.parse(savedPrayers);
       prayers = window.prayers;
       if (typeof renderPrayers === 'function') renderPrayers();
-    }
-  } catch(e) {}
-  
-  try {
-    const savedMembers = localStorage.getItem('ch2_members');
-    if (savedMembers) {
-      window.members = JSON.parse(savedMembers);
-      members = window.members;
-      if (typeof renderMembersAccord === 'function') renderMembersAccord();
-    }
-  } catch(e) {}
-  
-  try {
-    const savedMeditations = localStorage.getItem('ch2_meditations');
-    if (savedMeditations) {
-      window.meditations = JSON.parse(savedMeditations);
-      meditations = window.meditations;
-      if (typeof renderMeditations === 'function') renderMeditations();
-    }
-  } catch(e) {}
-  
-  try {
-    const savedTodayVerse = localStorage.getItem('ch2_todayVerse');
-    if (savedTodayVerse) {
-      window.todayVerse = JSON.parse(savedTodayVerse);
-      todayVerse = window.todayVerse;
-      if (typeof renderTodayVerse === 'function') renderTodayVerse();
     }
   } catch(e) {}
 }
@@ -303,11 +258,8 @@ function loadFromLocalStorage() {
       console.log('✅ Firebase 동기화 시작됨');
     } else {
       console.log('⚠️ Firebase 미준비, localStorage만 사용');
-      // Firebase 없을 때도 UI 업데이트
       if (typeof renderServiceView === 'function') renderServiceView();
       if (typeof renderHomeNotices === 'function') renderHomeNotices();
-      if (typeof renderMeditations === 'function') renderMeditations();
-      if (typeof renderPrayers === 'function') renderPrayers();
     }
   }, 200);
 })();

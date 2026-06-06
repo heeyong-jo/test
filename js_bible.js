@@ -437,9 +437,9 @@ function changeBibleReadingFontSize(delta) {
 
 
 // ==================== 성경 검색 기능 ====================
-let searchResults = [];
-let currentSearchPage = 1;
-const SEARCH_RESULTS_PER_PAGE = 20;
+window.searchResults = window.searchResults || [];
+window.currentSearchPage = window.currentSearchPage || 1;
+window.SEARCH_RESULTS_PER_PAGE = window.SEARCH_RESULTS_PER_PAGE || 20;
 
 
 function openBibleSearch() {
@@ -654,7 +654,7 @@ window.selectBook = window.selectBook || selectBook;
 window.loadChapter = window.loadChapter || loadChapter;
 window.showBibleList = window.showBibleList || showBibleList;
 window.showChapterView = window.showChapterView || showChapterView;
-window.changeFontSize = window.changeFontSize || changeFontSize;
+// window.changeFontSize = window.changeFontSize || changeFontSize;  // ← 함수 없음
 window.toggleAppendix = window.toggleAppendix || toggleAppendix;
 window.changeBibleReadingFontSize = window.changeBibleReadingFontSize || changeBibleReadingFontSize;
 window.openBibleSearch = window.openBibleSearch || openBibleSearch;
@@ -665,9 +665,6 @@ window.goToVerse = window.goToVerse || goToVerse;
 window.loadHymnTitles = window.loadHymnTitles || loadHymnTitles;
 window.initHymn = window.initHymn || initHymn;
 window.selectHymn = window.selectHymn || selectHymn;
-window.showHymnDetail = window.showHymnDetail || showHymnDetail;
-window.changeAppendixFont = window.changeAppendixFont || changeAppendixFont;
+// window.showHymnDetail = window.showHymnDetail || showHymnDetail;  // ← 함수 없음
+// window.changeAppendixFont = window.changeAppendixFont || changeAppendixFont;  // ← 함수 없음
 window.applyAppendixFont = window.applyAppendixFont || applyAppendixFont;
-
-
-console.log('✅ js_bible.js 모든 함수 전역 등록 완료');

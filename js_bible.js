@@ -1,22 +1,21 @@
 ﻿// ==================== 성경 초기화 (js_bible.js) ====================
-// 수정본 - 성경책 탭 정상 작동 보장
 
 
-let bibleReadingFontSize = 15;
-let appendixFontSize = 14;
-let fontSize = 15;
-let currentBook = null;
-let currentBookInfo = null;
-let currentChapter = 1;
-let currentBibleSection = null;
+window.bibleReadingFontSize = window.bibleReadingFontSize || 15;
+window.appendixFontSize = window.appendixFontSize || 14;
+window.fontSize = window.fontSize || 15;
+window.currentBook = window.currentBook || null;
+window.currentBookInfo = window.currentBookInfo || null;
+window.currentChapter = window.currentChapter || 1;
+window.currentBibleSection = window.currentBibleSection || null;
 
 
-// 찬송가 관련 변수
-let hymnTitles = {};
-let hymnTitlesLoaded = false;
-let currentHymnNo = 1;
-let currentHymnRange = 0;
-let hymnSearchQuery = '';
+// ✅ 찬송가 관련 변수도 window 할당
+window.hymnTitles = window.hymnTitles || {};
+window.hymnTitlesLoaded = window.hymnTitlesLoaded || false;
+window.currentHymnNo = window.currentHymnNo || 1;
+window.currentHymnRange = window.currentHymnRange || 0;
+window.hymnSearchQuery = window.hymnSearchQuery || '';
 
 
 // ==================== 부록 폰트 ====================
@@ -70,7 +69,7 @@ function closeBibleSection() {
 
 // ==================== 성경 책 목록 ====================
 function initBibleBooks() {
-  if (typeof OT_BOOKS === 'undefined' || typeof NT_BOOKS === 'undefined') {
+  if (typeof window.OT_BOOKS === 'undefined' || typeof window.NT_BOOKS === 'undefined') {
     console.error('OT_BOOKS 또는 NT_BOOKS가 정의되지 않음');
     return;
   }
@@ -86,8 +85,8 @@ function initBibleBooks() {
   const ntStyle = 'background:#fffaf0;border:1.5px solid #c8b896;border-radius:12px;padding:10px 4px;text-align:center;cursor:pointer;';
   
   let otHtml = '';
-  for (let i = 0; i < OT_BOOKS.length; i++) {
-    const b = OT_BOOKS[i];
+  for (let i = 0; i < window.OT_BOOKS.length; i++) {
+  const b = window.OT_BOOKS[i];
     otHtml += '<div style="' + otStyle + '" onclick="selectBook(\'' + b.name + '\')">' +
       '<div style="font-size:15px;font-weight:800;color:#6b4f2e;">' + b.abbr + '</div>' +
       '<div style="font-size:9px;color:#8a6e4e;">' + b.name.slice(0,4) + '</div>' +
@@ -97,8 +96,8 @@ function initBibleBooks() {
   otDiv.innerHTML = otHtml;
   
   let ntHtml = '';
-  for (let i = 0; i < NT_BOOKS.length; i++) {
-    const b = NT_BOOKS[i];
+  for (let i = 0; i < window.NT_BOOKS.length; i++) {
+  const b = window.NT_BOOKS[i];
     ntHtml += '<div style="' + ntStyle + '" onclick="selectBook(\'' + b.name + '\')">' +
       '<div style="font-size:15px;font-weight:800;color:#6b4f2e;">' + b.abbr + '</div>' +
       '<div style="font-size:9px;color:#8a6e4e;">' + b.name.slice(0,4) + '</div>' +
@@ -113,12 +112,12 @@ function initBibleBooks() {
 
 // ==================== 책 선택 ====================
 async function selectBook(bookName) {
-  if (typeof OT_BOOKS === 'undefined' || typeof NT_BOOKS === 'undefined') {
+  if (typeof window.OT_BOOKS === 'undefined' || typeof window.NT_BOOKS === 'undefined') {
     console.error('성경 데이터 없음');
     return;
   }
   
-  currentBookInfo = OT_BOOKS.find(b => b.name === bookName) || NT_BOOKS.find(b => b.name === bookName);
+  currentBookInfo = window.OT_BOOKS.find(b => b.name === bookName) || window.NT_BOOKS.find(b => b.name === bookName);
   if (!currentBookInfo) return;
   
   currentBook = bookName;
@@ -166,7 +165,7 @@ async function loadChapter(chapter) {
   }
   
   try {
-    const url = BIBLE_CDN + '/' + currentBookInfo.file;
+    const url = (window.BIBLE_CDN || 'https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@main') + '/' + currentBookInfo.file;
     console.log('성경 데이터 로드:', url);
     
     const res = await fetch(url);
@@ -485,11 +484,11 @@ async function searchBible() {
   searchResults = [];
   
   const books = [];
-  if (typeof OT_BOOKS !== 'undefined') {
-    for (let i = 0; i < OT_BOOKS.length; i++) books.push(OT_BOOKS[i]);
+  if (typeof window.OT_BOOKS !== 'undefined') {
+    for (let i = 0; i < window.OT_BOOKS.length; i++) books.push(window.OT_BOOKS[i]);
   }
-  if (typeof NT_BOOKS !== 'undefined') {
-    for (let i = 0; i < NT_BOOKS.length; i++) books.push(NT_BOOKS[i]);
+  if (typeof window.NT_BOOKS !== 'undefined') {
+    for (let i = 0; i < window.NT_BOOKS.length; i++) books.push(window.NT_BOOKS[i]);
   }
   
   const lowerKeyword = keyword.toLowerCase();
@@ -497,7 +496,7 @@ async function searchBible() {
   for (let b = 0; b < books.length; b++) {
     const book = books[b];
     try {
-      const url = BIBLE_CDN + '/' + book.file;
+      const url = (window.BIBLE_CDN || 'https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@main') + '/' + book.file;
       const response = await fetch(url);
       if (!response.ok) continue;
       
@@ -636,14 +635,39 @@ function initBible() {
   loadHymnTitles();
   
   // 성경 책 목록 확인
-  if (typeof OT_BOOKS !== 'undefined' && typeof NT_BOOKS !== 'undefined') {
-    console.log('✅ 성경 데이터 준비됨 - 구약:', OT_BOOKS.length, '권, 신약:', NT_BOOKS.length, '권');
+  if (typeof window.OT_BOOKS !== 'undefined' && typeof window.NT_BOOKS !== 'undefined') {
+    console.log('✅ 성경 데이터 준비됨 - 구약:', window.OT_BOOKS.length, '권, 신약:', window.NT_BOOKS.length, '권');
   } else {
     console.error('❌ 성경 데이터 없음 - OT_BOOKS, NT_BOOKS 확인 필요');
   }
-  
-  console.log('✅ 성경 탭 초기화 완료');
-}
 
 
-console.log('✅ js_bible.js 로드 완료 - initBible() 함수 준비됨');
+// ==================== 함수 전역 등록 ====================
+// HTML의 onclick 속성에서 호출 가능하도록 전역 등록
+
+
+window.initBible = window.initBible || initBible;
+window.openBibleSection = window.openBibleSection || openBibleSection;
+window.closeBibleSection = window.closeBibleSection || closeBibleSection;
+window.initBibleBooks = window.initBibleBooks || initBibleBooks;
+window.selectBook = window.selectBook || selectBook;
+window.loadChapter = window.loadChapter || loadChapter;
+window.showBibleList = window.showBibleList || showBibleList;
+window.showChapterView = window.showChapterView || showChapterView;
+window.changeFontSize = window.changeFontSize || changeFontSize;
+window.toggleAppendix = window.toggleAppendix || toggleAppendix;
+window.changeBibleReadingFontSize = window.changeBibleReadingFontSize || changeBibleReadingFontSize;
+window.openBibleSearch = window.openBibleSearch || openBibleSearch;
+window.closeBibleSearch = window.closeBibleSearch || closeBibleSearch;
+window.searchBible = window.searchBible || searchBible;
+window.goToSearchPage = window.goToSearchPage || goToSearchPage;
+window.goToVerse = window.goToVerse || goToVerse;
+window.loadHymnTitles = window.loadHymnTitles || loadHymnTitles;
+window.initHymn = window.initHymn || initHymn;
+window.selectHymn = window.selectHymn || selectHymn;
+window.showHymnDetail = window.showHymnDetail || showHymnDetail;
+window.changeAppendixFont = window.changeAppendixFont || changeAppendixFont;
+window.applyAppendixFont = window.applyAppendixFont || applyAppendixFont;
+
+
+console.log('✅ js_bible.js 모든 함수 전역 등록 완료');

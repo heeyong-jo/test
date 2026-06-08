@@ -1,5 +1,5 @@
 ﻿// ==================== UI 및 스와이프 제스처 (js_ui.js) ====================
-// 수정본 - 관리탭 오버랩 해결 (슬라이드 정상 유지)
+// 최종 수정본 - 슬라이드 겹침 해결 + 관리탭 전환 안정화
 
 
 if (typeof toastTimer === 'undefined') var toastTimer = null;
@@ -44,6 +44,65 @@ function showToast(msg) {
 function closeModal(id) {
   const modal = document.getElementById(id);
   if (modal) modal.style.display = 'none';
+}
+
+
+// ==================== XSS 방지 ====================
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
+}
+
+
+// ==================== 권한 적용 ====================
+function applyRole(role) {
+  console.log('applyRole 실행:', role);
+  
+  const isAdmin = role === 'admin';
+  const isAdminOrManager = role === 'admin' || role === 'manager';
+
+
+  function showEl(el) {
+    const tag = el.tagName.toLowerCase();
+    if (tag === 'button') {
+      el.classList.add('visible-inline');
+      el.classList.remove('visible');
+      el.style.cssText = 'display:inline-block !important';
+    } else {
+      el.classList.add('visible');
+      el.classList.remove('visible-inline');
+      el.style.cssText = 'display:block !important';
+    }
+  }
+  
+  function hideEl(el) {
+    el.classList.remove('visible', 'visible-inline');
+    el.style.cssText = 'display:none !important';
+  }
+
+
+  document.querySelectorAll('.admin-only').forEach(el => {
+    if (isAdmin) showEl(el);
+    else hideEl(el);
+  });
+  
+  document.querySelectorAll('.admin-manager-only').forEach(el => {
+    if (isAdminOrManager) showEl(el);
+    else hideEl(el);
+  });
+  
+  if (currentTab === 6 && isAdminOrManager) {
+    const p6 = document.getElementById('p6');
+    if (p6) {
+      p6.style.display = 'block';
+      p6.classList.add('show');
+    }
+  }
 }
 
 
@@ -293,7 +352,6 @@ window.approveUser = function(userId) {
         return;
       }
       
-      userData.status = 'approved';
       userData.approvedAt = Date.now();
       delete userData.status;
       
@@ -352,65 +410,6 @@ function restoreTabStyles() {
 }
 
 
-// ==================== XSS 방지 ====================
-function escapeHtml(str) {
-  if (!str) return '';
-  return str.replace(/[&<>]/g, function(m) {
-    if (m === '&') return '&amp;';
-    if (m === '<') return '&lt;';
-    if (m === '>') return '&gt;';
-    return m;
-  });
-}
-
-
-// ==================== 권한 적용 ====================
-function applyRole(role) {
-  console.log('applyRole 실행:', role);
-  
-  const isAdmin = role === 'admin';
-  const isAdminOrManager = role === 'admin' || role === 'manager';
-
-
-  function showEl(el) {
-    const tag = el.tagName.toLowerCase();
-    if (tag === 'button') {
-      el.classList.add('visible-inline');
-      el.classList.remove('visible');
-      el.style.cssText = 'display:inline-block !important';
-    } else {
-      el.classList.add('visible');
-      el.classList.remove('visible-inline');
-      el.style.cssText = 'display:block !important';
-    }
-  }
-  
-  function hideEl(el) {
-    el.classList.remove('visible', 'visible-inline');
-    el.style.cssText = 'display:none !important';
-  }
-
-
-  document.querySelectorAll('.admin-only').forEach(el => {
-    if (isAdmin) showEl(el);
-    else hideEl(el);
-  });
-  
-  document.querySelectorAll('.admin-manager-only').forEach(el => {
-    if (isAdminOrManager) showEl(el);
-    else hideEl(el);
-  });
-  
-  if (currentTab === 6 && isAdminOrManager) {
-    const p6 = document.getElementById('p6');
-    if (p6) {
-      p6.style.display = 'block';
-      p6.classList.add('show');
-    }
-  }
-}
-
-
 // ==================== 스와이프 제스처 ====================
 (function() {
   const el = document.getElementById('swipe-container');
@@ -444,19 +443,18 @@ function applyRole(role) {
     return -1;
   }
   
-  // ✅ 수정: prepareNext (관리탭 오버랩 방지)
+  // ✅ prepareNext: 고정 top 값 사용 (60px)
   function prepareNext(dir) {
     const ni = getNext(dir);
     if (ni < 0) return null;
     const nxt = getPage(ni);
     if (!nxt) return null;
     
-    const top = curEl ? curEl.getBoundingClientRect().top : 60;
-    const isAdminTab = (ni === 6);
+    const top = 60;
     
     nxt.style.cssText = `
       display: block !important;
-      position: ${isAdminTab ? 'absolute' : 'fixed'};
+      position: fixed;
       top: ${top}px;
       left: 0;
       width: 100%;
@@ -476,19 +474,19 @@ function applyRole(role) {
     sessionStorage.setItem(`scrollPos_${currentTab}`, currentScroll);
   }
   
-  // ✅ 수정: cleanup (오버랩 완전 제거)
+  // ✅ cleanup: 명시적 CSS 설정, afterTab 지연 없이 호출
   function cleanup(finalIdx) {
     const f = getPage(finalIdx);
     if (!f) return;
     
-    f.style.cssText = 'display: block !important; position: static; z-index: auto;';
+    f.style.cssText = '';
     f.classList.add('show');
     
     for (let i = 0; i < TOTAL_TABS; i++) {
       if (i === finalIdx) continue;
       const p = getPage(i);
       if (p) {
-        p.style.cssText = 'display: none !important; position: static; z-index: auto;';
+        p.style.cssText = '';
         p.classList.remove('show');
       }
     }
@@ -514,7 +512,8 @@ function applyRole(role) {
       }
     }
     
-    setTimeout(() => afterTab(finalIdx), 50);
+    // 지연 없이 afterTab 호출
+    afterTab(finalIdx);
   }
   
   el.addEventListener('touchstart', (e) => {
@@ -566,18 +565,17 @@ function applyRole(role) {
       dragDir = dx > 0 ? -1 : 1;
       
       if (curEl) {
-        const r = curEl.getBoundingClientRect();
         const currentScroll = window.scrollY || document.documentElement.scrollTop;
         curEl.style.cssText = `
           display: block !important;
           position: fixed;
-          top: ${r.top}px;
+          top: 60px;
           left: 0;
           width: 100%;
           z-index: 9;
           transform: translateX(0);
           overflow-y: auto;
-          max-height: calc(100dvh - ${r.top}px);
+          max-height: calc(100dvh - 60px);
           will-change: transform;
           background: var(--bg);
         `;
@@ -641,7 +639,9 @@ function applyRole(role) {
     const velocity = Math.abs(dx) / duration;
     const ratio = Math.abs(dx) / W();
     const ni = getNext(dragDir);
-    const will = (velocity > 0.5 && Math.abs(dx) > 50) || (ratio >= 0.2 && nxtEl !== null && ni >= 0 && ni < TOTAL_TABS);
+    
+    // ✅ will 조건 완화 (절반 이상 슬라이드하면 전환)
+    const will = (velocity > 0.3 && Math.abs(dx) > 40) || (ratio >= 0.35 && nxtEl !== null && ni >= 0 && ni < TOTAL_TABS);
     
     dragging = false;
     
@@ -750,4 +750,4 @@ function applyRole(role) {
 })();
 
 
-console.log('✅ js_ui.js 로드 완료');
+console.log('✅ js_ui.js 로드 완료 (최종 수정본)');

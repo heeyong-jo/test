@@ -1,5 +1,5 @@
 ﻿// ==================== UI 및 스와이프 제스처 (js_ui.js) ====================
-// 최종 수정본 - 슬라이드 겹침 해결 + 관리탭 전환 안정화
+// 최종 수정본 - 슬라이드 버그 완전 해결
 
 
 if (typeof toastTimer === 'undefined') var toastTimer = null;
@@ -131,6 +131,7 @@ function showTab(n) {
     }
   }
   
+  // 현재 스크롤 위치 저장 (이전 탭)
   const currentScroll = window.scrollY || document.documentElement.scrollTop;
   sessionStorage.setItem(`scrollPos_${currentTab}`, currentScroll);
   
@@ -141,6 +142,7 @@ function showTab(n) {
     else t.classList.remove('active');
   });
   
+  // 페이지 표시/숨김
   for (let i = 0; i < TOTAL_TABS; i++) {
     const page = document.getElementById('p' + i);
     if (page) {
@@ -167,9 +169,13 @@ function showTab(n) {
     }
   }
   
+  // 저장된 스크롤 위치 복원 (새 탭)
   const savedScroll = sessionStorage.getItem(`scrollPos_${n}`);
   if (savedScroll && !isNaN(parseInt(savedScroll))) {
     setTimeout(() => window.scrollTo(0, parseInt(savedScroll)), 50);
+  } else {
+    // 저장된 위치 없으면 맨 위로
+    setTimeout(() => window.scrollTo(0, 0), 50);
   }
   
   afterTab(n);
@@ -204,6 +210,13 @@ function afterTab(n) {
   else if (n === 6) {
     const user = getCurrentUser();
     console.log('관리탭 렌더링, role:', user ? user.role : 'none');
+    
+    // 관리탭 요소 강제 표시
+    const p6 = document.getElementById('p6');
+    if (p6) {
+      p6.style.display = 'block';
+      p6.classList.add('show');
+    }
     
     if (user && user.role === 'admin') {
       if (typeof renderMembersAccord === 'function') renderMembersAccord();
@@ -435,6 +448,9 @@ function restoreTabStyles() {
   
   function getNext(dir) {
     let idx = currentTab + dir;
+    // ✅ 범위 체크 (0 ~ TOTAL_TABS-1)
+    if (idx < 0 || idx >= TOTAL_TABS) return -1;
+    
     while (idx >= 0 && idx < TOTAL_TABS) {
       const t = document.getElementById('tab' + idx);
       if (t && t.style.display !== 'none') return idx;
@@ -443,7 +459,7 @@ function restoreTabStyles() {
     return -1;
   }
   
-  // ✅ prepareNext: 고정 top 값 사용 (60px)
+  // prepareNext: 고정 top 값 사용
   function prepareNext(dir) {
     const ni = getNext(dir);
     if (ni < 0) return null;
@@ -474,7 +490,7 @@ function restoreTabStyles() {
     sessionStorage.setItem(`scrollPos_${currentTab}`, currentScroll);
   }
   
-  // ✅ cleanup: 명시적 CSS 설정, afterTab 지연 없이 호출
+  // ✅ cleanup: 스크롤 위치 보존
   function cleanup(finalIdx) {
     const f = getPage(finalIdx);
     if (!f) return;
@@ -495,6 +511,7 @@ function restoreTabStyles() {
     nxtEl = null;
     dragDir = 0;
     
+    // ✅ 스크롤 위치 복원 (중요!)
     const savedScrollPos = sessionStorage.getItem(`scrollPos_${finalIdx}`);
     if (savedScrollPos && !isNaN(parseInt(savedScrollPos))) {
       setTimeout(() => window.scrollTo(0, parseInt(savedScrollPos)), 50);
@@ -512,7 +529,7 @@ function restoreTabStyles() {
       }
     }
     
-    // 지연 없이 afterTab 호출
+    // afterTab 호출
     afterTab(finalIdx);
   }
   
@@ -552,15 +569,6 @@ function restoreTabStyles() {
         return;
       }
       
-      const user = getCurrentUser();
-      if (currentTab === 0 && !user && dx > SWIPE_THRESHOLD) {
-        e.preventDefault();
-        document.getElementById('screen-login').style.display = 'flex';
-        dragging = false;
-        locked = true;
-        return;
-      }
-      
       dragging = true;
       dragDir = dx > 0 ? -1 : 1;
       
@@ -589,7 +597,7 @@ function restoreTabStyles() {
     e.preventDefault();
     
     let tx = dx;
-    if ((dx > 0 && currentTab === 0) || (dx < 0 && getNext(1) < 0)) {
+    if ((dx > 0 && currentTab === 0) || (dx < 0 && getNext(-1) < 0)) {
       tx = dx * 0.3;
     }
     
@@ -640,12 +648,12 @@ function restoreTabStyles() {
     const ratio = Math.abs(dx) / W();
     const ni = getNext(dragDir);
     
-    // ✅ will 조건 완화 (절반 이상 슬라이드하면 전환)
+    // ✅ will 조건
     const will = (velocity > 0.3 && Math.abs(dx) > 40) || (ratio >= 0.35 && nxtEl !== null && ni >= 0 && ni < TOTAL_TABS);
     
     dragging = false;
     
-    if (will) {
+    if (will && ni >= 0 && ni < TOTAL_TABS) {
       const tX = dragDir > 0 ? -W() : W();
       const sp = dx;
       const dur = 250;
@@ -678,6 +686,7 @@ function restoreTabStyles() {
           requestAnimationFrame(frame);
         } else {
           const user = getCurrentUser();
+          const needLoginTabs = [2, 3, 6];
           
           if (ni === 6 && user) {
             const role = user.role;
@@ -689,9 +698,18 @@ function restoreTabStyles() {
             }
           }
           
-          if (ni !== 0 && !user) {
+          // ✅ 로그인 필요 탭: 슬라이드 허용 (토스트만 표시)
+          if (ni !== 0 && !user && needLoginTabs.includes(ni)) {
+            currentTab = ni;
+            document.querySelectorAll('.tab').forEach((tb, i) => {
+              tb.classList.toggle('active', i === currentTab);
+              tb.style.opacity = '';
+              tb.style.color = '';
+            });
             cleanup(currentTab);
-            document.getElementById('screen-login').style.display = 'flex';
+            if (typeof showToast === 'function') {
+              showToast('🔐 로그인이 필요한 기능입니다');
+            }
           } else {
             currentTab = ni;
             document.querySelectorAll('.tab').forEach((tb, i) => {
@@ -705,6 +723,7 @@ function restoreTabStyles() {
         }
       })(start);
     } else {
+      // 취소 애니메이션
       const sp = dx;
       const dur = 300;
       const start = performance.now();

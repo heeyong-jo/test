@@ -1,5 +1,5 @@
 ﻿// ==================== 로컬 스토리지 및 Firebase 저장 ====================
-// 최종 수정본 - 변수 중복 제거, serviceList 정의, 들여쓰기 수정
+// 최종 수정본 - Firebase 저장 안정화
 
 
 if (typeof FB_KEYS === 'undefined') {
@@ -8,7 +8,6 @@ if (typeof FB_KEYS === 'undefined') {
 }
 
 
-// ✅ 전역 변수 선언 (let 제거, window만 사용)
 window.pendingUsers = window.pendingUsers || [];
 window.approvedUsers = window.approvedUsers || [];
 window.currentUser = window.currentUser || null;
@@ -19,11 +18,10 @@ window.meditations = window.meditations || [];
 window.prayers = window.prayers || [];
 window.todayVerse = window.todayVerse || null;
 window.posts = window.posts || [];
-window.serviceList = window.serviceList || [];   // ✅ 추가
-window.scheduleList = window.scheduleList || []; // ✅ 추가
+window.serviceList = window.serviceList || [];
+window.scheduleList = window.scheduleList || [];
 
 
-// 로컬 변수 (편의용)
 var members = window.members;
 var notices = window.notices;
 var offerings = window.offerings;
@@ -39,40 +37,44 @@ const STORAGE_PREFIX = 'ch2_';
 
 
 const LS = {
-  save: (k, v) => {
-    try { 
-      localStorage.setItem(STORAGE_PREFIX + k, JSON.stringify(v)); 
-    } catch(e) { 
-      console.warn('LS 저장 실패:', e); 
+  save: function(k, v) {
+    // localStorage 저장
+    try {
+      localStorage.setItem(STORAGE_PREFIX + k, JSON.stringify(v));
+      console.log('💾 LS 저장 성공:', k);
+    } catch(e) {
+      console.warn('LS 저장 실패:', e);
     }
     
-    if (FB_KEYS && FB_KEYS.includes(k) && window.FB_READY && typeof firebase !== 'undefined') {
-      try { 
+    // Firebase 저장 시도
+    if (FB_KEYS && FB_KEYS.includes(k) && window.FB_READY && typeof firebase !== 'undefined' && firebase.database) {
+      try {
         firebase.database().ref(k).set(v);
-        console.log(`✅ Firebase ${k} 저장 완료`);
-      } catch(e) { 
-        console.warn('FB 저장 실패:', e); 
+        console.log('✅ Firebase 저장 완료:', k);
+      } catch(e) {
+        console.warn('FB 저장 실패:', k, e);
       }
     }
   },
   
-  load: (k, d) => {
-    try { 
-      const r = localStorage.getItem(STORAGE_PREFIX + k); 
-      return r !== null ? JSON.parse(r) : d; 
-    } catch(e) { 
-      return d; 
+  load: function(k, d) {
+    try {
+      var r = localStorage.getItem(STORAGE_PREFIX + k);
+      return r !== null ? JSON.parse(r) : d;
+    } catch(e) {
+      return d;
     }
   },
   
-  del: (k) => {
-    try { 
-      localStorage.removeItem(STORAGE_PREFIX + k); 
+  del: function(k) {
+    try {
+      localStorage.removeItem(STORAGE_PREFIX + k);
     } catch(e) {}
     
     if (FB_KEYS && FB_KEYS.includes(k) && window.FB_READY && typeof firebase !== 'undefined') {
-      try { 
-        firebase.database().ref(k).remove(); 
+      try {
+        firebase.database().ref(k).remove();
+        console.log('🗑 Firebase 삭제 완료:', k);
       } catch(e) {}
     }
   }
@@ -80,12 +82,12 @@ const LS = {
 
 
 function fbUpdateUI(key, data) {
-  let arr = data;
+  console.log('🔄 fbUpdateUI:', key);
+  
+  var arr = data;
   if (data && typeof data === 'object' && !Array.isArray(data)) {
     arr = Object.values(data);
   }
-  
-  console.log('fbUpdateUI:', key, '데이터 개수:', arr ? arr.length : 0);
   
   switch(key) {
     case 'notices':
@@ -93,59 +95,50 @@ function fbUpdateUI(key, data) {
       notices = window.notices;
       if (typeof renderHomeNotices === 'function') renderHomeNotices();
       break;
-      
     case 'members':
       window.members = arr || [];
       members = window.members;
       if (typeof renderMembersAccord === 'function') renderMembersAccord();
       break;
-      
     case 'meditations':
-      window.meditations = (arr || []).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      window.meditations = (arr || []).sort(function(a, b) {
+        return (b.createdAt || 0) - (a.createdAt || 0);
+      });
       meditations = window.meditations;
       if (typeof renderMeditations === 'function') renderMeditations();
       break;
-      
     case 'pendingUsers':
       window.pendingUsers = arr || [];
       pendingUsers = window.pendingUsers;
       if (typeof renderApprovalsAccord === 'function') renderApprovalsAccord();
       break;
-      
     case 'approvedUsers':
       window.approvedUsers = arr || [];
       approvedUsers = window.approvedUsers;
       break;
-      
     case 'offerings':
       window.offerings = arr || [];
       offerings = window.offerings;
       break;
-      
     case 'todayVerse':
-      // todayVerse는 배열이 아닌 객체로 저장됨
-      todayVerse = (Array.isArray(data) ? data[0] : data) || null;
+      window.todayVerse = (Array.isArray(data) ? data[0] : data) || null;
+      todayVerse = window.todayVerse;
       if (typeof renderTodayVerse === 'function') renderTodayVerse();
       break;
-      
     case 'serviceList':
       window.serviceList = arr || [];
       serviceList = window.serviceList;
       if (typeof renderServiceView === 'function') renderServiceView();
       break;
-      
     case 'scheduleList':
       window.scheduleList = arr || [];
       scheduleList = window.scheduleList;
       if (typeof renderScheduleView === 'function') renderScheduleView();
       break;
-      
     case 'posts':
       window.posts = arr || [];
       posts = window.posts;
-      if (typeof renderBoardPosts === 'function') renderBoardPosts();
       break;
-      
     case 'prayers':
       window.prayers = arr || [];
       prayers = window.prayers;
@@ -159,26 +152,31 @@ if (typeof window._fbSyncDefined === 'undefined') {
   window._fbSyncDefined = true;
   
   function fbSync() {
-    if (!window.FB_READY || typeof firebase === 'undefined') return;
+    if (!window.FB_READY || typeof firebase === 'undefined' || !firebase.database) {
+      console.log('⚠️ Firebase 미준비, 동기화 스킵');
+      return;
+    }
     
     console.log('🔄 Firebase 동기화 시작');
     
-    FB_KEYS.forEach(key => {
-      try {
-        firebase.database().ref(key).on('value', (snapshot) => {
-          const data = snapshot.val();
-          if (data === null) return;
-          
-          try { 
-            localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(data)); 
-          } catch(e) {}
-          
-          fbUpdateUI(key, data);
-        });
-      } catch(e) { 
-        console.warn(key + ' 동기화 오류:', e); 
-      }
-    });
+    for (var i = 0; i < FB_KEYS.length; i++) {
+      var key = FB_KEYS[i];
+      (function(k) {
+        try {
+          firebase.database().ref(k).on('value', function(snapshot) {
+            var data = snapshot.val();
+            if (data === null) return;
+            try {
+              localStorage.setItem(STORAGE_PREFIX + k, JSON.stringify(data));
+            } catch(e) {}
+            fbUpdateUI(k, data);
+          });
+          console.log('✅ 동기화 등록:', k);
+        } catch(e) {
+          console.warn(k + ' 동기화 오류:', e);
+        }
+      })(key);
+    }
   }
 }
 
@@ -187,30 +185,27 @@ if (typeof window._fbLoadAllDefined === 'undefined') {
   window._fbLoadAllDefined = true;
   
   async function fbLoadAll() {
-    if (!window.FB_READY || typeof firebase === 'undefined') {
-      console.log('Firebase 미준비, fbLoadAll 건너뜀');
+    if (!window.FB_READY || typeof firebase === 'undefined' || !firebase.database) {
+      console.log('⚠️ Firebase 미준비, 로드 스킵');
       return;
     }
     
     console.log('📡 Firebase 데이터 로드 시작');
     
-    try {
-      for (const key of FB_KEYS) {
-        try {
-          const snap = await firebase.database().ref(key).once('value');
-          const data = snap.val();
-          if (data !== null) {
-            fbUpdateUI(key, data);
-            console.log(`✅ ${key} 로드 완료`);
-          }
-        } catch(e) {
-          console.warn(key + ' 로드 실패:', e);
+    for (var i = 0; i < FB_KEYS.length; i++) {
+      var key = FB_KEYS[i];
+      try {
+        var snap = await firebase.database().ref(key).once('value');
+        var data = snap.val();
+        if (data !== null) {
+          fbUpdateUI(key, data);
+          console.log('✅ 로드 완료:', key);
         }
+      } catch(e) {
+        console.warn(key + ' 로드 실패:', e);
       }
-      console.log('✅ Firebase 데이터 로드 완료');
-    } catch(e) {
-      console.error('fbLoadAll 오류:', e);
     }
+    console.log('✅ Firebase 데이터 로드 완료');
   }
 }
 
@@ -219,15 +214,17 @@ function loadFromLocalStorage() {
   console.log('📁 localStorage 데이터 로드 시작');
   
   try {
-    const savedService = localStorage.getItem('ch2_serviceList');
-    if (savedService && typeof serviceList !== 'undefined') {
-      serviceList = JSON.parse(savedService);
+    var savedService = localStorage.getItem('ch2_serviceList');
+    if (savedService) {
+      window.serviceList = JSON.parse(savedService);
+      serviceList = window.serviceList;
+      if (typeof renderServiceView === 'function') renderServiceView();
       console.log('serviceList 로드됨:', serviceList.length);
     }
   } catch(e) {}
   
   try {
-    const savedNotices = localStorage.getItem('ch2_notices');
+    var savedNotices = localStorage.getItem('ch2_notices');
     if (savedNotices) {
       window.notices = JSON.parse(savedNotices);
       notices = window.notices;
@@ -236,7 +233,7 @@ function loadFromLocalStorage() {
   } catch(e) {}
   
   try {
-    const savedPrayers = localStorage.getItem('ch2_prayers');
+    var savedPrayers = localStorage.getItem('ch2_prayers');
     if (savedPrayers) {
       window.prayers = JSON.parse(savedPrayers);
       prayers = window.prayers;
@@ -252,7 +249,7 @@ function loadFromLocalStorage() {
   loadFromLocalStorage();
   
   setTimeout(function() {
-    if (typeof window.FB_READY !== 'undefined' && window.FB_READY && typeof firebase !== 'undefined') {
+    if (window.FB_READY && typeof firebase !== 'undefined' && firebase.database) {
       fbLoadAll();
       fbSync();
       console.log('✅ Firebase 동기화 시작됨');
@@ -261,7 +258,7 @@ function loadFromLocalStorage() {
       if (typeof renderServiceView === 'function') renderServiceView();
       if (typeof renderHomeNotices === 'function') renderHomeNotices();
     }
-  }, 200);
+  }, 500);
 })();
 
 
@@ -269,7 +266,6 @@ window.LS = LS;
 window.fbUpdateUI = fbUpdateUI;
 window.fbSync = fbSync;
 window.fbLoadAll = fbLoadAll;
-window.loadFromLocalStorage = loadFromLocalStorage;
 
 
-console.log('✅ js_storage.js 로드 완료 (수정본)');
+console.log('✅ js_storage.js 로드 완료');

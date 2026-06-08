@@ -1,5 +1,5 @@
 ﻿// ==================== UI 및 스와이프 제스처 (js_ui.js) ====================
-// 최종 수정본 - 슬라이드 버그 완전 해결
+// 최종 수정본 - 슬라이드 시 상단 탭 안정화
 
 
 if (typeof toastTimer === 'undefined') var toastTimer = null;
@@ -131,7 +131,6 @@ function showTab(n) {
     }
   }
   
-  // 현재 스크롤 위치 저장 (이전 탭)
   const currentScroll = window.scrollY || document.documentElement.scrollTop;
   sessionStorage.setItem(`scrollPos_${currentTab}`, currentScroll);
   
@@ -142,7 +141,6 @@ function showTab(n) {
     else t.classList.remove('active');
   });
   
-  // 페이지 표시/숨김
   for (let i = 0; i < TOTAL_TABS; i++) {
     const page = document.getElementById('p' + i);
     if (page) {
@@ -169,12 +167,10 @@ function showTab(n) {
     }
   }
   
-  // 저장된 스크롤 위치 복원 (새 탭)
   const savedScroll = sessionStorage.getItem(`scrollPos_${n}`);
   if (savedScroll && !isNaN(parseInt(savedScroll))) {
     setTimeout(() => window.scrollTo(0, parseInt(savedScroll)), 50);
   } else {
-    // 저장된 위치 없으면 맨 위로
     setTimeout(() => window.scrollTo(0, 0), 50);
   }
   
@@ -194,11 +190,9 @@ function afterTab(n) {
     if (typeof renderTodayVerse === 'function') renderTodayVerse();
   }
   else if (n === 2) {
-  if (typeof initBoard === 'function') {
-    initBoard();  
+    if (typeof initBoard === 'function') initBoard();
+    if (typeof renderPrayers === 'function') renderPrayers();
   }
-  if (typeof renderPrayers === 'function') renderPrayers();  
-}
   else if (n === 3) {
     if (typeof renderPosts === 'function') renderPosts();
   }
@@ -214,7 +208,6 @@ function afterTab(n) {
     const user = getCurrentUser();
     console.log('관리탭 렌더링, role:', user ? user.role : 'none');
     
-    // 관리탭 요소 강제 표시
     const p6 = document.getElementById('p6');
     if (p6) {
       p6.style.display = 'block';
@@ -442,6 +435,7 @@ function restoreTabStyles() {
   const SWIPE_THRESHOLD = 30;
   const MAX_VERTICAL_RATIO = 1.5;
   const MIN_HORIZONTAL_MOVE = 15;
+  const HEADER_HEIGHT = 60;
   
   const W = () => window.innerWidth;
   
@@ -451,7 +445,6 @@ function restoreTabStyles() {
   
   function getNext(dir) {
     let idx = currentTab + dir;
-    // ✅ 범위 체크 (0 ~ TOTAL_TABS-1)
     if (idx < 0 || idx >= TOTAL_TABS) return -1;
     
     while (idx >= 0 && idx < TOTAL_TABS) {
@@ -462,25 +455,23 @@ function restoreTabStyles() {
     return -1;
   }
   
-  // prepareNext: 고정 top 값 사용
+  // ✅ prepareNext: fixed + top 0 (헤더 아래부터 시작)
   function prepareNext(dir) {
     const ni = getNext(dir);
     if (ni < 0) return null;
     const nxt = getPage(ni);
     if (!nxt) return null;
     
-    const top = 60;
-    
     nxt.style.cssText = `
       display: block !important;
       position: fixed;
-      top: ${top}px;
+      top: ${HEADER_HEIGHT}px;
       left: 0;
       width: 100%;
       z-index: 10;
       transform: translateX(${dir > 0 ? W() : -W()}px);
       overflow-y: auto;
-      max-height: calc(100dvh - ${top}px);
+      max-height: calc(100dvh - ${HEADER_HEIGHT}px);
       will-change: transform;
       opacity: 1;
       background: var(--bg);
@@ -493,14 +484,16 @@ function restoreTabStyles() {
     sessionStorage.setItem(`scrollPos_${currentTab}`, currentScroll);
   }
   
-  // ✅ cleanup: 스크롤 위치 보존
+  // ✅ cleanup: 스크롤 위치 복원 (탭 영역 영향 없음)
   function cleanup(finalIdx) {
     const f = getPage(finalIdx);
     if (!f) return;
     
+    // 페이지 스타일 초기화 (fixed 해제)
     f.style.cssText = '';
     f.classList.add('show');
     
+    // 다른 페이지 숨김
     for (let i = 0; i < TOTAL_TABS; i++) {
       if (i === finalIdx) continue;
       const p = getPage(i);
@@ -514,7 +507,7 @@ function restoreTabStyles() {
     nxtEl = null;
     dragDir = 0;
     
-    // ✅ 스크롤 위치 복원 (중요!)
+    // 스크롤 위치 복원
     const savedScrollPos = sessionStorage.getItem(`scrollPos_${finalIdx}`);
     if (savedScrollPos && !isNaN(parseInt(savedScrollPos))) {
       setTimeout(() => window.scrollTo(0, parseInt(savedScrollPos)), 50);
@@ -532,7 +525,6 @@ function restoreTabStyles() {
       }
     }
     
-    // afterTab 호출
     afterTab(finalIdx);
   }
   
@@ -580,13 +572,13 @@ function restoreTabStyles() {
         curEl.style.cssText = `
           display: block !important;
           position: fixed;
-          top: 60px;
+          top: ${HEADER_HEIGHT}px;
           left: 0;
           width: 100%;
           z-index: 9;
           transform: translateX(0);
           overflow-y: auto;
-          max-height: calc(100dvh - 60px);
+          max-height: calc(100dvh - ${HEADER_HEIGHT}px);
           will-change: transform;
           background: var(--bg);
         `;
@@ -650,8 +642,6 @@ function restoreTabStyles() {
     const velocity = Math.abs(dx) / duration;
     const ratio = Math.abs(dx) / W();
     const ni = getNext(dragDir);
-    
-    // ✅ will 조건
     const will = (velocity > 0.3 && Math.abs(dx) > 40) || (ratio >= 0.35 && nxtEl !== null && ni >= 0 && ni < TOTAL_TABS);
     
     dragging = false;
@@ -701,7 +691,6 @@ function restoreTabStyles() {
             }
           }
           
-          // ✅ 로그인 필요 탭: 슬라이드 허용 (토스트만 표시)
           if (ni !== 0 && !user && needLoginTabs.includes(ni)) {
             currentTab = ni;
             document.querySelectorAll('.tab').forEach((tb, i) => {
@@ -726,7 +715,6 @@ function restoreTabStyles() {
         }
       })(start);
     } else {
-      // 취소 애니메이션
       const sp = dx;
       const dur = 300;
       const start = performance.now();

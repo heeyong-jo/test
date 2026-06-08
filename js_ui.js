@@ -194,8 +194,11 @@ function afterTab(n) {
     if (typeof renderTodayVerse === 'function') renderTodayVerse();
   }
   else if (n === 2) {
-    if (typeof renderPrayers === 'function') renderPrayers();
+  if (typeof initBoard === 'function') {
+    initBoard();  
   }
+  if (typeof renderPrayers === 'function') renderPrayers();  
+}
   else if (n === 3) {
     if (typeof renderPosts === 'function') renderPosts();
   }

@@ -502,4 +502,13 @@ if (document.readyState === 'loading') {
 }
 
 
-console.log('✅ js_notices.js 로드 완료 (수정본)');
+window.openAddNotice = openAddNotice;
+window.saveNotice = saveNotice;
+window.deleteNotice = deleteNotice;
+window.viewNotice = viewNotice;
+window.closeNoticeView = closeNoticeView;
+window.showAllNotices = showAllNotices;
+window.noticePhotoPreview = noticePhotoPreview;
+
+
+console.log('✅ 공지사항 함수 전역 재등록 완료');

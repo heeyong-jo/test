@@ -1,5 +1,5 @@
 ﻿// ==================== UI 및 스와이프 제스처 (js_ui.js) ====================
-// 최종 수정본 - 슬라이드 부드럽게, 위로 올라가는 현상 제거
+// 최종 수정본 - 슬라이드 정상 작동
 
 
 if (typeof toastTimer === 'undefined') var toastTimer = null;
@@ -131,7 +131,6 @@ function showTab(n) {
     }
   }
   
-  // 현재 스크롤 위치 저장
   const currentScroll = window.scrollY || document.documentElement.scrollTop;
   sessionStorage.setItem(`scrollPos_${currentTab}`, currentScroll);
   
@@ -453,52 +452,38 @@ function restoreTabStyles() {
     return -1;
   }
   
-  // ✅ 스크롤 위치 저장 변수
   let savedScrollTop = 0;
   
-  // prepareNext 함수
-function prepareNext(dir) {
-  const ni = getNext(dir);
-  if (ni < 0) return null;
-  const nxt = getPage(ni);
-  if (!nxt) return null;
+  function saveCurrentScrollPosition() {
+    const currentScroll = window.scrollY || document.documentElement.scrollTop;
+    sessionStorage.setItem(`scrollPos_${currentTab}`, currentScroll);
+  }
   
-  nxt.style.cssText = `
-    display: block !important;
-    position: fixed;
-    top: 100px;
-    left: 0;
-    width: 100%;
-    z-index: 10;
-    transform: translateX(${dir > 0 ? W() : -W()}px);
-    overflow-y: auto;
-    max-height: calc(100dvh - 100px);
-    will-change: transform;
-    opacity: 1;
-    background: var(--bg);
-  `;
-  return nxt;
-}
-
-
-// touchmove 내 curEl 설정
-if (curEl) {
-  const currentScroll = window.scrollY || document.documentElement.scrollTop;
-  curEl.style.cssText = `
-    display: block !important;
-    position: fixed;
-    top: 100px;
-    left: 0;
-    width: 100%;
-    z-index: 9;
-    transform: translateX(0);
-    overflow-y: auto;
-    max-height: calc(100dvh - 100px);
-    will-change: transform;
-    background: var(--bg);
-  `;
-  curEl.scrollTop = currentScroll;
-}
+  function prepareNext(dir) {
+    const ni = getNext(dir);
+    if (ni < 0) return null;
+    const nxt = getPage(ni);
+    if (!nxt) return null;
+    
+    savedScrollTop = window.scrollY || document.documentElement.scrollTop;
+    
+    nxt.style.cssText = `
+      display: block !important;
+      position: fixed;
+      top: 60px;
+      left: 0;
+      width: 100%;
+      z-index: 10;
+      transform: translateX(${dir > 0 ? W() : -W()}px);
+      overflow-y: auto;
+      max-height: calc(100dvh - 60px);
+      will-change: transform;
+      opacity: 1;
+      background: var(--bg);
+    `;
+    nxt.scrollTop = savedScrollTop;
+    return nxt;
+  }
   
   function cleanup(finalIdx) {
     const f = getPage(finalIdx);
@@ -580,7 +565,6 @@ if (curEl) {
       dragDir = dx > 0 ? -1 : 1;
       
       if (curEl) {
-        // ✅ 현재 스크롤 위치 저장
         savedScrollTop = window.scrollY || document.documentElement.scrollTop;
         
         curEl.style.cssText = `
@@ -596,7 +580,6 @@ if (curEl) {
           will-change: transform;
           background: var(--bg);
         `;
-        // ✅ 스크롤 위치 복원
         curEl.scrollTop = savedScrollTop;
       }
       nxtEl = prepareNext(dragDir);
@@ -759,7 +742,6 @@ if (curEl) {
         } else {
           if (curEl) {
             curEl.style.cssText = '';
-            // ✅ 원래 스크롤 위치로 복원
             window.scrollTo(0, savedScrollTop);
           }
           if (nxtEl) nxtEl.style.cssText = '';
@@ -773,4 +755,4 @@ if (curEl) {
 })();
 
 
-console.log('✅ js_ui.js 로드 완료 (최종 수정본)');
+console.log('✅ js_ui.js 로드 완료');

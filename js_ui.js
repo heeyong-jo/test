@@ -1,5 +1,5 @@
 ﻿// ==================== UI 및 스와이프 제스처 (js_ui.js) ====================
-// 최종 수정본 - 상단 탭 고정, 슬라이드 부드럽게
+// 최종 수정본 - 슬라이드 부드럽게, 위로 올라가는 현상 제거
 
 
 if (typeof toastTimer === 'undefined') var toastTimer = null;
@@ -131,6 +131,7 @@ function showTab(n) {
     }
   }
   
+  // 현재 스크롤 위치 저장
   const currentScroll = window.scrollY || document.documentElement.scrollTop;
   sessionStorage.setItem(`scrollPos_${currentTab}`, currentScroll);
   
@@ -433,8 +434,6 @@ function restoreTabStyles() {
   const SWIPE_THRESHOLD = 30;
   const MAX_VERTICAL_RATIO = 1.5;
   const MIN_HORIZONTAL_MOVE = 15;
-  const HEADER_HEIGHT = 60;
-  const TABBAR_HEIGHT = 50;
   
   const W = () => window.innerWidth;
   
@@ -454,27 +453,34 @@ function restoreTabStyles() {
     return -1;
   }
   
+  // ✅ 스크롤 위치 저장 변수
+  let savedScrollTop = 0;
+  
   function prepareNext(dir) {
     const ni = getNext(dir);
     if (ni < 0) return null;
     const nxt = getPage(ni);
     if (!nxt) return null;
     
-    // ✅ 탭바 아래에서 시작하도록 top 설정
+    // ✅ 현재 스크롤 위치 저장
+    savedScrollTop = window.scrollY || document.documentElement.scrollTop;
+    
     nxt.style.cssText = `
       display: block !important;
       position: fixed;
-      top: ${HEADER_HEIGHT + TABBAR_HEIGHT}px;
+      top: 60px;
       left: 0;
       width: 100%;
-      z-index: 5;
+      z-index: 10;
       transform: translateX(${dir > 0 ? W() : -W()}px);
       overflow-y: auto;
-      max-height: calc(100dvh - ${HEADER_HEIGHT + TABBAR_HEIGHT}px);
+      max-height: calc(100dvh - 60px);
       will-change: transform;
       opacity: 1;
       background: var(--bg);
     `;
+    // ✅ 스크롤 위치 동기화
+    nxt.scrollTop = savedScrollTop;
     return nxt;
   }
   
@@ -563,21 +569,24 @@ function restoreTabStyles() {
       dragDir = dx > 0 ? -1 : 1;
       
       if (curEl) {
-        const currentScroll = window.scrollY || document.documentElement.scrollTop;
+        // ✅ 현재 스크롤 위치 저장
+        savedScrollTop = window.scrollY || document.documentElement.scrollTop;
+        
         curEl.style.cssText = `
           display: block !important;
           position: fixed;
-          top: ${HEADER_HEIGHT + TABBAR_HEIGHT}px;
+          top: 60px;
           left: 0;
           width: 100%;
-          z-index: 5;
+          z-index: 9;
           transform: translateX(0);
           overflow-y: auto;
-          max-height: calc(100dvh - ${HEADER_HEIGHT + TABBAR_HEIGHT}px);
+          max-height: calc(100dvh - 60px);
           will-change: transform;
           background: var(--bg);
         `;
-        curEl.scrollTop = currentScroll;
+        // ✅ 스크롤 위치 복원
+        curEl.scrollTop = savedScrollTop;
       }
       nxtEl = prepareNext(dragDir);
     }
@@ -739,10 +748,8 @@ function restoreTabStyles() {
         } else {
           if (curEl) {
             curEl.style.cssText = '';
-            const savedPos = sessionStorage.getItem(`scrollPos_${currentTab}`);
-            if (savedPos && !isNaN(parseInt(savedPos))) {
-              window.scrollTo(0, parseInt(savedPos));
-            }
+            // ✅ 원래 스크롤 위치로 복원
+            window.scrollTo(0, savedScrollTop);
           }
           if (nxtEl) nxtEl.style.cssText = '';
           curEl = null;

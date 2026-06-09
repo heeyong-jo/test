@@ -1,5 +1,5 @@
 ﻿// ==================== UI 및 스와이프 제스처 (js_ui.js) ====================
-// 최종 수정본 - 슬라이드 시 상단 탭 안정화
+// 최종 수정본 - 상단 탭 고정, 슬라이드 부드럽게
 
 
 if (typeof toastTimer === 'undefined') var toastTimer = null;
@@ -170,8 +170,6 @@ function showTab(n) {
   const savedScroll = sessionStorage.getItem(`scrollPos_${n}`);
   if (savedScroll && !isNaN(parseInt(savedScroll))) {
     setTimeout(() => window.scrollTo(0, parseInt(savedScroll)), 50);
-  } else {
-    setTimeout(() => window.scrollTo(0, 0), 50);
   }
   
   afterTab(n);
@@ -436,6 +434,7 @@ function restoreTabStyles() {
   const MAX_VERTICAL_RATIO = 1.5;
   const MIN_HORIZONTAL_MOVE = 15;
   const HEADER_HEIGHT = 60;
+  const TABBAR_HEIGHT = 50;
   
   const W = () => window.innerWidth;
   
@@ -455,23 +454,23 @@ function restoreTabStyles() {
     return -1;
   }
   
-  // ✅ prepareNext: fixed + top 0 (헤더 아래부터 시작)
   function prepareNext(dir) {
     const ni = getNext(dir);
     if (ni < 0) return null;
     const nxt = getPage(ni);
     if (!nxt) return null;
     
+    // ✅ 탭바 아래에서 시작하도록 top 설정
     nxt.style.cssText = `
       display: block !important;
       position: fixed;
-      top: ${HEADER_HEIGHT}px;
+      top: ${HEADER_HEIGHT + TABBAR_HEIGHT}px;
       left: 0;
       width: 100%;
-      z-index: 10;
+      z-index: 5;
       transform: translateX(${dir > 0 ? W() : -W()}px);
       overflow-y: auto;
-      max-height: calc(100dvh - ${HEADER_HEIGHT}px);
+      max-height: calc(100dvh - ${HEADER_HEIGHT + TABBAR_HEIGHT}px);
       will-change: transform;
       opacity: 1;
       background: var(--bg);
@@ -484,16 +483,13 @@ function restoreTabStyles() {
     sessionStorage.setItem(`scrollPos_${currentTab}`, currentScroll);
   }
   
-  // ✅ cleanup: 스크롤 위치 복원 (탭 영역 영향 없음)
   function cleanup(finalIdx) {
     const f = getPage(finalIdx);
     if (!f) return;
     
-    // 페이지 스타일 초기화 (fixed 해제)
     f.style.cssText = '';
     f.classList.add('show');
     
-    // 다른 페이지 숨김
     for (let i = 0; i < TOTAL_TABS; i++) {
       if (i === finalIdx) continue;
       const p = getPage(i);
@@ -507,7 +503,6 @@ function restoreTabStyles() {
     nxtEl = null;
     dragDir = 0;
     
-    // 스크롤 위치 복원
     const savedScrollPos = sessionStorage.getItem(`scrollPos_${finalIdx}`);
     if (savedScrollPos && !isNaN(parseInt(savedScrollPos))) {
       setTimeout(() => window.scrollTo(0, parseInt(savedScrollPos)), 50);
@@ -572,13 +567,13 @@ function restoreTabStyles() {
         curEl.style.cssText = `
           display: block !important;
           position: fixed;
-          top: ${HEADER_HEIGHT}px;
+          top: ${HEADER_HEIGHT + TABBAR_HEIGHT}px;
           left: 0;
           width: 100%;
-          z-index: 9;
+          z-index: 5;
           transform: translateX(0);
           overflow-y: auto;
-          max-height: calc(100dvh - ${HEADER_HEIGHT}px);
+          max-height: calc(100dvh - ${HEADER_HEIGHT + TABBAR_HEIGHT}px);
           will-change: transform;
           background: var(--bg);
         `;

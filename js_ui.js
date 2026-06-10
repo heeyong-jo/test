@@ -1,5 +1,5 @@
 ﻿// ==================== UI 및 스와이프 제스처 (js_ui.js) ====================
-// 최종 수정본 - 탭 전환 시 항상 맨 위로, 슬라이드 부드럽게
+// 최종 수정본 - 상단탭 고정, 슬라이드 부드럽게
 
 
 if (typeof toastTimer === 'undefined') var toastTimer = null;
@@ -164,7 +164,7 @@ function showTab(n) {
     }
   }
   
-  // ✅ 항상 맨 위로 스크롤
+  // 항상 맨 위로 스크롤
   setTimeout(() => window.scrollTo(0, 0), 50);
   
   afterTab(n);
@@ -424,12 +424,11 @@ function restoreTabStyles() {
   let curEl = null;
   let nxtEl = null;
   let touchStartTime = 0;
-  let savedScrollTop = 0;
   
   const SWIPE_THRESHOLD = 30;
   const MAX_VERTICAL_RATIO = 1.5;
   const MIN_HORIZONTAL_MOVE = 15;
-  const HEADER_HEIGHT = 60;
+  const TOP_POSITION = 60;  // 헤더 높이
   
   const W = () => window.innerWidth;
   
@@ -450,7 +449,6 @@ function restoreTabStyles() {
   }
   
   function saveCurrentScrollPosition() {
-    // 저장은 하지만 사용하지 않음 (항상 맨 위로)
     const currentScroll = window.scrollY || document.documentElement.scrollTop;
     sessionStorage.setItem(`scrollPos_${currentTab}`, currentScroll);
   }
@@ -461,23 +459,20 @@ function restoreTabStyles() {
     const nxt = getPage(ni);
     if (!nxt) return null;
     
-    savedScrollTop = window.scrollY || document.documentElement.scrollTop;
-    
     nxt.style.cssText = `
       display: block !important;
       position: fixed;
-      top: ${HEADER_HEIGHT}px;
+      top: ${TOP_POSITION}px;
       left: 0;
       width: 100%;
-      z-index: 10;
+      z-index: 5;
       transform: translateX(${dir > 0 ? W() : -W()}px);
       overflow-y: auto;
-      max-height: calc(100dvh - ${HEADER_HEIGHT}px);
+      max-height: calc(100dvh - ${TOP_POSITION}px);
       will-change: transform;
       opacity: 1;
       background: var(--bg);
     `;
-    nxt.scrollTop = 0;  // 항상 맨 위로
     return nxt;
   }
   
@@ -501,7 +496,6 @@ function restoreTabStyles() {
     nxtEl = null;
     dragDir = 0;
     
-    // ✅ 항상 맨 위로 스크롤
     setTimeout(() => window.scrollTo(0, 0), 50);
     
     const user = getCurrentUser();
@@ -559,22 +553,19 @@ function restoreTabStyles() {
       dragDir = dx > 0 ? -1 : 1;
       
       if (curEl) {
-        savedScrollTop = window.scrollY || document.documentElement.scrollTop;
-        
         curEl.style.cssText = `
           display: block !important;
           position: fixed;
-          top: ${HEADER_HEIGHT}px;
+          top: ${TOP_POSITION}px;
           left: 0;
           width: 100%;
-          z-index: 9;
+          z-index: 5;
           transform: translateX(0);
           overflow-y: auto;
-          max-height: calc(100dvh - ${HEADER_HEIGHT}px);
+          max-height: calc(100dvh - ${TOP_POSITION}px);
           will-change: transform;
           background: var(--bg);
         `;
-        curEl.scrollTop = 0;  // 항상 맨 위로
       }
       nxtEl = prepareNext(dragDir);
     }

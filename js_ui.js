@@ -1,5 +1,5 @@
 ﻿// ==================== UI 및 스와이프 제스처 (js_ui.js) ====================
-// 최종 수정본 - 슬라이드 정상 작동
+// 최종 수정본 - 탭 전환 시 항상 맨 위로, 슬라이드 부드럽게
 
 
 if (typeof toastTimer === 'undefined') var toastTimer = null;
@@ -131,9 +131,6 @@ function showTab(n) {
     }
   }
   
-  const currentScroll = window.scrollY || document.documentElement.scrollTop;
-  sessionStorage.setItem(`scrollPos_${currentTab}`, currentScroll);
-  
   currentTab = n;
   
   document.querySelectorAll('.tab').forEach((t, i) => {
@@ -167,10 +164,8 @@ function showTab(n) {
     }
   }
   
-  const savedScroll = sessionStorage.getItem(`scrollPos_${n}`);
-  if (savedScroll && !isNaN(parseInt(savedScroll))) {
-    setTimeout(() => window.scrollTo(0, parseInt(savedScroll)), 50);
-  }
+  // ✅ 항상 맨 위로 스크롤
+  setTimeout(() => window.scrollTo(0, 0), 50);
   
   afterTab(n);
 }
@@ -429,10 +424,12 @@ function restoreTabStyles() {
   let curEl = null;
   let nxtEl = null;
   let touchStartTime = 0;
+  let savedScrollTop = 0;
   
   const SWIPE_THRESHOLD = 30;
   const MAX_VERTICAL_RATIO = 1.5;
   const MIN_HORIZONTAL_MOVE = 15;
+  const HEADER_HEIGHT = 60;
   
   const W = () => window.innerWidth;
   
@@ -452,9 +449,8 @@ function restoreTabStyles() {
     return -1;
   }
   
-  let savedScrollTop = 0;
-  
   function saveCurrentScrollPosition() {
+    // 저장은 하지만 사용하지 않음 (항상 맨 위로)
     const currentScroll = window.scrollY || document.documentElement.scrollTop;
     sessionStorage.setItem(`scrollPos_${currentTab}`, currentScroll);
   }
@@ -470,18 +466,18 @@ function restoreTabStyles() {
     nxt.style.cssText = `
       display: block !important;
       position: fixed;
-      top: 60px;
+      top: ${HEADER_HEIGHT}px;
       left: 0;
       width: 100%;
       z-index: 10;
       transform: translateX(${dir > 0 ? W() : -W()}px);
       overflow-y: auto;
-      max-height: calc(100dvh - 60px);
+      max-height: calc(100dvh - ${HEADER_HEIGHT}px);
       will-change: transform;
       opacity: 1;
       background: var(--bg);
     `;
-    nxt.scrollTop = savedScrollTop;
+    nxt.scrollTop = 0;  // 항상 맨 위로
     return nxt;
   }
   
@@ -505,10 +501,8 @@ function restoreTabStyles() {
     nxtEl = null;
     dragDir = 0;
     
-    const savedScrollPos = sessionStorage.getItem(`scrollPos_${finalIdx}`);
-    if (savedScrollPos && !isNaN(parseInt(savedScrollPos))) {
-      setTimeout(() => window.scrollTo(0, parseInt(savedScrollPos)), 50);
-    }
+    // ✅ 항상 맨 위로 스크롤
+    setTimeout(() => window.scrollTo(0, 0), 50);
     
     const user = getCurrentUser();
     if (finalIdx === 6 && user) {
@@ -570,17 +564,17 @@ function restoreTabStyles() {
         curEl.style.cssText = `
           display: block !important;
           position: fixed;
-          top: 60px;
+          top: ${HEADER_HEIGHT}px;
           left: 0;
           width: 100%;
           z-index: 9;
           transform: translateX(0);
           overflow-y: auto;
-          max-height: calc(100dvh - 60px);
+          max-height: calc(100dvh - ${HEADER_HEIGHT}px);
           will-change: transform;
           background: var(--bg);
         `;
-        curEl.scrollTop = savedScrollTop;
+        curEl.scrollTop = 0;  // 항상 맨 위로
       }
       nxtEl = prepareNext(dragDir);
     }
@@ -742,7 +736,7 @@ function restoreTabStyles() {
         } else {
           if (curEl) {
             curEl.style.cssText = '';
-            window.scrollTo(0, savedScrollTop);
+            window.scrollTo(0, 0);
           }
           if (nxtEl) nxtEl.style.cssText = '';
           curEl = null;
@@ -755,4 +749,4 @@ function restoreTabStyles() {
 })();
 
 
-console.log('✅ js_ui.js 로드 완료');
+console.log('✅ js_ui.js 로드 완료 (최종 수정본)');

@@ -1,4 +1,8 @@
-﻿window.__FIXED__ = true;
+﻿// ==================== Firebase 설정 및 전역 변수 ====================
+// 최종 수정본 - Compat SDK 방식으로 통일
+
+
+window.__FIXED__ = true;
 
 
 // ==================== Firebase 설정 ====================
@@ -13,11 +17,12 @@ const firebaseConfig = {
 };
 
 
-// ✅ Promise 기반 초기화
+// Firebase 상태 변수
 let FB_READY = false;
 let firebaseInitPromise = null;
 
 
+// Firebase 초기화 함수 (Compat 버전)
 function initFirebase() {
   if (firebaseInitPromise) return firebaseInitPromise;
   
@@ -31,10 +36,10 @@ function initFirebase() {
       if (typeof firebase !== 'undefined' && firebase.initializeApp) {
         if (!firebase.apps.length) {
           firebase.initializeApp(firebaseConfig);
+          console.log('✅ Firebase 연결 성공 (Compat)');
         }
         FB_READY = true;
         window.FB_READY = true;
-        console.log('✅ Firebase 연결 성공');
         resolve();
       } else {
         reject(new Error('Firebase SDK가 로드되지 않음'));
@@ -49,6 +54,7 @@ function initFirebase() {
 }
 
 
+// Firebase 준비 대기 함수
 async function waitForFirebase() {
   try {
     await initFirebase();
@@ -60,11 +66,22 @@ async function waitForFirebase() {
 }
 
 
+// DOM 로드 후 자동 초기화
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(initFirebase, 100);
+  });
+} else {
+  setTimeout(initFirebase, 100);
+}
+
+
 window.FB_READY = FB_READY;
 window.initFirebase = initFirebase;
 window.waitForFirebase = waitForFirebase;
 
 
+// ==================== 관리자 계정 ====================
 if (typeof ADMIN_ACCOUNTS === 'undefined') {
   var ADMIN_ACCOUNTS = [
     { id: 'gajwajeil', pw: 'gajwajeil123', name: '김명서 담임목사', role: 'admin', email: 'pastor@hamkke.church', phone: '032-581-4048', birth: '1955-03-29' },
@@ -73,6 +90,7 @@ if (typeof ADMIN_ACCOUNTS === 'undefined') {
 }
 
 
+// ==================== 성경 데이터 (구약 39권) ====================
 if (typeof OT_BOOKS === 'undefined') {
   var OT_BOOKS = [
     { name: "창세기", abbr: "창", chapters: 50, file: "ot01_genesis.json" },
@@ -118,6 +136,7 @@ if (typeof OT_BOOKS === 'undefined') {
 }
 
 
+// ==================== 성경 데이터 (신약 27권) ====================
 if (typeof NT_BOOKS === 'undefined') {
   var NT_BOOKS = [
     { name: "마태복음", abbr: "마", chapters: 28, file: "nt01_matthew.json" },
@@ -151,11 +170,14 @@ if (typeof NT_BOOKS === 'undefined') {
 }
 
 
+// ==================== Firebase 키 목록 ====================
 if (typeof FB_KEYS === 'undefined') {
-  var FB_KEYS = ['notices', 'members', 'meditations', 'pendingUsers', 'approvedUsers', 'offerings', 'todayVerse', 'serviceList', 'scheduleList', 'posts', 'prayers'];
+  var FB_KEYS = ['notices', 'members', 'meditations', 'pendingUsers', 'approvedUsers', 
+                  'offerings', 'todayVerse', 'serviceList', 'scheduleList', 'posts', 'prayers'];
 }
 
 
+// ==================== CDN 경로 ====================
 if (typeof BIBLE_CDN === 'undefined') {
   var BIBLE_CDN = 'https://cdn.jsdelivr.net/gh/heeyong-jo/bible-data@main';
 }
@@ -166,6 +188,7 @@ if (typeof HYMN_CDN === 'undefined') {
 }
 
 
+// ==================== 역할 레이블 ====================
 if (typeof roleLabel === 'undefined') {
   var roleLabel = { admin: '관리자', manager: '매니저', member: '일반성도' };
 }
@@ -181,4 +204,17 @@ window.HYMN_CDN = HYMN_CDN;
 window.roleLabel = roleLabel;
 
 
-console.log('✅ js_confige.js 로드 완료 (성경 데이터 포함)');
+// SDK 로드 완료 후 Firebase 초기화 재시도
+function retryFirebaseInit() {
+  if (!FB_READY && typeof firebase !== 'undefined') {
+    initFirebase();
+  }
+}
+
+
+setTimeout(retryFirebaseInit, 500);
+setTimeout(retryFirebaseInit, 1000);
+setTimeout(retryFirebaseInit, 2000);
+
+
+console.log('✅ js_confige.js 로드 완료 (Compat SDK 버전)');

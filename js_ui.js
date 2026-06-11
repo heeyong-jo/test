@@ -1,5 +1,5 @@
 ﻿// ==================== UI 및 스와이프 제스처 (js_ui.js) ====================
-// 최종 수정본 - 상단탭 고정, 슬라이드 부드럽게
+// 수정본 - 상단탑 고정 버그 수정
 
 
 if (typeof toastTimer === 'undefined') var toastTimer = null;
@@ -9,6 +9,10 @@ if (typeof TOTAL_TABS === 'undefined') var TOTAL_TABS = 7;
 if (typeof tabContainer === 'undefined') var tabContainer = null;
 if (typeof tabScrollStartX === 'undefined') var tabScrollStartX = 0;
 if (typeof tabOriginalScroll === 'undefined') var tabOriginalScroll = 0;
+
+
+// ==================== 탭 스타일 백업 ====================
+let tabOriginalStyles = null;
 
 
 // ==================== 현재 사용자 가져오기 ====================
@@ -164,9 +168,7 @@ function showTab(n) {
     }
   }
   
-  // 항상 맨 위로 스크롤
   setTimeout(() => window.scrollTo(0, 0), 50);
-  
   afterTab(n);
 }
 
@@ -394,25 +396,49 @@ window.rejectUser = function(userId) {
 };
 
 
-// ==================== 탭 스타일 복원 ====================
+// ==================== 탭 스타일 복원 (강화) ====================
 function restoreTabStyles() {
-  if (!tabContainer) return;
-  
   const tabs = document.querySelectorAll('.tab');
-  const currentTabEl = tabs[currentTab];
-  if (currentTabEl) {
-    const targetLeft = currentTabEl.offsetLeft - (tabContainer.clientWidth / 2) + (currentTabEl.clientWidth / 2);
-    tabContainer.scrollLeft = Math.max(0, targetLeft);
+  const tabBar = document.querySelector('.tabs');
+  
+  if (tabBar) {
+    // 탭바가 항상 보이도록 강제 설정
+    tabBar.style.visibility = 'visible';
+    tabBar.style.opacity = '1';
+    tabBar.style.zIndex = '100';
   }
   
   tabs.forEach(tab => {
+    tab.style.visibility = 'visible';
     tab.style.opacity = '';
     tab.style.color = '';
   });
+  
+  if (tabContainer) {
+    const tabsCount = document.querySelectorAll('.tab');
+    const currentTabEl = tabsCount[currentTab];
+    if (currentTabEl) {
+      const targetLeft = currentTabEl.offsetLeft - (tabContainer.clientWidth / 2) + (currentTabEl.clientWidth / 2);
+      tabContainer.scrollLeft = Math.max(0, targetLeft);
+    }
+  }
 }
 
 
-// ==================== 스와이프 제스처 ====================
+// ==================== 탭바 고정 함수 (추가) ====================
+function fixTabBarPosition() {
+  const tabBar = document.querySelector('.tabs');
+  if (tabBar) {
+    tabBar.style.position = 'sticky';
+    tabBar.style.top = '0';
+    tabBar.style.zIndex = '100';
+    tabBar.style.backgroundColor = 'white';
+    tabBar.style.visibility = 'visible';
+  }
+}
+
+
+// ==================== 스와이프 제스처 (수정) ====================
 (function() {
   const el = document.getElementById('swipe-container');
   if (!el) return;
@@ -428,7 +454,7 @@ function restoreTabStyles() {
   const SWIPE_THRESHOLD = 30;
   const MAX_VERTICAL_RATIO = 1.5;
   const MIN_HORIZONTAL_MOVE = 15;
-  const TOP_POSITION = 60;  // 헤더 높이
+  const TOP_POSITION = 60;
   
   const W = () => window.innerWidth;
   
@@ -498,6 +524,10 @@ function restoreTabStyles() {
     
     setTimeout(() => window.scrollTo(0, 0), 50);
     
+    // 탭바 복원 및 고정
+    restoreTabStyles();
+    fixTabBarPosition();
+    
     const user = getCurrentUser();
     if (finalIdx === 6 && user) {
       const role = user.role;
@@ -512,6 +542,9 @@ function restoreTabStyles() {
     
     afterTab(finalIdx);
   }
+  
+  // 탭바 요소 참조 저장
+  let tabBarElement = document.querySelector('.tabs');
   
   el.addEventListener('touchstart', (e) => {
     if (currentTab === 5 && currentBibleSection) {
@@ -534,6 +567,9 @@ function restoreTabStyles() {
       tabScrollStartX = tabContainer.scrollLeft;
       tabOriginalScroll = tabContainer.scrollLeft;
     }
+    
+    // 탭바 요소 참조 갱신
+    tabBarElement = document.querySelector('.tabs');
   }, { passive: true });
   
   el.addEventListener('touchmove', (e) => {
@@ -551,6 +587,12 @@ function restoreTabStyles() {
       
       dragging = true;
       dragDir = dx > 0 ? -1 : 1;
+      
+      // 스와이프 중 탭바 숨김 방지 (투명도 유지)
+      if (tabBarElement) {
+        tabBarElement.style.opacity = '1';
+        tabBarElement.style.visibility = 'visible';
+      }
       
       if (curEl) {
         curEl.style.cssText = `
@@ -611,12 +653,14 @@ function restoreTabStyles() {
       locked = false; 
       if (curEl) curEl.style.cssText = ''; 
       restoreTabStyles();
+      fixTabBarPosition();
       return; 
     }
     
     if (!dragging) { 
       if (curEl) curEl.style.cssText = ''; 
       restoreTabStyles();
+      fixTabBarPosition();
       return; 
     }
     
@@ -670,6 +714,7 @@ function restoreTabStyles() {
               cleanup(currentTab);
               if (typeof showToast === 'function') showToast('⚠️ 관리자 또는 매니저만 접근 가능합니다');
               restoreTabStyles();
+              fixTabBarPosition();
               return;
             }
           }
@@ -695,6 +740,7 @@ function restoreTabStyles() {
             cleanup(currentTab);
           }
           restoreTabStyles();
+          fixTabBarPosition();
         }
       })(start);
     } else {
@@ -733,6 +779,7 @@ function restoreTabStyles() {
           curEl = null;
           nxtEl = null;
           restoreTabStyles();
+          fixTabBarPosition();
         }
       })(start);
     }
@@ -740,4 +787,11 @@ function restoreTabStyles() {
 })();
 
 
-console.log('✅ js_ui.js 로드 완료 (최종 수정본)');
+// 초기 탭바 고정
+setTimeout(() => {
+  fixTabBarPosition();
+  restoreTabStyles();
+}, 100);
+
+
+console.log('✅ js_ui.js 로드 완료 (상단탭 고정 버그 수정본)');

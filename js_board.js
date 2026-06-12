@@ -1,5 +1,5 @@
 ﻿// ==================== 게시판 기능 (js_board.js) ====================
-// 최종 수정본 - 게시글 탭 내부 클릭 정상 작동
+// 최종 수정본 - 댓글 삭제 기능 추가
 
 
 window.currentBoardCategory = window.currentBoardCategory || '일반성도';
@@ -401,7 +401,7 @@ function openBoardDetail(postId) {
     if (contentEl) contentEl.innerHTML = html;
     
     var comments = postData.comments || {};
-    renderComments(comments);
+    renderComments(comments, postData.firebaseKey || postId);
     
     var modal = document.getElementById('board-detail-overlay');
     if (modal) modal.style.display = 'flex';
@@ -420,26 +420,68 @@ function closeBoardDetail() {
 }
 
 
-// ==================== 댓글 렌더링 ====================
-function renderComments(comments) {
+// ==================== 댓글 렌더링 (삭제 버튼 포함) ====================
+function renderComments(comments, postFirebaseKey) {
   var commentsList = document.getElementById('board-comments-list');
   if (!commentsList) return;
   
+  var currentUser = getBoardCurrentUser();
   var list = Object.entries(comments).sort(function(a, b) {
     return (a[1].timestamp || 0) - (b[1].timestamp || 0);
   });
   var html = '';
   
   for (var i = 0; i < list.length; i++) {
-    var c = list[i][1];
+    var commentKey = list[i][0];
+    var comment = list[i][1];
+    var isAuthor = currentUser && (currentUser.name === comment.author || currentUser.id === comment.authorId);
+    
     html += '<div style="margin-bottom:12px;padding:8px 0;border-bottom:1px solid var(--border);">' +
-      '<b style="color:var(--purple);">' + escapeHtml(c.author) + '</b>' +
-      '<span style="font-size:11px;color:var(--text2);margin-left:8px;">' + (c.timestamp ? new Date(c.timestamp).toLocaleString() : '') + '</span>' +
-      '<div style="margin-top:4px;font-size:13px;">' + escapeHtml(c.text) + '</div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+        '<div>' +
+          '<b style="color:var(--purple);">' + escapeHtml(comment.author) + '</b>' +
+          '<span style="font-size:11px;color:var(--text2);margin-left:8px;">' + (comment.timestamp ? new Date(comment.timestamp).toLocaleString() : '') + '</span>' +
+        '</div>';
+    
+    // 삭제 버튼 (본인 댓글만)
+    if (isAuthor) {
+      html += '<button onclick="deleteBoardComment(\'' + postFirebaseKey + '\', \'' + commentKey + '\')" style="background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">🗑 삭제</button>';
+    }
+    
+    html += '</div>' +
+      '<div style="margin-top:4px;font-size:13px;">' + escapeHtml(comment.text) + '</div>' +
     '</div>';
   }
   
   commentsList.innerHTML = html || '<div style="color:var(--text2);font-size:12px;padding:12px;text-align:center;">아직 댓글이 없습니다.</div>';
+}
+
+
+// ==================== 댓글 삭제 (새로운 기능) ====================
+function deleteBoardComment(postFirebaseKey, commentKey) {
+  if (!confirm('댓글을 삭제하시겠습니까?')) return;
+  
+  var user = getBoardCurrentUser();
+  if (!user) {
+    if (typeof showToast === 'function') showToast('로그인이 필요합니다.');
+    return;
+  }
+  
+  if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) {
+    if (typeof showToast === 'function') showToast('서버 연결에 실패했습니다.');
+    return;
+  }
+  
+  firebase.database().ref('boards/' + currentBoardCategory + '/posts/' + postFirebaseKey + '/comments/' + commentKey).remove()
+    .then(function() {
+      if (typeof showToast === 'function') showToast('🗑 댓글이 삭제되었습니다.');
+      // 현재 게시글 다시 로드
+      openBoardDetail(currentPostId);
+    })
+    .catch(function(err) {
+      console.error('댓글 삭제 실패:', err);
+      if (typeof showToast === 'function') showToast('❌ 삭제 실패');
+    });
 }
 
 
@@ -669,4 +711,4 @@ if (document.readyState === 'loading') {
 }
 
 
-console.log('✅ js_board.js 로드 완료 (수정본)');
+console.log('✅ js_board.js 로드 완료 (댓글 삭제 기능 포함)');

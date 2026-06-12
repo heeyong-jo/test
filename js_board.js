@@ -1,5 +1,5 @@
 ﻿// ==================== 게시판 기능 (js_board.js) ====================
-// 최종 수정본 - 뒤로가기 버튼 추가
+// 최종 수정본 - 뒤로가기 버튼 정상 표시
 
 
 window.currentBoardCategory = window.currentBoardCategory || '일반성도';
@@ -133,15 +133,17 @@ function openBoardCategory() {
     titleEl.textContent = getCategoryLabel(currentBoardCategory);
   }
   
-  loadPosts();
-  loadBoardManager();
-  updateBoardWriteBtn();
-  
   // ✅ 뒤로가기 버튼 표시 (게시글 목록일 때)
   var backBtn = document.getElementById('board-back-btn');
   if (backBtn) {
-    backBtn.style.display = 'inline-block';
+    backBtn.style.display = 'inline-flex';
+    backBtn.style.visibility = 'visible';
+    console.log('뒤로가기 버튼 표시됨');
   }
+  
+  loadPosts();
+  loadBoardManager();
+  updateBoardWriteBtn();
 }
 
 
@@ -706,12 +708,27 @@ function boardPhotoPreview(input) {
 }
 
 
+// ==================== 뒤로가기 버튼 클릭 이벤트 (한번만 등록) ====================
+function initBackButton() {
+  var backBtn = document.getElementById('board-back-btn');
+  if (backBtn && !backBtn.hasAttribute('data-back-bound')) {
+    backBtn.setAttribute('data-back-bound', 'true');
+    backBtn.onclick = function() {
+      console.log('뒤로가기 버튼 클릭됨');
+      showBoardCategoryList();
+    };
+    console.log('뒤로가기 버튼 이벤트 등록됨');
+  }
+}
+
+
 // ==================== 초기화 ====================
 function initBoardOnLoad() {
   console.log('initBoardOnLoad 실행');
   initBoard();
+  initBackButton();
   
-  // ✅ 뒤로가기 버튼 초기 상태 설정 (카테고리 목록에서는 숨김)
+  // 초기 상태: 카테고리 목록에서 뒤로가기 버튼 숨김
   var backBtn = document.getElementById('board-back-btn');
   if (backBtn) {
     backBtn.style.display = 'none';
@@ -727,4 +744,4 @@ if (document.readyState === 'loading') {
 }
 
 
-console.log('✅ js_board.js 로드 완료 (뒤로가기 버튼 추가)');
+console.log('✅ js_board.js 로드 완료 (뒤로가기 버튼 정상 표시)');

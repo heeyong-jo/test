@@ -427,7 +427,7 @@ function restoreTabStyles() {
   const SWIPE_THRESHOLD = 30;
   const MAX_VERTICAL_RATIO = 1.5;
   const MIN_HORIZONTAL_MOVE = 15;
-  const TOP_POSITION = 60;  // 헤더 높이
+  const TOP_POSITION = 60;
   
   const W = () => window.innerWidth;
   

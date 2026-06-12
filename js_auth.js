@@ -5,6 +5,10 @@
 
 
 
+
+
+
+
 (function() {
   console.log('🔥 js_auth.js 초기화 시작');
   
@@ -64,6 +68,104 @@
     if (loginErr) loginErr.style.display = 'none';
   };
   
+// ==================== 아이디 찾기 ====================
+
+
+// 아이디 찾기 폼 표시
+window.showFindId = function() {
+  console.log('showFindId 실행');
+  
+  // 모든 폼 숨김
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('signup-form').style.display = 'none';
+  document.getElementById('signup-extra').style.display = 'none';
+  document.getElementById('forgot-form').style.display = 'none';
+  
+  // 아이디 찾기 폼만 표시
+  const findIdForm = document.getElementById('find-id-form');
+  if (findIdForm) {
+    findIdForm.style.display = 'block';
+    
+    // 입력 필드 초기화
+    document.getElementById('find-birth').value = '';
+    document.getElementById('find-phone').value = '';
+    document.getElementById('find-id-result').style.display = 'none';
+    document.getElementById('find-id-result-text').textContent = '';
+  }
+};
+
+
+// 아이디 찾기 실행
+window.doFindId = function() {
+  console.log('doFindId 실행');
+  
+  const birth = document.getElementById('find-birth').value;
+  const phone = document.getElementById('find-phone').value;
+  
+  // 유효성 검사
+  if (!birth) {
+    if (typeof showToast === 'function') showToast('생년월일을 입력하세요');
+    return;
+  }
+  
+  if (!phone || phone.length < 10) {
+    if (typeof showToast === 'function') showToast('올바른 전화번호를 입력하세요');
+    return;
+  }
+  
+  // 생년월일 형식 변환 (YYYY-MM-DD → YYYYMMDD)
+  const birthFormatted = birth.replace(/-/g, '');
+  
+  // Firebase에서 사용자 검색
+  if (typeof firebase === 'undefined' || !firebase.apps.length) {
+    if (typeof showToast === 'function') showToast('Firebase 연결 필요');
+    return;
+  }
+  
+  firebase.database().ref('approvedUsers').once('value')
+    .then(function(snap) {
+      const users = snap.val() || {};
+      let foundId = null;
+      
+      // 생년월일과 전화번호 일치하는 사용자 찾기
+      Object.values(users).forEach(user => {
+        if (user.birth && user.phone) {
+          // 생년월일 형식 통일 (저장된 형식에 맞춤)
+          const userBirth = user.birth.replace(/-/g, '').substring(0, 8);
+          const inputBirth = birthFormatted.substring(0, 8);
+          
+          // 전화번호 형식 통일 (숫자만 비교)
+          const userPhone = user.phone.replace(/[^0-9]/g, '');
+          const inputPhone = phone.replace(/[^0-9]/g, '');
+          
+          if (userBirth === inputBirth && userPhone === inputPhone) {
+            foundId = user.id;
+          }
+        }
+      });
+      
+      // 결과 표시
+      const resultDiv = document.getElementById('find-id-result');
+      const resultText = document.getElementById('find-id-result-text');
+      
+      if (foundId) {
+        resultText.textContent = foundId;
+        resultDiv.style.display = 'block';
+        if (typeof showToast === 'function') showToast('✅ 아이디를 찾았습니다');
+      } else {
+        resultDiv.style.display = 'block';
+        resultText.textContent = '일치하는 사용자가 없습니다';
+        resultDiv.style.background = 'rgba(255,100,100,0.1)';
+        if (typeof showToast === 'function') showToast('⚠️ 일치하는 정보가 없습니다');
+      }
+    })
+    .catch(function(err) {
+      console.error('아이디 찾기 오류:', err);
+      if (typeof showToast === 'function') showToast('오류 발생: ' + err.message);
+    });
+};
+
+
   // ========== 탭 전환 ==========
   window.switchAuthTab = function(mode) {
     console.log('📱 switchAuthTab 실행:', mode);
@@ -670,5 +772,7 @@
     window.restoreLogin();
   }, 200);
   
+
+
   console.log('✅ js_auth.js 로드 완료 (수정본)');
 })();

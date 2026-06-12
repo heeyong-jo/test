@@ -1,5 +1,5 @@
 ﻿// ==================== UI 및 스와이프 제스처 (js_ui.js) ====================
-// 최종 수정본 - 슬라이드 시 내용 위치 안정화
+// 최종 수정본 - 상단탭 고정, 슬라이드 부드럽게
 
 
 if (typeof toastTimer === 'undefined') var toastTimer = null;
@@ -9,17 +9,6 @@ if (typeof TOTAL_TABS === 'undefined') var TOTAL_TABS = 7;
 if (typeof tabContainer === 'undefined') var tabContainer = null;
 if (typeof tabScrollStartX === 'undefined') var tabScrollStartX = 0;
 if (typeof tabOriginalScroll === 'undefined') var tabOriginalScroll = 0;
-
-
-// ==================== 헤더 + 탭 높이 동적 계산 ====================
-function getTopPosition() {
-  const header = document.querySelector('header');
-  const tabs = document.querySelector('.tabs');
-  let height = 0;
-  if (header) height += header.offsetHeight;
-  if (tabs) height += tabs.offsetHeight;
-  return height;
-}
 
 
 // ==================== 현재 사용자 가져오기 ====================
@@ -422,7 +411,7 @@ function restoreTabStyles() {
 }
 
 
-// ==================== 스와이프 제스처 (위치 안정화 버전) ====================
+// ==================== 스와이프 제스처 ====================
 (function() {
   const el = document.getElementById('swipe-container');
   if (!el) return;
@@ -438,6 +427,7 @@ function restoreTabStyles() {
   const SWIPE_THRESHOLD = 30;
   const MAX_VERTICAL_RATIO = 1.5;
   const MIN_HORIZONTAL_MOVE = 15;
+  const TOP_POSITION = 60;  // 헤더 높이
   
   const W = () => window.innerWidth;
   
@@ -468,18 +458,16 @@ function restoreTabStyles() {
     const nxt = getPage(ni);
     if (!nxt) return null;
     
-    const topPos = getTopPosition();
-    
     nxt.style.cssText = `
       display: block !important;
       position: fixed;
-      top: ${topPos}px;
+      top: ${TOP_POSITION}px;
       left: 0;
       width: 100%;
       z-index: 5;
       transform: translateX(${dir > 0 ? W() : -W()}px);
       overflow-y: auto;
-      max-height: calc(100dvh - ${topPos}px);
+      max-height: calc(100dvh - ${TOP_POSITION}px);
       will-change: transform;
       opacity: 1;
       background: var(--bg);
@@ -537,27 +525,7 @@ function restoreTabStyles() {
     dragging = false;
     locked = false;
     dragDir = 0;
-    
-    // 현재 페이지 저장 (고정 위치)
-    const currentPage = getPage(currentTab);
-    if (currentPage) {
-      const topPos = getTopPosition();
-      currentPage.style.cssText = `
-        display: block !important;
-        position: fixed;
-        top: ${topPos}px;
-        left: 0;
-        width: 100%;
-        z-index: 5;
-        transform: translateX(0);
-        overflow-y: auto;
-        max-height: calc(100dvh - ${topPos}px);
-        will-change: transform;
-        background: var(--bg);
-      `;
-      curEl = currentPage;
-    }
-    
+    curEl = getPage(currentTab);
     nxtEl = null;
     
     tabContainer = document.querySelector('.tabs');
@@ -576,18 +544,28 @@ function restoreTabStyles() {
       
       if (Math.abs(dy) > Math.abs(dx) * MAX_VERTICAL_RATIO) {
         locked = true;
-        // 세로 스크롤 시 원래대로 복원
-        if (curEl) {
-          curEl.style.cssText = '';
-          curEl = null;
-        }
+        curEl = null;
         return;
       }
       
       dragging = true;
       dragDir = dx > 0 ? -1 : 1;
       
-      // 다음 페이지 준비
+      if (curEl) {
+        curEl.style.cssText = `
+          display: block !important;
+          position: fixed;
+          top: ${TOP_POSITION}px;
+          left: 0;
+          width: 100%;
+          z-index: 5;
+          transform: translateX(0);
+          overflow-y: auto;
+          max-height: calc(100dvh - ${TOP_POSITION}px);
+          will-change: transform;
+          background: var(--bg);
+        `;
+      }
       nxtEl = prepareNext(dragDir);
     }
     
@@ -748,12 +726,12 @@ function restoreTabStyles() {
         } else {
           if (curEl) {
             curEl.style.cssText = '';
+            window.scrollTo(0, 0);
           }
           if (nxtEl) nxtEl.style.cssText = '';
           curEl = null;
           nxtEl = null;
           restoreTabStyles();
-          window.scrollTo(0, 0);
         }
       })(start);
     }
@@ -761,4 +739,4 @@ function restoreTabStyles() {
 })();
 
 
-console.log('✅ js_ui.js 로드 완료 (슬라이드 위치 안정화 버전)');
+console.log('✅ js_ui.js 로드 완료 (최종 수정본)');

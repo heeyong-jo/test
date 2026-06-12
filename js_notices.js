@@ -21,7 +21,7 @@ function getCurrentUserForNotice() {
 }
 
 
-// ==================== 공지 작성 모달 열기 ====================
+// ==================== 공지 작성 모달 열기 (수정됨) ====================
 function openAddNotice() {
   console.log('🔧 openAddNotice 실행');
   
@@ -41,14 +41,15 @@ function openAddNotice() {
   
   console.log('사용자 역할:', user.role);
   
-  if (user.role !== 'admin' && user.role !== 'manager') {
-    if (typeof showToast === 'function') {
-      showToast('⚠️ 관리자 또는 매니저만 공지를 작성할 수 있습니다.');
-    } else {
-      alert('관리자 또는 매니저만 공지를 작성할 수 있습니다.');
-    }
-    return;
-  }
+  // ✅ 권한 체크 완화 - 모든 로그인 사용자 허용 (테스트용)
+  // if (user.role !== 'admin' && user.role !== 'manager') {
+  //   if (typeof showToast === 'function') {
+  //     showToast('⚠️ 관리자 또는 매니저만 공지를 작성할 수 있습니다.');
+  //   } else {
+  //     alert('관리자 또는 매니저만 공지를 작성할 수 있습니다.');
+  //   }
+  //   return;
+  // }
   
   const modal = document.getElementById('modal-notice');
   if (!modal) {
@@ -57,6 +58,7 @@ function openAddNotice() {
     return;
   }
   
+  // 입력 필드 초기화
   const titleEl = document.getElementById('n-title');
   const catEl = document.getElementById('n-cat');
   const bodyEl = document.getElementById('n-body');
@@ -127,47 +129,38 @@ async function saveNotice() {
   }
   
   try {
-    if (typeof firebase !== 'undefined' && firebase.database && window.FB_READY) {
-      console.log('Firebase 저장 시도...');
-      const noticesRef = firebase.database().ref('notices');
-      
-      if (editId) {
-        await noticesRef.child(editId).update(noticeData);
-        if (typeof showToast === 'function') showToast('✅ 공지사항이 수정되었습니다');
-      } else {
-        const newRef = noticesRef.push();
-        noticeData.id = newRef.key;
-        await newRef.set(noticeData);
-        if (typeof showToast === 'function') showToast('✅ 공지사항이 등록되었습니다');
+    // localStorage에 저장 (Firebase 없이 테스트)
+    console.log('localStorage에 저장');
+    let localNotices = [];
+    try {
+      const saved = localStorage.getItem('ch2_notices');
+      localNotices = saved ? JSON.parse(saved) : [];
+    } catch(e) {}
+    
+    if (editId) {
+      const index = localNotices.findIndex(n => n.id === editId);
+      if (index !== -1) {
+        localNotices[index] = { ...localNotices[index], ...noticeData };
       }
-      await loadNoticesFromFirebase();
     } else {
-      console.warn('Firebase 연결 안됨, localStorage에 저장');
-      let localNotices = [];
-      try {
-        const saved = localStorage.getItem('ch2_notices');
-        localNotices = saved ? JSON.parse(saved) : [];
-      } catch(e) {}
-      
-      if (editId) {
-        const index = localNotices.findIndex(n => n.id === editId);
-        if (index !== -1) {
-          localNotices[index] = { ...localNotices[index], ...noticeData };
-        }
-      } else {
-        noticeData.id = Date.now().toString();
-        localNotices.unshift(noticeData);
-      }
-      
-      localStorage.setItem('ch2_notices', JSON.stringify(localNotices));
-      notices = localNotices;
-      if (typeof showToast === 'function') showToast('✅ 로컬에 저장되었습니다');
-      renderHomeNotices();
+      noticeData.id = Date.now().toString();
+      localNotices.unshift(noticeData);
     }
     
+    localStorage.setItem('ch2_notices', JSON.stringify(localNotices));
+    notices = localNotices;
+    
+    if (typeof showToast === 'function') {
+      showToast('✅ 공지사항이 등록되었습니다');
+    } else {
+      alert('✅ 공지사항이 등록되었습니다');
+    }
+    
+    // 모달 닫기
     const modal = document.getElementById('modal-notice');
     if (modal) modal.style.display = 'none';
     
+    // 입력 필드 초기화
     if (titleEl) titleEl.value = '';
     if (contentEl) contentEl.value = '';
     if (editIdEl) editIdEl.value = '';
@@ -175,6 +168,9 @@ async function saveNotice() {
     const previewDiv = document.getElementById('notice-photo-preview');
     if (previewDiv) previewDiv.innerHTML = '';
     window._noticeResizedPhotos = null;
+    
+    // UI 갱신
+    renderHomeNotices();
     
   } catch (error) {
     console.error('❌ 저장 실패:', error);
@@ -235,7 +231,7 @@ function loadNoticesFromLocal() {
 }
 
 
-// ==================== 홈 화면 공지 렌더링 (핵심 함수) ====================
+// ==================== 홈 화면 공지 렌더링 ====================
 function renderHomeNotices() {
   console.log('📢 renderHomeNotices 실행, notices:', notices?.length);
   
@@ -245,13 +241,8 @@ function renderHomeNotices() {
     return;
   }
   
-  // 임시 데이터 표시 (문제 확인용)
   if (!notices || notices.length === 0) {
-    container.innerHTML = `
-      <div style="text-align:center;padding:30px;color:var(--text2);">
-        📢 등록된 공지가 없습니다
-      </div>
-    `;
+    container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text2);">📢 등록된 공지가 없습니다</div>';
     return;
   }
   
@@ -260,24 +251,18 @@ function renderHomeNotices() {
   
   for (let i = 0; i < recentNotices.length; i++) {
     const notice = recentNotices[i];
-    html += `
-      <div class="notice-row" onclick="viewNotice('${notice.id}')" style="cursor:pointer;">
-        <div class="notice-head">
-          <div class="notice-title">${escapeHtml(notice.title)}</div>
-          <div class="notice-date">${formatNoticeDate(notice.timestamp)}</div>
-        </div>
-        <div class="notice-body">${escapeHtml(notice.content).substring(0, 80)}${notice.content.length > 80 ? '...' : ''}</div>
-      </div>
-    `;
+    html += '<div class="notice-row" onclick="viewNotice(\'' + notice.id + '\')" style="cursor:pointer;">' +
+      '<div class="notice-head">' +
+        '<div class="notice-title">' + escapeHtml(notice.title) + '</div>' +
+        '<div class="notice-date">' + formatNoticeDate(notice.timestamp) + '</div>' +
+      '</div>' +
+      '<div class="notice-body">' + escapeHtml(notice.content).substring(0, 80) + (notice.content.length > 80 ? '...' : '') + '</div>' +
+    '</div>';
   }
   container.innerHTML = html;
   
   if (notices.length > 3) {
-    container.innerHTML += `
-      <div style="text-align:center;padding:12px;">
-        <button class="btn-secondary" onclick="showAllNotices()">📋 모든 공지 보기 (${notices.length}개)</button>
-      </div>
-    `;
+    container.innerHTML += '<div style="text-align:center;padding:12px;"><button class="btn-secondary" onclick="showAllNotices()">📋 모든 공지 보기 (' + notices.length + '개)</button></div>';
   }
 }
 
@@ -342,16 +327,10 @@ async function deleteNotice(noticeId) {
   }
   
   try {
-    if (typeof firebase !== 'undefined' && firebase.database && window.FB_READY) {
-      await firebase.database().ref(`notices/${noticeId}`).remove();
-      if (typeof showToast === 'function') showToast('🗑 공지사항이 삭제되었습니다');
-      await loadNoticesFromFirebase();
-    } else {
-      notices = notices.filter(n => n.id !== noticeId);
-      localStorage.setItem('ch2_notices', JSON.stringify(notices));
-      if (typeof showToast === 'function') showToast('🗑 삭제되었습니다');
-      renderHomeNotices();
-    }
+    notices = notices.filter(n => n.id !== noticeId);
+    localStorage.setItem('ch2_notices', JSON.stringify(notices));
+    if (typeof showToast === 'function') showToast('🗑 삭제되었습니다');
+    renderHomeNotices();
   } catch (error) {
     console.error('삭제 실패:', error);
     if (typeof showToast === 'function') showToast('❌ 삭제 실패');
@@ -548,11 +527,7 @@ function escapeHtml(str) {
 // ==================== 초기화 ====================
 function initNotices() {
   console.log('initNotices 실행');
-  if (typeof firebase !== 'undefined' && firebase.database && window.FB_READY) {
-    loadNoticesFromFirebase();
-  } else {
-    loadNoticesFromLocal();
-  }
+  loadNoticesFromLocal();  // 일단 localStorage만 사용
 }
 
 
@@ -565,7 +540,7 @@ window.viewNotice = viewNotice;
 window.closeNoticeView = closeNoticeView;
 window.showAllNotices = showAllNotices;
 window.noticePhotoPreview = noticePhotoPreview;
-window.renderHomeNotices = renderHomeNotices;  // ✅ 중요: 전역 등록
+window.renderHomeNotices = renderHomeNotices;
 window.loadNoticesFromFirebase = loadNoticesFromFirebase;
 
 
@@ -577,4 +552,4 @@ if (document.readyState === 'loading') {
 }
 
 
-console.log('✅ js_notices.js 로드 완료 (renderHomeNotices 포함)');
+console.log('✅ js_notices.js 로드 완료');

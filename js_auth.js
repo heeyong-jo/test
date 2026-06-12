@@ -1,18 +1,11 @@
 ﻿// ==================== 로그인/회원가입/비밀번호 찾기 ====================
-// 최종 수정 버전 - 모든 함수를 window에 직접 등록
-// 수정 내역: 비밀번호 변경 기능 구현, restoreLogin UI 업데이트 추가
-
-
-
-
-
-
+// 최종 수정 버전 - 아이디 찾기 기능 포함
 
 
 (function() {
   console.log('🔥 js_auth.js 초기화 시작');
   
-  // 전역 변수 초기화 (window 객체 사용)
+  // 전역 변수 초기화
   window.pendingUsers = window.pendingUsers || [];
   window.approvedUsers = window.approvedUsers || [];
   window.currentUser = window.currentUser || null;
@@ -35,6 +28,7 @@
     var loginForm = document.getElementById('login-form');
     var signupExtra = document.getElementById('signup-extra');
     var forgotForm = document.getElementById('forgot-form');
+    var findIdForm = document.getElementById('find-id-form');
     var loginErr = document.getElementById('login-err');
     var pendingMsg = document.getElementById('pending-msg');
     var authTabLogin = document.getElementById('auth-tab-login');
@@ -43,6 +37,7 @@
     if (loginForm) loginForm.style.display = 'block';
     if (signupExtra) signupExtra.style.display = 'none';
     if (forgotForm) forgotForm.style.display = 'none';
+    if (findIdForm) findIdForm.style.display = 'none';
     if (loginErr) loginErr.style.display = 'none';
     if (pendingMsg) pendingMsg.style.display = 'none';
     if (authTabLogin) {
@@ -60,112 +55,140 @@
     var loginForm = document.getElementById('login-form');
     var signupExtra = document.getElementById('signup-extra');
     var forgotForm = document.getElementById('forgot-form');
+    var findIdForm = document.getElementById('find-id-form');
     var loginErr = document.getElementById('login-err');
     
     if (loginForm) loginForm.style.display = 'none';
     if (signupExtra) signupExtra.style.display = 'none';
     if (forgotForm) forgotForm.style.display = 'block';
+    if (findIdForm) findIdForm.style.display = 'none';
     if (loginErr) loginErr.style.display = 'none';
   };
   
-// ==================== 아이디 찾기 ====================
-
-
-// 아이디 찾기 폼 표시
-window.showFindId = function() {
-  console.log('showFindId 실행');
-  
-  // 모든 폼 숨김
-  document.getElementById('login-form').style.display = 'none';
-  document.getElementById('signup-form').style.display = 'none';
-  document.getElementById('signup-extra').style.display = 'none';
-  document.getElementById('forgot-form').style.display = 'none';
-  
-  // 아이디 찾기 폼만 표시
-  const findIdForm = document.getElementById('find-id-form');
-  if (findIdForm) {
-    findIdForm.style.display = 'block';
+  // ========== 아이디 찾기 폼 표시 ==========
+  window.showFindId = function() {
+    console.log('🔍 showFindId 실행');
+    
+    var loginForm = document.getElementById('login-form');
+    var signupExtra = document.getElementById('signup-extra');
+    var forgotForm = document.getElementById('forgot-form');
+    var findIdForm = document.getElementById('find-id-form');
+    var loginErr = document.getElementById('login-err');
+    var pendingMsg = document.getElementById('pending-msg');
+    var findIdResult = document.getElementById('find-id-result');
+    var findBirth = document.getElementById('find-birth');
+    var findPhone = document.getElementById('find-phone');
+    
+    if (loginForm) loginForm.style.display = 'none';
+    if (signupExtra) signupExtra.style.display = 'none';
+    if (forgotForm) forgotForm.style.display = 'none';
+    if (findIdForm) findIdForm.style.display = 'block';
+    if (loginErr) loginErr.style.display = 'none';
+    if (pendingMsg) pendingMsg.style.display = 'none';
     
     // 입력 필드 초기화
-    document.getElementById('find-birth').value = '';
-    document.getElementById('find-phone').value = '';
-    document.getElementById('find-id-result').style.display = 'none';
-    document.getElementById('find-id-result-text').textContent = '';
-  }
-};
-
-
-// 아이디 찾기 실행
-window.doFindId = function() {
-  console.log('doFindId 실행');
+    if (findBirth) findBirth.value = '';
+    if (findPhone) findPhone.value = '';
+    if (findIdResult) {
+      findIdResult.style.display = 'none';
+      findIdResult.style.background = 'rgba(255,255,255,0.1)';
+    }
+  };
   
-  const birth = document.getElementById('find-birth').value;
-  const phone = document.getElementById('find-phone').value;
-  
-  // 유효성 검사
-  if (!birth) {
-    if (typeof showToast === 'function') showToast('생년월일을 입력하세요');
-    return;
-  }
-  
-  if (!phone || phone.length < 10) {
-    if (typeof showToast === 'function') showToast('올바른 전화번호를 입력하세요');
-    return;
-  }
-  
-  // 생년월일 형식 변환 (YYYY-MM-DD → YYYYMMDD)
-  const birthFormatted = birth.replace(/-/g, '');
-  
-  // Firebase에서 사용자 검색
-  if (typeof firebase === 'undefined' || !firebase.apps.length) {
-    if (typeof showToast === 'function') showToast('Firebase 연결 필요');
-    return;
-  }
-  
-  firebase.database().ref('approvedUsers').once('value')
-    .then(function(snap) {
-      const users = snap.val() || {};
-      let foundId = null;
-      
-      // 생년월일과 전화번호 일치하는 사용자 찾기
-      Object.values(users).forEach(user => {
-        if (user.birth && user.phone) {
-          // 생년월일 형식 통일 (저장된 형식에 맞춤)
-          const userBirth = user.birth.replace(/-/g, '').substring(0, 8);
-          const inputBirth = birthFormatted.substring(0, 8);
-          
-          // 전화번호 형식 통일 (숫자만 비교)
-          const userPhone = user.phone.replace(/[^0-9]/g, '');
-          const inputPhone = phone.replace(/[^0-9]/g, '');
-          
-          if (userBirth === inputBirth && userPhone === inputPhone) {
-            foundId = user.id;
-          }
+  // ========== 아이디 찾기 실행 ==========
+  window.doFindId = function() {
+    console.log('🔍 doFindId 실행');
+    
+    var birthInput = document.getElementById('find-birth');
+    var phoneInput = document.getElementById('find-phone');
+    var resultDiv = document.getElementById('find-id-result');
+    var resultText = document.getElementById('find-id-result-text');
+    
+    if (!birthInput || !phoneInput) {
+      console.error('아이디 찾기 폼 요소 없음');
+      if (typeof showToast === 'function') showToast('오류: 입력 폼을 찾을 수 없습니다');
+      return;
+    }
+    
+    var birth = birthInput.value;
+    var phone = phoneInput.value;
+    
+    if (!birth) {
+      if (typeof showToast === 'function') showToast('생년월일을 입력하세요');
+      return;
+    }
+    
+    if (!phone || phone.length < 10) {
+      if (typeof showToast === 'function') showToast('올바른 전화번호를 입력하세요');
+      return;
+    }
+    
+    // 생년월일 형식 변환 (YYYY-MM-DD → YYYYMMDD)
+    var birthFormatted = birth.replace(/-/g, '');
+    var phoneFormatted = phone.replace(/[^0-9]/g, '');
+    
+    console.log('검색 조건 - 생년월일:', birthFormatted, '전화번호:', phoneFormatted);
+    
+    // 사용자 검색
+    var foundUser = null;
+    
+    // 1. 관리자 계정에서 검색
+    if (typeof ADMIN_ACCOUNTS !== 'undefined') {
+      for (var i = 0; i < ADMIN_ACCOUNTS.length; i++) {
+        var user = ADMIN_ACCOUNTS[i];
+        var userBirth = user.birth ? user.birth.replace(/-/g, '') : '';
+        var userPhone = user.phone ? user.phone.replace(/[^0-9]/g, '') : '';
+        if (userBirth === birthFormatted && userPhone === phoneFormatted) {
+          foundUser = user;
+          break;
         }
-      });
-      
-      // 결과 표시
-      const resultDiv = document.getElementById('find-id-result');
-      const resultText = document.getElementById('find-id-result-text');
-      
-      if (foundId) {
-        resultText.textContent = foundId;
-        resultDiv.style.display = 'block';
-        if (typeof showToast === 'function') showToast('✅ 아이디를 찾았습니다');
-      } else {
-        resultDiv.style.display = 'block';
-        resultText.textContent = '일치하는 사용자가 없습니다';
-        resultDiv.style.background = 'rgba(255,100,100,0.1)';
-        if (typeof showToast === 'function') showToast('⚠️ 일치하는 정보가 없습니다');
       }
-    })
-    .catch(function(err) {
-      console.error('아이디 찾기 오류:', err);
-      if (typeof showToast === 'function') showToast('오류 발생: ' + err.message);
-    });
-};
-
-
+    }
+    
+    // 2. 승인된 일반 회원에서 검색
+    if (!foundUser && window.approvedUsers) {
+      for (var i = 0; i < window.approvedUsers.length; i++) {
+        var user = window.approvedUsers[i];
+        var userBirth = user.birth ? user.birth.replace(/-/g, '') : '';
+        var userPhone = user.phone ? user.phone.replace(/[^0-9]/g, '') : '';
+        if (userBirth === birthFormatted && userPhone === phoneFormatted) {
+          foundUser = user;
+          break;
+        }
+      }
+    }
+    
+    // 3. 승인 대기자에서 검색
+    if (!foundUser && window.pendingUsers) {
+      for (var i = 0; i < window.pendingUsers.length; i++) {
+        var user = window.pendingUsers[i];
+        var userBirth = user.birth ? user.birth.replace(/-/g, '') : '';
+        var userPhone = user.phone ? user.phone.replace(/[^0-9]/g, '') : '';
+        if (userBirth === birthFormatted && userPhone === phoneFormatted) {
+          foundUser = user;
+          break;
+        }
+      }
+    }
+    
+    // 결과 표시
+    if (resultDiv && resultText) {
+      if (foundUser) {
+        resultText.textContent = foundUser.id;
+        resultDiv.style.display = 'block';
+        resultDiv.style.background = 'rgba(255,215,0,0.15)';
+        if (typeof showToast === 'function') showToast('✅ 아이디를 찾았습니다');
+        console.log('아이디 찾기 성공:', foundUser.id);
+      } else {
+        resultText.textContent = '일치하는 사용자가 없습니다';
+        resultDiv.style.display = 'block';
+        resultDiv.style.background = 'rgba(255,100,100,0.15)';
+        if (typeof showToast === 'function') showToast('⚠️ 일치하는 정보가 없습니다');
+        console.log('아이디 찾기 실패: 일치하는 정보 없음');
+      }
+    }
+  };
+  
   // ========== 탭 전환 ==========
   window.switchAuthTab = function(mode) {
     console.log('📱 switchAuthTab 실행:', mode);
@@ -176,6 +199,7 @@ window.doFindId = function() {
     var loginForm = document.getElementById('login-form');
     var signupExtra = document.getElementById('signup-extra');
     var forgotForm = document.getElementById('forgot-form');
+    var findIdForm = document.getElementById('find-id-form');
     var loginErr = document.getElementById('login-err');
     var pendingMsg = document.getElementById('pending-msg');
     var idCheckMsg = document.getElementById('id-check-msg');
@@ -193,6 +217,7 @@ window.doFindId = function() {
     if (loginForm) loginForm.style.display = isLogin ? 'block' : 'none';
     if (signupExtra) signupExtra.style.display = isLogin ? 'none' : 'block';
     if (forgotForm) forgotForm.style.display = 'none';
+    if (findIdForm) findIdForm.style.display = 'none';
     if (loginErr) loginErr.style.display = 'none';
     if (pendingMsg) pendingMsg.style.display = 'none';
     if (idCheckMsg) idCheckMsg.textContent = '';
@@ -226,7 +251,7 @@ window.doFindId = function() {
       return;
     }
     
-    // 관리자 계정 확인 (ADMIN_ACCOUNTS는 js_confige.js에 있음)
+    // 관리자 계정 확인
     if (typeof ADMIN_ACCOUNTS !== 'undefined') {
       for (var i = 0; i < ADMIN_ACCOUNTS.length; i++) {
         if (ADMIN_ACCOUNTS[i].id === id && ADMIN_ACCOUNTS[i].pw === pw) {
@@ -260,7 +285,6 @@ window.doFindId = function() {
   window.loginSuccess = function(acc) {
     console.log('✅ loginSuccess 실행:', acc.name);
     
-    // ⭐ 중요: 전역 변수에 여러 방식으로 할당
     window.currentUser = {
       id: acc.id,
       name: acc.name,
@@ -270,10 +294,8 @@ window.doFindId = function() {
       birth: acc.birth || ''
     };
     
-    // ⭐ 추가: 일반 변수에도 할당 (다른 파일과의 호환성)
     currentUser = window.currentUser;
     
-    // ⭐ 추가: localStorage에도 저장
     if (typeof LS !== 'undefined') {
       LS.save('logged', { 
         id: acc.id, 
@@ -284,25 +306,20 @@ window.doFindId = function() {
     }
     localStorage.setItem('ch2_currentUser', JSON.stringify(window.currentUser));
     
-    // 로그인 화면 닫기
     var loginScreen = document.getElementById('screen-login');
     if (loginScreen) loginScreen.style.display = 'none';
     
-    // UI 업데이트
     var roleText = (window.currentUser.role === 'admin' ? '관리자' : (window.currentUser.role === 'manager' ? '매니저' : '일반성도'));
     var userNameSpan = document.getElementById('user-name-display');
     var userRoleSpan = document.getElementById('user-role-display');
     if (userNameSpan) userNameSpan.textContent = acc.name;
     if (userRoleSpan) userRoleSpan.textContent = roleText;
     
-    // ⭐ 중요: setting-user-info 업데이트
     var settingInfoSpan = document.getElementById('setting-user-info');
     if (settingInfoSpan) settingInfoSpan.textContent = acc.name + ' (' + roleText + ')';
     
-    // 권한 적용
     if (typeof applyRole === 'function') applyRole(window.currentUser.role);
     
-    // ⭐ 중요: 모든 페이지에서 currentUser가 인식되도록 강제刷新
     setTimeout(function() {
       console.log('로그인 후 홈 탭으로 이동, currentUser:', window.currentUser);
       if (typeof showTab === 'function') showTab(0);
@@ -311,7 +328,6 @@ window.doFindId = function() {
     if (typeof showToast === 'function') showToast('✅ ' + acc.name + '님 환영합니다');
     else alert('✅ ' + acc.name + '님 환영합니다');
     
-    // ⭐ 추가: body에 data 속성으로 로그인 상태 표시
     document.body.setAttribute('data-logged-in', 'true');
   };
   
@@ -387,7 +403,6 @@ window.doFindId = function() {
     
     if (typeof LS !== 'undefined') LS.save('pendingUsers', window.pendingUsers);
     
-    // 입력 필드 초기화
     suIdEl.value = '';
     if (suPwEl) suPwEl.value = '';
     if (suPw2El) suPw2El.value = '';
@@ -463,13 +478,11 @@ window.doFindId = function() {
   window.restoreLogin = function() {
     console.log('🔄 restoreLogin 실행');
     
-    // 1. LS에서 확인
     var savedLogin = null;
     if (typeof LS !== 'undefined') {
       savedLogin = LS.load('logged', null);
     }
     
-    // 2. localStorage에서 직접 확인
     if (!savedLogin) {
       try {
         var saved = localStorage.getItem('ch2_logged');
@@ -477,7 +490,6 @@ window.doFindId = function() {
       } catch(e) {}
     }
     
-    // 3. currentUser 직접 확인
     if (!savedLogin) {
       try {
         var savedUser = localStorage.getItem('ch2_currentUser');
@@ -488,14 +500,12 @@ window.doFindId = function() {
           currentUser = user;
           if (typeof applyRole === 'function') applyRole(user.role);
           
-          // UI 업데이트
           var roleText = (user.role === 'admin' ? '관리자' : (user.role === 'manager' ? '매니저' : '일반성도'));
           var userNameSpan = document.getElementById('user-name-display');
           var userRoleSpan = document.getElementById('user-role-display');
           if (userNameSpan) userNameSpan.textContent = user.name;
           if (userRoleSpan) userRoleSpan.textContent = roleText;
           
-          // ✅ 수정: setting-user-info 업데이트 추가
           var settingInfoSpan = document.getElementById('setting-user-info');
           if (settingInfoSpan) {
             settingInfoSpan.textContent = user.name + ' (' + roleText + ')';
@@ -511,7 +521,6 @@ window.doFindId = function() {
       return false;
     }
     
-    // 사용자 정보 찾기
     var user = null;
     if (typeof ADMIN_ACCOUNTS !== 'undefined') {
       for (var i = 0; i < ADMIN_ACCOUNTS.length; i++) {
@@ -536,7 +545,6 @@ window.doFindId = function() {
       };
       currentUser = window.currentUser;
       
-      // localStorage에 저장
       localStorage.setItem('ch2_currentUser', JSON.stringify(window.currentUser));
       
       var roleText = (window.currentUser.role === 'admin' ? '관리자' : (window.currentUser.role === 'manager' ? '매니저' : '일반성도'));
@@ -545,7 +553,6 @@ window.doFindId = function() {
       if (userNameSpan) userNameSpan.textContent = user.name;
       if (userRoleSpan) userRoleSpan.textContent = roleText;
       
-      // ✅ 수정: setting-user-info 업데이트 추가
       var settingInfoSpan = document.getElementById('setting-user-info');
       if (settingInfoSpan) {
         settingInfoSpan.textContent = user.name + ' (' + roleText + ')';
@@ -564,7 +571,17 @@ window.doFindId = function() {
       else alert('로그인이 필요합니다');
       return;
     }
-    alert('내 정보 기능: ' + window.currentUser.name);
+    var modal = document.getElementById('modal-my-profile');
+    if (modal) {
+      // 내 정보 표시
+      document.getElementById('my-pv-name').textContent = window.currentUser.name || '';
+      document.getElementById('my-pv-email').textContent = window.currentUser.email || '';
+      document.getElementById('my-pv-phone').textContent = window.currentUser.phone || '';
+      document.getElementById('my-pv-birth').textContent = window.currentUser.birth || '';
+      modal.style.display = 'flex';
+    } else {
+      alert('내 정보 기능: ' + window.currentUser.name);
+    }
   };
   
   window.openChangePassword = function() {
@@ -577,7 +594,6 @@ window.doFindId = function() {
     if (modal) modal.style.display = 'flex';
   };
   
-  // ========== 비밀번호 변경 (실제 저장 기능 추가) ==========
   window.changePassword = function() {
     var currentPw = document.getElementById('cpw-current') ? document.getElementById('cpw-current').value : '';
     var newPw = document.getElementById('cpw-new') ? document.getElementById('cpw-new').value : '';
@@ -596,11 +612,9 @@ window.doFindId = function() {
       return;
     }
     
-    // ✅ 수정: 실제 비밀번호 변경 로직 추가
     var userId = window.currentUser.id;
     var changed = false;
     
-    // 관리자 계정 체크
     if (typeof ADMIN_ACCOUNTS !== 'undefined') {
       for (var i = 0; i < ADMIN_ACCOUNTS.length; i++) {
         if (ADMIN_ACCOUNTS[i].id === userId && ADMIN_ACCOUNTS[i].pw === currentPw) {
@@ -611,7 +625,6 @@ window.doFindId = function() {
       }
     }
     
-    // 일반 회원 체크
     if (!changed) {
       for (var i = 0; i < window.approvedUsers.length; i++) {
         if (window.approvedUsers[i].id === userId && window.approvedUsers[i].pw === currentPw) {
@@ -623,20 +636,17 @@ window.doFindId = function() {
     }
     
     if (changed) {
-      // 저장
       if (typeof LS !== 'undefined') {
         LS.save('approvedUsers', window.approvedUsers);
       }
       localStorage.setItem('ch2_approvedUsers', JSON.stringify(window.approvedUsers));
       
-      // 현재 사용자 정보 업데이트
       window.currentUser.pw = newPw;
       localStorage.setItem('ch2_currentUser', JSON.stringify(window.currentUser));
       
       if (typeof showToast === 'function') showToast('✅ 비밀번호가 변경되었습니다');
       else alert('✅ 비밀번호가 변경되었습니다');
       
-      // 모달 닫기 및 입력 필드 초기화
       var modal = document.getElementById('modal-change-pw');
       if (modal) modal.style.display = 'none';
       document.getElementById('cpw-current').value = '';
@@ -648,17 +658,15 @@ window.doFindId = function() {
     }
   };
   
-  // ========== 내 정보 수정 관련 함수 추가 ==========
   window.openEditMyProfile = function() {
     if (!window.currentUser) {
       if (typeof showToast === 'function') showToast('로그인이 필요합니다');
       return;
     }
     
-    var user = window.currentUser;
-    document.getElementById('my-em-name').value = user.name || '';
-    document.getElementById('my-em-phone').value = user.phone || '';
-    document.getElementById('my-em-birth').value = user.birth || '';
+    document.getElementById('my-em-name').value = window.currentUser.name || '';
+    document.getElementById('my-em-phone').value = window.currentUser.phone || '';
+    document.getElementById('my-em-birth').value = window.currentUser.birth || '';
     
     document.getElementById('my-profile-view').style.display = 'none';
     document.getElementById('my-profile-edit').style.display = 'block';
@@ -682,7 +690,6 @@ window.doFindId = function() {
     var userId = window.currentUser.id;
     var updated = false;
     
-    // 일반 회원 정보 업데이트
     for (var i = 0; i < window.approvedUsers.length; i++) {
       if (window.approvedUsers[i].id === userId) {
         window.approvedUsers[i].name = newName;
@@ -693,7 +700,6 @@ window.doFindId = function() {
       }
     }
     
-    // 관리자 계정 체크
     if (!updated && typeof ADMIN_ACCOUNTS !== 'undefined') {
       for (var i = 0; i < ADMIN_ACCOUNTS.length; i++) {
         if (ADMIN_ACCOUNTS[i].id === userId) {
@@ -707,20 +713,17 @@ window.doFindId = function() {
     }
     
     if (updated) {
-      // 현재 사용자 정보 업데이트
       window.currentUser.name = newName;
       window.currentUser.phone = newPhone;
       window.currentUser.birth = newBirth;
       currentUser = window.currentUser;
       
-      // 저장
       if (typeof LS !== 'undefined') {
         LS.save('approvedUsers', window.approvedUsers);
       }
       localStorage.setItem('ch2_approvedUsers', JSON.stringify(window.approvedUsers));
       localStorage.setItem('ch2_currentUser', JSON.stringify(window.currentUser));
       
-      // UI 업데이트
       var userNameSpan = document.getElementById('user-name-display');
       if (userNameSpan) userNameSpan.textContent = newName;
       
@@ -732,7 +735,6 @@ window.doFindId = function() {
       
       if (typeof showToast === 'function') showToast('✅ 내 정보가 수정되었습니다');
       
-      // 모달 닫기
       document.getElementById('modal-my-profile').style.display = 'none';
       document.getElementById('my-profile-view').style.display = 'block';
       document.getElementById('my-profile-edit').style.display = 'none';
@@ -746,7 +748,6 @@ window.doFindId = function() {
     document.getElementById('my-profile-edit').style.display = 'none';
   };
   
-  // ========== 프로필 드롭다운 토글 ==========
   window.toggleProfileDropdown = function() {
     var dropdown = document.getElementById('profile-dropdown');
     if (!dropdown) return;
@@ -758,7 +759,6 @@ window.doFindId = function() {
     }
   };
   
-  // 드롭다운 외부 클릭 시 닫기
   document.addEventListener('click', function(e) {
     var dropdown = document.getElementById('profile-dropdown');
     var userBadge = document.querySelector('.user-badge');
@@ -767,12 +767,9 @@ window.doFindId = function() {
     }
   });
   
-  // 자동 실행
   setTimeout(function() {
     window.restoreLogin();
   }, 200);
   
-
-
-  console.log('✅ js_auth.js 로드 완료 (수정본)');
+  console.log('✅ js_auth.js 로드 완료 (아이디 찾기 기능 포함)');
 })();

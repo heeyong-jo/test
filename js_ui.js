@@ -1,5 +1,5 @@
 ﻿// ==================== UI 및 스와이프 제스처 (js_ui.js) ====================
-// 최종 수정본 - 모든 탭 정상 표시
+// 최종 수정본 - 슬라이드 시 내용 위치 안정화
 
 
 if (typeof toastTimer === 'undefined') var toastTimer = null;
@@ -181,49 +181,33 @@ function showTab(n) {
 }
 
 
-// ==================== 탭 전환 후 작업 (수정됨) ====================
+// ==================== 탭 전환 후 작업 ====================
 function afterTab(n) {
   console.log('afterTab 실행:', n);
   
   if (n === 0) {
-    // 홈
     if (typeof renderHomeNotices === 'function') renderHomeNotices();
-    if (typeof renderServiceView === 'function') renderServiceView();
   }
   else if (n === 1) {
-    // 말씀
-    console.log('말씀 탭 렌더링 시작');
     if (typeof renderMeditations === 'function') renderMeditations();
     if (typeof renderTodayVerse === 'function') renderTodayVerse();
-    if (typeof loadPrayers === 'function') loadPrayers();
-    if (typeof renderPrayers === 'function') renderPrayers();
   }
   else if (n === 2) {
-    // 게시물
-    console.log('게시물 탭 렌더링 시작');
     if (typeof initBoard === 'function') initBoard();
+    if (typeof renderPrayers === 'function') renderPrayers();
   }
   else if (n === 3) {
-    // 성경읽기
-    console.log('성경읽기 탭 렌더링 시작');
-    if (typeof loadBibleHallOfFame === 'function') loadBibleHallOfFame();
-    if (typeof loadBibleStatus === 'function') loadBibleStatus();
+    if (typeof renderPosts === 'function') renderPosts();
   }
   else if (n === 4) {
-    // 안내
-    console.log('안내 탭 렌더링 시작');
     if (typeof renderServiceView === 'function') renderServiceView();
     if (typeof renderScheduleView === 'function') renderScheduleView();
     if (typeof loadStaff === 'function') loadStaff();
-    if (typeof loadChurchInfo === 'function') loadChurchInfo();
   }
   else if (n === 5) {
-    // 성경책
-    console.log('성경책 탭 렌더링 시작');
     if (typeof initBible === 'function') initBible();
   }
   else if (n === 6) {
-    // 관리
     const user = getCurrentUser();
     console.log('관리탭 렌더링, role:', user ? user.role : 'none');
     
@@ -246,8 +230,6 @@ function afterTab(n) {
       settingInfoSpan.textContent = `${user.name} (${roleText})`;
     }
   }
-  
-  console.log('afterTab 완료:', n);
 }
 
 
@@ -440,19 +422,21 @@ function restoreTabStyles() {
 }
 
 
-// ==================== 스와이프 제스처 ====================
+// ==================== 스와이프 제스처 (위치 안정화 버전) ====================
 (function() {
   const el = document.getElementById('swipe-container');
   if (!el) return;
   
   let startX = 0, startY = 0;
   let dragging = false;
+  let locked = false;
   let dragDir = 0;
   let curEl = null;
   let nxtEl = null;
   let touchStartTime = 0;
-  let isVerticalScroll = false;
   
+  const SWIPE_THRESHOLD = 30;
+  const MAX_VERTICAL_RATIO = 1.5;
   const MIN_HORIZONTAL_MOVE = 15;
   
   const W = () => window.innerWidth;
@@ -471,6 +455,11 @@ function restoreTabStyles() {
       idx += dir;
     }
     return -1;
+  }
+  
+  function saveCurrentScrollPosition() {
+    const currentScroll = window.scrollY || document.documentElement.scrollTop;
+    sessionStorage.setItem(`scrollPos_${currentTab}`, currentScroll);
   }
   
   function prepareNext(dir) {
@@ -536,15 +525,39 @@ function restoreTabStyles() {
   }
   
   el.addEventListener('touchstart', (e) => {
-    if (currentTab === 5 && currentBibleSection) return;
+    if (currentTab === 5 && currentBibleSection) {
+      locked = true;
+      return;
+    }
     
+    saveCurrentScrollPosition();
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
     touchStartTime = Date.now();
     dragging = false;
+    locked = false;
     dragDir = 0;
-    isVerticalScroll = false;
-    curEl = null;
+    
+    // 현재 페이지 저장 (고정 위치)
+    const currentPage = getPage(currentTab);
+    if (currentPage) {
+      const topPos = getTopPosition();
+      currentPage.style.cssText = `
+        display: block !important;
+        position: fixed;
+        top: ${topPos}px;
+        left: 0;
+        width: 100%;
+        z-index: 5;
+        transform: translateX(0);
+        overflow-y: auto;
+        max-height: calc(100dvh - ${topPos}px);
+        will-change: transform;
+        background: var(--bg);
+      `;
+      curEl = currentPage;
+    }
+    
     nxtEl = null;
     
     tabContainer = document.querySelector('.tabs');
@@ -558,44 +571,27 @@ function restoreTabStyles() {
     const dx = e.touches[0].clientX - startX;
     const dy = e.touches[0].clientY - startY;
     
-    if (!dragging && !isVerticalScroll) {
-      if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > MIN_HORIZONTAL_MOVE) {
-        isVerticalScroll = true;
+    if (!dragging && !locked) {
+      if (Math.abs(dx) < MIN_HORIZONTAL_MOVE && Math.abs(dy) < MIN_HORIZONTAL_MOVE) return;
+      
+      if (Math.abs(dy) > Math.abs(dx) * MAX_VERTICAL_RATIO) {
+        locked = true;
+        // 세로 스크롤 시 원래대로 복원
+        if (curEl) {
+          curEl.style.cssText = '';
+          curEl = null;
+        }
         return;
       }
       
-      if (Math.abs(dx) < MIN_HORIZONTAL_MOVE) return;
+      dragging = true;
+      dragDir = dx > 0 ? -1 : 1;
       
-      if (Math.abs(dx) > MIN_HORIZONTAL_MOVE && Math.abs(dx) > Math.abs(dy) * 0.8) {
-        dragging = true;
-        dragDir = dx > 0 ? -1 : 1;
-        
-        const topPos = getTopPosition();
-        const currentPage = getPage(currentTab);
-        
-        if (currentPage) {
-          currentPage.style.cssText = `
-            display: block !important;
-            position: fixed;
-            top: ${topPos}px;
-            left: 0;
-            width: 100%;
-            z-index: 5;
-            transform: translateX(0);
-            overflow-y: auto;
-            max-height: calc(100dvh - ${topPos}px);
-            will-change: transform;
-            background: var(--bg);
-          `;
-          curEl = currentPage;
-        }
-        
-        nxtEl = prepareNext(dragDir);
-      }
+      // 다음 페이지 준비
+      nxtEl = prepareNext(dragDir);
     }
     
-    if (isVerticalScroll) return;
-    if (!dragging) return;
+    if (locked || !dragging) return;
     
     e.preventDefault();
     
@@ -632,15 +628,17 @@ function restoreTabStyles() {
   }, { passive: false });
   
   el.addEventListener('touchend', (e) => {
-    if (isVerticalScroll) {
-      isVerticalScroll = false;
-      return;
+    if (locked) { 
+      locked = false; 
+      if (curEl) curEl.style.cssText = ''; 
+      restoreTabStyles();
+      return; 
     }
     
-    if (!dragging) {
-      if (curEl) curEl.style.cssText = '';
+    if (!dragging) { 
+      if (curEl) curEl.style.cssText = ''; 
       restoreTabStyles();
-      return;
+      return; 
     }
     
     const dx = e.changedTouches[0].clientX - startX;
@@ -748,7 +746,9 @@ function restoreTabStyles() {
         if (t < 1) {
           requestAnimationFrame(frame);
         } else {
-          if (curEl) curEl.style.cssText = '';
+          if (curEl) {
+            curEl.style.cssText = '';
+          }
           if (nxtEl) nxtEl.style.cssText = '';
           curEl = null;
           nxtEl = null;
@@ -761,4 +761,4 @@ function restoreTabStyles() {
 })();
 
 
-console.log('✅ js_ui.js 로드 완료 (모든 탭 정상 표시 버전)');
+console.log('✅ js_ui.js 로드 완료 (슬라이드 위치 안정화 버전)');

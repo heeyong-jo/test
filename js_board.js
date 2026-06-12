@@ -1,5 +1,5 @@
 ﻿// ==================== 게시판 기능 (js_board.js) ====================
-// 최종 수정본 - 댓글 삭제 기능 추가
+// 최종 수정본 - 뒤로가기 버튼 추가
 
 
 window.currentBoardCategory = window.currentBoardCategory || '일반성도';
@@ -136,6 +136,12 @@ function openBoardCategory() {
   loadPosts();
   loadBoardManager();
   updateBoardWriteBtn();
+  
+  // ✅ 뒤로가기 버튼 표시 (게시글 목록일 때)
+  var backBtn = document.getElementById('board-back-btn');
+  if (backBtn) {
+    backBtn.style.display = 'inline-block';
+  }
 }
 
 
@@ -148,6 +154,12 @@ function showBoardCategoryList() {
   
   if (list) list.style.display = 'flex';
   if (content) content.style.display = 'none';
+  
+  // ✅ 뒤로가기 버튼 숨김 (카테고리 목록에서는 필요 없음)
+  var backBtn = document.getElementById('board-back-btn');
+  if (backBtn) {
+    backBtn.style.display = 'none';
+  }
 }
 
 
@@ -443,7 +455,6 @@ function renderComments(comments, postFirebaseKey) {
           '<span style="font-size:11px;color:var(--text2);margin-left:8px;">' + (comment.timestamp ? new Date(comment.timestamp).toLocaleString() : '') + '</span>' +
         '</div>';
     
-    // 삭제 버튼 (본인 댓글만)
     if (isAuthor) {
       html += '<button onclick="deleteBoardComment(\'' + postFirebaseKey + '\', \'' + commentKey + '\')" style="background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">🗑 삭제</button>';
     }
@@ -457,7 +468,7 @@ function renderComments(comments, postFirebaseKey) {
 }
 
 
-// ==================== 댓글 삭제 (새로운 기능) ====================
+// ==================== 댓글 삭제 ====================
 function deleteBoardComment(postFirebaseKey, commentKey) {
   if (!confirm('댓글을 삭제하시겠습니까?')) return;
   
@@ -475,7 +486,6 @@ function deleteBoardComment(postFirebaseKey, commentKey) {
   firebase.database().ref('boards/' + currentBoardCategory + '/posts/' + postFirebaseKey + '/comments/' + commentKey).remove()
     .then(function() {
       if (typeof showToast === 'function') showToast('🗑 댓글이 삭제되었습니다.');
-      // 현재 게시글 다시 로드
       openBoardDetail(currentPostId);
     })
     .catch(function(err) {
@@ -700,6 +710,12 @@ function boardPhotoPreview(input) {
 function initBoardOnLoad() {
   console.log('initBoardOnLoad 실행');
   initBoard();
+  
+  // ✅ 뒤로가기 버튼 초기 상태 설정 (카테고리 목록에서는 숨김)
+  var backBtn = document.getElementById('board-back-btn');
+  if (backBtn) {
+    backBtn.style.display = 'none';
+  }
 }
 
 
@@ -711,4 +727,4 @@ if (document.readyState === 'loading') {
 }
 
 
-console.log('✅ js_board.js 로드 완료 (댓글 삭제 기능 포함)');
+console.log('✅ js_board.js 로드 완료 (뒤로가기 버튼 추가)');

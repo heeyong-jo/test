@@ -1,4 +1,4 @@
-﻿// ==================== 게시판 관리 (댓글 삭제 기능 추가) ====================
+﻿// ==================== 게시판 관리 (댓글 삭제 기능 포함 - 안정화 버전) ====================
 
 
 let currentCategory = '일반성도';
@@ -18,9 +18,13 @@ function initBoard() {
 
 // ==================== 카테고리 목록 표시 ====================
 function showBoardCategoryList() {
-  document.getElementById('board-content').style.display = 'none';
-  document.getElementById('board-category-list').style.display = 'flex';
-  document.getElementById('board-write-btn-wrap').style.display = 'none';
+  const boardContent = document.getElementById('board-content');
+  const categoryList = document.getElementById('board-category-list');
+  const writeBtnWrap = document.getElementById('board-write-btn-wrap');
+  
+  if (boardContent) boardContent.style.display = 'none';
+  if (categoryList) categoryList.style.display = 'flex';
+  if (writeBtnWrap) writeBtnWrap.style.display = 'none';
 }
 
 
@@ -30,25 +34,30 @@ function selectCategory(category) {
   currentCategory = category;
   
   // 카테고리 버튼 활성화 스타일
-  document.querySelectorAll('.board-cat-btn').forEach(btn => {
+  const btns = document.querySelectorAll('.board-cat-btn');
+  for (let i = 0; i < btns.length; i++) {
+    const btn = btns[i];
     if (btn.getAttribute('data-cat') === category) {
       btn.classList.add('active');
     } else {
       btn.classList.remove('active');
     }
-  });
+  }
   
   // 게시판 본문 표시
-  document.getElementById('board-category-list').style.display = 'none';
-  document.getElementById('board-content').style.display = 'block';
-  document.getElementById('board-category-title').textContent = getCategoryTitle(category);
+  const categoryList = document.getElementById('board-category-list');
+  const boardContent = document.getElementById('board-content');
+  const categoryTitle = document.getElementById('board-category-title');
+  const writeBtnWrap = document.getElementById('board-write-btn-wrap');
+  
+  if (categoryList) categoryList.style.display = 'none';
+  if (boardContent) boardContent.style.display = 'block';
+  if (categoryTitle) categoryTitle.textContent = getCategoryTitle(category);
   
   // 글쓰기 버튼 표시 (로그인 필요)
   const user = getCurrentUser();
-  if (user) {
-    document.getElementById('board-write-btn-wrap').style.display = 'block';
-  } else {
-    document.getElementById('board-write-btn-wrap').style.display = 'none';
+  if (writeBtnWrap) {
+    writeBtnWrap.style.display = user ? 'block' : 'none';
   }
   
   loadPosts();
@@ -78,17 +87,21 @@ function loadPosts() {
   
   container.innerHTML = '<div style="text-align:center;padding:40px;"><div class="splash-spinner"></div><div>로딩 중...</div></div>';
   
-  // Firebase에서 게시물 로드
   if (typeof firebase !== 'undefined' && firebase.database && window.FB_READY) {
     firebase.database().ref('posts').once('value')
       .then(snapshot => {
         const data = snapshot.val();
         if (data) {
-          currentPosts = Object.entries(data).map(([key, value]) => ({
-            id: key,
-            ...value
-          }));
-          currentPosts = currentPosts.filter(post => post.category === currentCategory);
+          currentPosts = [];
+          const keys = Object.keys(data);
+          for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
+            const post = data[key];
+            post.id = key;
+            if (post.category === currentCategory) {
+              currentPosts.push(post);
+            }
+          }
           currentPosts.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
         } else {
           currentPosts = [];
@@ -100,7 +113,6 @@ function loadPosts() {
         container.innerHTML = '<div style="text-align:center;padding:40px;color:red;">⚠️ 게시물을 불러올 수 없습니다</div>';
       });
   } else {
-    // localStorage에서 로드
     try {
       const saved = localStorage.getItem('ch2_posts');
       if (saved) {
@@ -154,7 +166,10 @@ function viewPost(postId) {
   const post = currentPosts.find(p => p.id === postId);
   if (!post) return;
   
-  document.getElementById('board-detail-title').textContent = post.title;
+  const titleEl = document.getElementById('board-detail-title');
+  const contentEl = document.getElementById('board-detail-content');
+  
+  if (titleEl) titleEl.textContent = post.title;
   
   let contentHtml = `
     <div style="margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--border);">
@@ -169,7 +184,6 @@ function viewPost(postId) {
     contentHtml += `<div style="margin-bottom:16px;"><img src="${post.photo}" style="width:100%; border-radius:12px;" onclick="window.open(this.src)"></div>`;
   }
   
-  // 수정/삭제 버튼 (작성자만)
   const user = getCurrentUser();
   if (user && user.name === post.author) {
     contentHtml += `
@@ -180,12 +194,12 @@ function viewPost(postId) {
     `;
   }
   
-  document.getElementById('board-detail-content').innerHTML = contentHtml;
+  if (contentEl) contentEl.innerHTML = contentHtml;
   
-  // 댓글 로드
   loadComments(postId);
   
-  document.getElementById('board-detail-overlay').style.display = 'flex';
+  const overlay = document.getElementById('board-detail-overlay');
+  if (overlay) overlay.style.display = 'flex';
 }
 
 
@@ -203,10 +217,14 @@ function loadComments(postId) {
       .then(snapshot => {
         const data = snapshot.val();
         if (data) {
-          currentComments = Object.entries(data).map(([key, value]) => ({
-            id: key,
-            ...value
-          }));
+          currentComments = [];
+          const keys = Object.keys(data);
+          for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
+            const comment = data[key];
+            comment.id = key;
+            currentComments.push(comment);
+          }
           currentComments.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
         } else {
           currentComments = [];
@@ -218,7 +236,6 @@ function loadComments(postId) {
         container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">댓글을 불러올 수 없습니다</div>';
       });
   } else {
-    // localStorage에서 로드
     try {
       const saved = localStorage.getItem(`ch2_comments_${postId}`);
       if (saved) {
@@ -274,15 +291,13 @@ function renderComments() {
 function submitBoardComment() {
   const user = getCurrentUser();
   if (!user) {
-    if (typeof showToast === 'function') {
-      showToast('로그인이 필요합니다.');
-    } else {
-      alert('로그인이 필요합니다.');
-    }
+    if (typeof showToast === 'function') showToast('로그인이 필요합니다.');
     return;
   }
   
-  const content = document.getElementById('board-comment-input').value.trim();
+  const inputEl = document.getElementById('board-comment-input');
+  const content = inputEl ? inputEl.value.trim() : '';
+  
   if (!content) {
     if (typeof showToast === 'function') showToast('댓글 내용을 입력하세요');
     return;
@@ -300,7 +315,7 @@ function submitBoardComment() {
   if (typeof firebase !== 'undefined' && firebase.database && window.FB_READY) {
     firebase.database().ref(`comments/${currentPostId}`).push(commentData)
       .then(() => {
-        document.getElementById('board-comment-input').value = '';
+        if (inputEl) inputEl.value = '';
         if (typeof showToast === 'function') showToast('✅ 댓글이 등록되었습니다');
         loadComments(currentPostId);
       })
@@ -309,13 +324,12 @@ function submitBoardComment() {
         if (typeof showToast === 'function') showToast('❌ 댓글 저장 실패');
       });
   } else {
-    // localStorage 저장
     try {
       const saved = localStorage.getItem(`ch2_comments_${currentPostId}`);
       let comments = saved ? JSON.parse(saved) : [];
       comments.push(commentData);
       localStorage.setItem(`ch2_comments_${currentPostId}`, JSON.stringify(comments));
-      document.getElementById('board-comment-input').value = '';
+      if (inputEl) inputEl.value = '';
       if (typeof showToast === 'function') showToast('✅ 댓글이 등록되었습니다');
       loadComments(currentPostId);
     } catch(e) {
@@ -326,7 +340,7 @@ function submitBoardComment() {
 }
 
 
-// ==================== 댓글 삭제 (새로운 기능) ====================
+// ==================== 댓글 삭제 ====================
 function deleteComment(commentId) {
   if (!confirm('댓글을 삭제하시겠습니까?')) return;
   
@@ -336,28 +350,27 @@ function deleteComment(commentId) {
     return;
   }
   
-  // 삭제할 댓글 찾기
   const comment = currentComments.find(c => c.id === commentId);
   if (!comment) {
     if (typeof showToast === 'function') showToast('댓글을 찾을 수 없습니다.');
     return;
   }
   
-  // 작성자 본인만 삭제 가능
   if (user.name !== comment.author) {
     if (typeof showToast === 'function') showToast('⚠️ 본인이 작성한 댓글만 삭제할 수 있습니다.');
     return;
   }
   
   if (typeof firebase !== 'undefined' && firebase.database && window.FB_READY) {
-    // Firebase에서 특정 댓글 찾아서 삭제
     firebase.database().ref(`comments/${currentPostId}`).once('value')
       .then(snapshot => {
         const data = snapshot.val();
         if (data) {
           let targetKey = null;
-          for (const [key, value] of Object.entries(data)) {
-            if (value.id === commentId) {
+          const keys = Object.keys(data);
+          for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
+            if (data[key].id === commentId) {
               targetKey = key;
               break;
             }
@@ -372,8 +385,6 @@ function deleteComment(commentId) {
                 console.error('댓글 삭제 실패:', err);
                 if (typeof showToast === 'function') showToast('❌ 삭제 실패');
               });
-          } else {
-            if (typeof showToast === 'function') showToast('댓글을 찾을 수 없습니다.');
           }
         }
       })
@@ -382,7 +393,6 @@ function deleteComment(commentId) {
         if (typeof showToast === 'function') showToast('❌ 삭제 실패');
       });
   } else {
-    // localStorage에서 삭제
     try {
       const saved = localStorage.getItem(`ch2_comments_${currentPostId}`);
       let comments = saved ? JSON.parse(saved) : [];
@@ -398,29 +408,32 @@ function deleteComment(commentId) {
 }
 
 
-// ==================== 게시물 작성 ====================
+// ==================== 게시물 작성 모달 ====================
 function openBoardWrite() {
   const user = getCurrentUser();
   if (!user) {
-    if (typeof showToast === 'function') {
-      showToast('로그인이 필요합니다.');
-    } else {
-      alert('로그인이 필요합니다.');
-    }
+    if (typeof showToast === 'function') showToast('로그인이 필요합니다.');
     return;
   }
   
-  document.getElementById('board-write-title').value = '';
-  document.getElementById('board-write-content').value = '';
-  document.getElementById('board-photo-preview').innerHTML = '';
+  const titleEl = document.getElementById('board-write-title');
+  const contentEl = document.getElementById('board-write-content');
+  const previewDiv = document.getElementById('board-photo-preview');
+  
+  if (titleEl) titleEl.value = '';
+  if (contentEl) contentEl.value = '';
+  if (previewDiv) previewDiv.innerHTML = '';
+  
   window._boardPhotoData = null;
   
-  document.getElementById('board-write-overlay').style.display = 'flex';
+  const overlay = document.getElementById('board-write-overlay');
+  if (overlay) overlay.style.display = 'flex';
 }
 
 
 function closeBoardWrite() {
-  document.getElementById('board-write-overlay').style.display = 'none';
+  const overlay = document.getElementById('board-write-overlay');
+  if (overlay) overlay.style.display = 'none';
 }
 
 
@@ -446,8 +459,11 @@ function submitBoardPost() {
     return;
   }
   
-  const title = document.getElementById('board-write-title').value.trim();
-  const content = document.getElementById('board-write-content').value.trim();
+  const titleEl = document.getElementById('board-write-title');
+  const contentEl = document.getElementById('board-write-content');
+  
+  const title = titleEl ? titleEl.value.trim() : '';
+  const content = contentEl ? contentEl.value.trim() : '';
   
   if (!title || !content) {
     if (typeof showToast === 'function') showToast('제목과 내용을 입력하세요');
@@ -498,19 +514,27 @@ function editPost(postId) {
   const post = currentPosts.find(p => p.id === postId);
   if (!post) return;
   
-  document.getElementById('board-write-title').value = post.title;
-  document.getElementById('board-write-content').value = post.content;
-  if (post.photo) {
-    document.getElementById('board-photo-preview').innerHTML = `<img src="${post.photo}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;">`;
+  const titleEl = document.getElementById('board-write-title');
+  const contentEl = document.getElementById('board-write-content');
+  const previewDiv = document.getElementById('board-photo-preview');
+  
+  if (titleEl) titleEl.value = post.title;
+  if (contentEl) contentEl.value = post.content;
+  if (previewDiv && post.photo) {
+    previewDiv.innerHTML = `<img src="${post.photo}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;">`;
     window._boardPhotoData = post.photo;
   }
   
   window._editingPostId = postId;
-  document.getElementById('board-write-overlay').style.display = 'flex';
   
-  // 수정 모드에서는 저장 버튼 동작 변경
-  const originalSubmit = document.querySelector('#board-write-overlay .btn-primary').onclick;
-  document.querySelector('#board-write-overlay .btn-primary').onclick = () => updatePost(postId);
+  const overlay = document.getElementById('board-write-overlay');
+  if (overlay) overlay.style.display = 'flex';
+  
+  const submitBtn = document.querySelector('#board-write-overlay .btn-primary');
+  if (submitBtn) {
+    submitBtn.textContent = '수정하기';
+    submitBtn.onclick = () => updatePost(postId);
+  }
 }
 
 
@@ -523,8 +547,11 @@ function updatePost(postId) {
     return;
   }
   
-  const title = document.getElementById('board-write-title').value.trim();
-  const content = document.getElementById('board-write-content').value.trim();
+  const titleEl = document.getElementById('board-write-title');
+  const contentEl = document.getElementById('board-write-content');
+  
+  const title = titleEl ? titleEl.value.trim() : '';
+  const content = contentEl ? contentEl.value.trim() : '';
   
   if (!title || !content) {
     if (typeof showToast === 'function') showToast('제목과 내용을 입력하세요');
@@ -571,7 +598,11 @@ function updatePost(postId) {
   }
   
   window._editingPostId = null;
-  document.querySelector('#board-write-overlay .btn-primary').onclick = submitBoardPost;
+  const submitBtn = document.querySelector('#board-write-overlay .btn-primary');
+  if (submitBtn) {
+    submitBtn.textContent = '등록';
+    submitBtn.onclick = submitBoardPost;
+  }
 }
 
 
@@ -621,7 +652,8 @@ function deletePost(postId) {
 
 // ==================== 모달 닫기 ====================
 function closeBoardDetail() {
-  document.getElementById('board-detail-overlay').style.display = 'none';
+  const overlay = document.getElementById('board-detail-overlay');
+  if (overlay) overlay.style.display = 'none';
   currentPostId = null;
 }
 
@@ -641,6 +673,26 @@ function formatPostDate(timestamp) {
 }
 
 
+// ==================== XSS 방지 (없으면 추가) ====================
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
+}
+
+
+// ==================== 현재 사용자 가져오기 (없으면 추가) ====================
+function getCurrentUser() {
+  if (typeof window.currentUser !== 'undefined' && window.currentUser) return window.currentUser;
+  if (typeof currentUser !== 'undefined' && currentUser) return currentUser;
+  return null;
+}
+
+
 // ==================== 전역 함수 등록 ====================
 window.initBoard = initBoard;
 window.selectCategory = selectCategory;
@@ -654,7 +706,7 @@ window.boardPhotoPreview = boardPhotoPreview;
 window.editPost = editPost;
 window.deletePost = deletePost;
 window.submitBoardComment = submitBoardComment;
-window.deleteComment = deleteComment;  // ✅ 새로 추가
+window.deleteComment = deleteComment;
 
 
 console.log('✅ js_board.js 로드 완료 (댓글 삭제 기능 포함)');

@@ -324,13 +324,13 @@
 
 
  <!-- 📢 최근 공지 카드 -->
-  <div class="card">
-    <div class="sec-hd">
-      <div class="card-title">📢 최근 공지</div>
-      <button class="edit-mode-btn admin-only" onclick="openAddNotice()" style="padding:5px 10px; font-size:11px;">➕ 공지 작성</button>
-    </div>
-    <div id="home-notices"></div>
+<div class="card">
+  <div class="sec-hd">
+    <div class="card-title">📢 최근 공지</div>
+    <!-- 아래 줄의 admin-only 를 admin-manager-only 로 변경 -->
+    <button class="edit-mode-btn admin-manager-only" onclick="openAddNotice()" style="padding:5px 10px; font-size:11px;">➕ 공지 작성</button>
   </div>
+  <div id="home-notices"></div>
 </div>
 <!-- 공지 작성 모달 -->
 <div id="modal-notice" class="modal-overlay">

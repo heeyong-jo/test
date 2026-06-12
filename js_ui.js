@@ -2,6 +2,8 @@
 // 최종 수정본 - 모든 탭 정상 표시
 
 
+
+
 if (typeof toastTimer === 'undefined') var toastTimer = null;
 if (typeof currentBibleSection === 'undefined') var currentBibleSection = null;
 if (typeof currentTab === 'undefined') var currentTab = 0;
@@ -9,6 +11,8 @@ if (typeof TOTAL_TABS === 'undefined') var TOTAL_TABS = 7;
 if (typeof tabContainer === 'undefined') var tabContainer = null;
 if (typeof tabScrollStartX === 'undefined') var tabScrollStartX = 0;
 if (typeof tabOriginalScroll === 'undefined') var tabOriginalScroll = 0;
+
+
 
 
 // ==================== 헤더 + 탭 높이 동적 계산 ====================
@@ -22,12 +26,16 @@ function getTopPosition() {
 }
 
 
+
+
 // ==================== 현재 사용자 가져오기 ====================
 function getCurrentUser() {
   if (typeof window.currentUser !== 'undefined' && window.currentUser) return window.currentUser;
   if (typeof currentUser !== 'undefined' && currentUser) return currentUser;
   return null;
 }
+
+
 
 
 // ==================== 시계 업데이트 ====================
@@ -38,6 +46,8 @@ function tick() {
 }
 setInterval(tick, 1000);
 tick();
+
+
 
 
 // ==================== 토스트 메시지 ====================
@@ -51,11 +61,15 @@ function showToast(msg) {
 }
 
 
+
+
 // ==================== 모달 닫기 ====================
 function closeModal(id) {
   const modal = document.getElementById(id);
   if (modal) modal.style.display = 'none';
 }
+
+
 
 
 // ==================== XSS 방지 ====================
@@ -70,12 +84,16 @@ function escapeHtml(str) {
 }
 
 
+
+
 // ==================== 권한 적용 ====================
 function applyRole(role) {
   console.log('applyRole 실행:', role);
   
   const isAdmin = role === 'admin';
   const isAdminOrManager = role === 'admin' || role === 'manager';
+
+
 
 
   function showEl(el) {
@@ -97,6 +115,8 @@ function applyRole(role) {
   }
 
 
+
+
   document.querySelectorAll('.admin-only').forEach(el => {
     if (isAdmin) showEl(el);
     else hideEl(el);
@@ -115,6 +135,8 @@ function applyRole(role) {
     }
   }
 }
+
+
 
 
 // ==================== 탭 전환 ====================
@@ -181,13 +203,15 @@ function showTab(n) {
 }
 
 
+
+
 // ==================== 탭 전환 후 작업 (수정됨) ====================
 function afterTab(n) {
   console.log('afterTab 실행:', n);
   
   if (n === 0) {
     // 홈
-    if (typeof renderHomeNotices === 'function') renderHomeNotices();
+   // if (typeof renderHomeNotices === 'function') renderHomeNotices();
     if (typeof renderServiceView === 'function') renderServiceView();
   }
   else if (n === 1) {
@@ -251,7 +275,11 @@ function afterTab(n) {
 }
 
 
+
+
 // ==================== 관리탭 렌더링 함수들 ====================
+
+
 
 
 window.renderMembersAccord = function() {
@@ -306,6 +334,8 @@ window.renderMembersAccord = function() {
     container.innerHTML = '<div style="padding:20px;color:red;">⚠️ Firebase 연결이 필요합니다.</div>';
   }
 };
+
+
 
 
 window.renderApprovalsAccord = function() {
@@ -365,6 +395,8 @@ window.renderApprovalsAccord = function() {
 };
 
 
+
+
 window.approveUser = function(userId) {
   if (!confirm('이 사용자를 승인하시겠습니까?')) return;
   
@@ -401,6 +433,8 @@ window.approveUser = function(userId) {
 };
 
 
+
+
 window.rejectUser = function(userId) {
   if (!confirm('이 사용자를 거절하시겠습니까?')) return;
   
@@ -422,6 +456,8 @@ window.rejectUser = function(userId) {
 };
 
 
+
+
 // ==================== 탭 스타일 복원 ====================
 function restoreTabStyles() {
   if (!tabContainer) return;
@@ -438,6 +474,8 @@ function restoreTabStyles() {
     tab.style.color = '';
   });
 }
+
+
 
 
 // ==================== 스와이프 제스처 ====================
@@ -759,6 +797,8 @@ function restoreTabStyles() {
     }
   }, { passive: true });
 })();
+
+
 
 
 console.log('✅ js_ui.js 로드 완료 (모든 탭 정상 표시 버전)');

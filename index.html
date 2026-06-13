@@ -91,15 +91,17 @@
       </div>
 
 
-      <!-- 로그인 폼 (아이디 찾기 버튼 추가됨) -->
-      <div id="login-form">
-        <input type="text" class="login-input" id="li-id" placeholder="아이디" autocomplete="username">
-        <input type="password" class="login-input" id="li-pw" placeholder="비밀번호" onkeydown="if(event.key==='Enter')doAuthSubmit()" autocomplete="current-password">
-        <button class="login-btn" onclick="doAuthSubmit()" id="auth-submit-btn">로그인</button>
-        <div style="text-align:center;margin-top:12px;">
-          <button onclick="showFindId()" style="background:none;border:none;color:rgba(255,255,255,0.45);font-size:11px;cursor:pointer;text-decoration:underline;">아이디 찾기</button>
-        </div>
-      </div>
+      <!-- 로그인 폼 -->
+<div id="login-form">
+  <input type="text" class="login-input" id="li-id" placeholder="아이디" autocomplete="username">
+  <input type="password" class="login-input" id="li-pw" placeholder="비밀번호" onkeydown="if(event.key==='Enter')doAuthSubmit()" autocomplete="current-password">
+  <button class="login-btn" onclick="doAuthSubmit()" id="auth-submit-btn">로그인</button>
+  <div style="text-align:center;margin-top:12px;">
+    <button onclick="showFindId()" style="background:none;border:none;color:rgba(255,255,255,0.45);font-size:11px;cursor:pointer;text-decoration:underline;">아이디 찾기</button>
+    <span style="color:rgba(255,255,255,0.2);"> | </span>
+    <button onclick="showForgotPw()" style="background:none;border:none;color:rgba(255,255,255,0.45);font-size:11px;cursor:pointer;text-decoration:underline;">비밀번호를 잊으셨나요?</button>
+  </div>
+</div>
 
 
       <!-- 회원가입 추가 폼 -->

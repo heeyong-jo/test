@@ -21,7 +21,7 @@ function getCurrentUserForNotice() {
 }
 
 
-// ==================== 공지 작성 모달 열기 (수정됨) ====================
+// ==================== 공지 작성 모달 열기 ====================
 function openAddNotice() {
   console.log('🔧 openAddNotice 실행');
   
@@ -41,15 +41,14 @@ function openAddNotice() {
   
   console.log('사용자 역할:', user.role);
   
-  // ✅ 권한 체크 완화 - 모든 로그인 사용자 허용 (테스트용)
-  // if (user.role !== 'admin' && user.role !== 'manager') {
-  //   if (typeof showToast === 'function') {
-  //     showToast('⚠️ 관리자 또는 매니저만 공지를 작성할 수 있습니다.');
-  //   } else {
-  //     alert('관리자 또는 매니저만 공지를 작성할 수 있습니다.');
-  //   }
-  //   return;
-  // }
+  if (user.role !== 'admin' && user.role !== 'manager') {
+    if (typeof showToast === 'function') {
+      showToast('⚠️ 관리자 또는 매니저만 공지를 작성할 수 있습니다.');
+    } else {
+      alert('관리자 또는 매니저만 공지를 작성할 수 있습니다.');
+    }
+    return;
+  }
   
   const modal = document.getElementById('modal-notice');
   if (!modal) {
@@ -58,7 +57,6 @@ function openAddNotice() {
     return;
   }
   
-  // 입력 필드 초기화
   const titleEl = document.getElementById('n-title');
   const catEl = document.getElementById('n-cat');
   const bodyEl = document.getElementById('n-body');
@@ -129,38 +127,47 @@ async function saveNotice() {
   }
   
   try {
-    // localStorage에 저장 (Firebase 없이 테스트)
-    console.log('localStorage에 저장');
-    let localNotices = [];
-    try {
-      const saved = localStorage.getItem('ch2_notices');
-      localNotices = saved ? JSON.parse(saved) : [];
-    } catch(e) {}
-    
-    if (editId) {
-      const index = localNotices.findIndex(n => n.id === editId);
-      if (index !== -1) {
-        localNotices[index] = { ...localNotices[index], ...noticeData };
+    if (typeof firebase !== 'undefined' && firebase.database && window.FB_READY) {
+      console.log('Firebase 저장 시도...');
+      const noticesRef = firebase.database().ref('notices');
+      
+      if (editId) {
+        await noticesRef.child(editId).update(noticeData);
+        if (typeof showToast === 'function') showToast('✅ 공지사항이 수정되었습니다');
+      } else {
+        const newRef = noticesRef.push();
+        noticeData.id = newRef.key;
+        await newRef.set(noticeData);
+        if (typeof showToast === 'function') showToast('✅ 공지사항이 등록되었습니다');
       }
+      await loadNoticesFromFirebase();
     } else {
-      noticeData.id = Date.now().toString();
-      localNotices.unshift(noticeData);
+      console.warn('Firebase 연결 안됨, localStorage에 저장');
+      let localNotices = [];
+      try {
+        const saved = localStorage.getItem('ch2_notices');
+        localNotices = saved ? JSON.parse(saved) : [];
+      } catch(e) {}
+      
+      if (editId) {
+        const index = localNotices.findIndex(n => n.id === editId);
+        if (index !== -1) {
+          localNotices[index] = { ...localNotices[index], ...noticeData };
+        }
+      } else {
+        noticeData.id = Date.now().toString();
+        localNotices.unshift(noticeData);
+      }
+      
+      localStorage.setItem('ch2_notices', JSON.stringify(localNotices));
+      notices = localNotices;
+      if (typeof showToast === 'function') showToast('✅ 로컬에 저장되었습니다');
+      renderHomeNotices();
     }
     
-    localStorage.setItem('ch2_notices', JSON.stringify(localNotices));
-    notices = localNotices;
-    
-    if (typeof showToast === 'function') {
-      showToast('✅ 공지사항이 등록되었습니다');
-    } else {
-      alert('✅ 공지사항이 등록되었습니다');
-    }
-    
-    // 모달 닫기
     const modal = document.getElementById('modal-notice');
     if (modal) modal.style.display = 'none';
     
-    // 입력 필드 초기화
     if (titleEl) titleEl.value = '';
     if (contentEl) contentEl.value = '';
     if (editIdEl) editIdEl.value = '';
@@ -168,9 +175,6 @@ async function saveNotice() {
     const previewDiv = document.getElementById('notice-photo-preview');
     if (previewDiv) previewDiv.innerHTML = '';
     window._noticeResizedPhotos = null;
-    
-    // UI 갱신
-    renderHomeNotices();
     
   } catch (error) {
     console.error('❌ 저장 실패:', error);
@@ -204,6 +208,9 @@ async function loadNoticesFromFirebase() {
       console.log('✅ 공지사항 로드 완료:', notices.length);
     } else {
       notices = [];
+      console.log('Firebase에 공지사항 없음, 테스트 공지 추가');
+      // ✅ 테스트 공지 추가 (Firebase에 데이터가 없을 때만)
+      addTestNotice();
     }
     renderHomeNotices();
   } catch (error) {
@@ -223,15 +230,58 @@ function loadNoticesFromLocal() {
       console.log('localStorage에서 로드:', notices.length);
     } else {
       notices = [];
+      console.log('localStorage에 공지사항 없음, 테스트 공지 추가');
+      // ✅ 테스트 공지 추가 (저장된 데이터가 없을 때만)
+      addTestNotice();
     }
   } catch(e) {
     notices = [];
+    addTestNotice();
   }
   renderHomeNotices();
 }
 
 
-// ==================== 홈 화면 공지 렌더링 ====================
+// ==================== 테스트 공지 추가 (문제 확인용) ====================
+function addTestNotice() {
+  // 이미 테스트 공지가 있는지 확인
+  if (notices && notices.length > 0) return;
+  
+  console.log('📢 테스트 공지 추가됨');
+  notices = [
+    {
+      id: 'test_notice_1',
+      title: '📢 가좌제일교회 공지사항 테스트',
+      content: '공지사항 기능이 정상 작동하고 있습니다. 공지 작성 버튼을 클릭하여 새 공지를 등록할 수 있습니다.',
+      timestamp: Date.now(),
+      category: '📢 일반',
+      date: new Date().toISOString()
+    },
+    {
+      id: 'test_notice_2',
+      title: '🙏 수요기도회 안내',
+      content: '매주 수요일 오전 10시 30분, 저녁 7시에 수요기도회가 있습니다. 성도님들의 많은 참여 바랍니다.',
+      timestamp: Date.now() - 86400000,
+      category: '🙏 기도',
+      date: new Date(Date.now() - 86400000).toISOString()
+    },
+    {
+      id: 'test_notice_3',
+      title: '🎉 부활절 예배 안내',
+      content: '부활절 예배가 4월 9일 오전 11시에 있습니다. 함께 부활의 기쁨을 나누세요.',
+      timestamp: Date.now() - 172800000,
+      category: '🎉 행사',
+      date: new Date(Date.now() - 172800000).toISOString()
+    }
+  ];
+  
+  // localStorage에 저장
+  localStorage.setItem('ch2_notices', JSON.stringify(notices));
+  console.log('✅ 테스트 공지 3개가 추가되었습니다.');
+}
+
+
+// ==================== 홈 화면 공지 렌더링 (강화 버전) ====================
 function renderHomeNotices() {
   console.log('📢 renderHomeNotices 실행, notices:', notices?.length);
   
@@ -241,8 +291,14 @@ function renderHomeNotices() {
     return;
   }
   
+  // notices가 없거나 비어있으면 테스트 공지 추가 시도
   if (!notices || notices.length === 0) {
-    container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text2);">📢 등록된 공지가 없습니다</div>';
+    console.log('notices가 비어있음, 테스트 공지 추가 시도');
+    addTestNotice();
+  }
+  
+  if (!notices || notices.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text2);">📢 등록된 공지가 없습니다<br><small>➕ 공지 작성 버튼을 클릭하여 공지를 등록하세요</small></div>';
     return;
   }
   
@@ -264,6 +320,8 @@ function renderHomeNotices() {
   if (notices.length > 3) {
     container.innerHTML += '<div style="text-align:center;padding:12px;"><button class="btn-secondary" onclick="showAllNotices()">📋 모든 공지 보기 (' + notices.length + '개)</button></div>';
   }
+  
+  console.log('✅ renderHomeNotices 완료, 표시된 공지 수:', Math.min(notices.length, 3));
 }
 
 
@@ -327,10 +385,16 @@ async function deleteNotice(noticeId) {
   }
   
   try {
-    notices = notices.filter(n => n.id !== noticeId);
-    localStorage.setItem('ch2_notices', JSON.stringify(notices));
-    if (typeof showToast === 'function') showToast('🗑 삭제되었습니다');
-    renderHomeNotices();
+    if (typeof firebase !== 'undefined' && firebase.database && window.FB_READY) {
+      await firebase.database().ref(`notices/${noticeId}`).remove();
+      if (typeof showToast === 'function') showToast('🗑 공지사항이 삭제되었습니다');
+      await loadNoticesFromFirebase();
+    } else {
+      notices = notices.filter(n => n.id !== noticeId);
+      localStorage.setItem('ch2_notices', JSON.stringify(notices));
+      if (typeof showToast === 'function') showToast('🗑 삭제되었습니다');
+      renderHomeNotices();
+    }
   } catch (error) {
     console.error('삭제 실패:', error);
     if (typeof showToast === 'function') showToast('❌ 삭제 실패');
@@ -527,7 +591,11 @@ function escapeHtml(str) {
 // ==================== 초기화 ====================
 function initNotices() {
   console.log('initNotices 실행');
-  loadNoticesFromLocal();  // 일단 localStorage만 사용
+  if (typeof firebase !== 'undefined' && firebase.database && window.FB_READY) {
+    loadNoticesFromFirebase();
+  } else {
+    loadNoticesFromLocal();
+  }
 }
 
 
@@ -542,6 +610,7 @@ window.showAllNotices = showAllNotices;
 window.noticePhotoPreview = noticePhotoPreview;
 window.renderHomeNotices = renderHomeNotices;
 window.loadNoticesFromFirebase = loadNoticesFromFirebase;
+window.addTestNotice = addTestNotice;  // 테스트용
 
 
 // 자동 실행
@@ -552,4 +621,4 @@ if (document.readyState === 'loading') {
 }
 
 
-console.log('✅ js_notices.js 로드 완료');
+console.log('✅ js_notices.js 로드 완료 (테스트 공지 포함)');

@@ -104,17 +104,16 @@
 
 
       <!-- 로그인 폼 -->
-      <!-- 로그인 폼 -->
       <div id="login-form">
         <input type="text" class="login-input" id="li-id" placeholder="아이디" autocomplete="username">
         <input type="password" class="login-input" id="li-pw" placeholder="비밀번호" onkeydown="if(event.key==='Enter')doAuthSubmit()" autocomplete="current-password">
         <button class="login-btn" onclick="doAuthSubmit()" id="auth-submit-btn">로그인</button>
-        <div style="text-align:center;margin-top:12px;display:flex;gap:10px;justify-content:center;">
-          <button onclick="showFindId()" style="background:none;border:none;color:rgba(255,255,255,0.45);font-size:11px;cursor:pointer;text-decoration:underline;">아이디 찾기</button>
-          <span style="color:rgba(255,255,255,0.2);">|</span>
+        <div style="text-align:center;margin-top:12px;">
           <button onclick="showForgotPw()" style="background:none;border:none;color:rgba(255,255,255,0.45);font-size:11px;cursor:pointer;text-decoration:underline;">비밀번호를 잊으셨나요?</button>
         </div>
       </div>
+
+
 
 
       <!-- 회원가입 추가 폼 -->
@@ -133,22 +132,6 @@
       </div>
 
 
-<!-- 아이디 찾기 폼 -->
-      <div id="find-id-form" style="display:none;">
-        <div style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:14px;line-height:1.6;text-align:center;">
-          생년월일과 전화번호로<br>아이디를 찾을 수 있습니다
-        </div>
-        <input type="date" class="login-input" id="find-birth" placeholder="생년월일" style="color:rgba(255,255,255,0.8);color-scheme:dark;">
-        <input type="tel" class="login-input" id="find-phone" placeholder="전화번호 (01012345678)">
-        <button class="login-btn" onclick="doFindId()">아이디 찾기</button>
-        <div id="find-id-result" style="display:none;margin-top:16px;padding:12px;background:rgba(255,255,255,0.1);border-radius:8px;">
-          <div style="color:rgba(255,255,255,0.6);font-size:11px;margin-bottom:6px;">찾은 아이디</div>
-          <div id="find-id-result-text" style="color:rgba(255,255,255,0.9);font-weight:700;font-size:14px;"></div>
-        </div>
-        <div style="text-align:center;margin-top:12px;">
-          <button onclick="showLoginForm()" style="background:none;border:none;color:rgba(255,255,255,0.45);font-size:11px;cursor:pointer;text-decoration:underline;">← 로그인으로 돌아가기</button>
-        </div>
-      </div>
 
 
       <!-- 비밀번호 찾기 폼 -->
@@ -218,9 +201,9 @@
   <div id="board-detail-overlay" class="modal-overlay" style="align-items:center;">
     <div class="modal-box" style="border-radius:24px;max-width:600px;max-height:90vh;overflow-y:auto;">
       <div class="modal-header">
-      <div class="modal-title" id="board-detail-title"></div>
-      <button class="modal-close" onclick="closeBoardDetail()">✕</button>
-    </div>
+        <div class="modal-title" id="board-detail-title"></div>
+        <button class="modal-close" onclick="closeBoardDetail()">✕</button>
+      </div>
       <div id="board-detail-content" style="margin-bottom:16px;"></div>
       <div class="board-comments-section">
         <div class="board-comments-title">💬 댓글</div>
@@ -341,13 +324,13 @@
 
 
  <!-- 📢 최근 공지 카드 -->
-<div class="card">
-  <div class="sec-hd">
-    <div class="card-title">📢 최근 공지</div>
-    <!-- 아래 줄의 admin-only 를 admin-manager-only 로 변경 -->
-    <button class="edit-mode-btn admin-manager-only" onclick="openAddNotice()" style="padding:5px 10px; font-size:11px;">➕ 공지 작성</button>
+  <div class="card">
+    <div class="sec-hd">
+      <div class="card-title">📢 최근 공지</div>
+      <button class="edit-mode-btn admin-only" onclick="openAddNotice()" style="padding:5px 10px; font-size:11px;">➕ 공지 작성</button>
+    </div>
+    <div id="home-notices"></div>
   </div>
-  <div id="home-notices"></div>
 </div>
 <!-- 공지 작성 모달 -->
 <div id="modal-notice" class="modal-overlay">

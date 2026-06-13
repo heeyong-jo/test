@@ -1,4 +1,4 @@
-﻿// ==================== 공지사항 관리 (최종 수정본) ====================
+﻿// ==================== 공지사항 관리 (최종 확정본) ====================
 
 
 let notices = [];
@@ -190,6 +190,7 @@ async function loadNoticesFromFirebase() {
   console.log('loadNoticesFromFirebase 실행');
   
   if (typeof firebase === 'undefined' || !firebase.database || !window.FB_READY) {
+    console.log('Firebase 미준비, localStorage 사용');
     loadNoticesFromLocal();
     return;
   }
@@ -198,7 +199,7 @@ async function loadNoticesFromFirebase() {
     const snapshot = await firebase.database().ref('notices').once('value');
     const data = snapshot.val();
     
-    if (data) {
+    if (data && Object.keys(data).length > 0) {
       notices = Object.entries(data).map(([key, value]) => ({
         id: key,
         ...value
@@ -207,10 +208,11 @@ async function loadNoticesFromFirebase() {
       localStorage.setItem('ch2_notices', JSON.stringify(notices));
       console.log('✅ 공지사항 로드 완료:', notices.length);
     } else {
+      console.log('Firebase에 공지사항 없음');
       notices = [];
-      console.log('Firebase에 공지사항 없음, 테스트 공지 추가');
-      // ✅ 테스트 공지 추가 (Firebase에 데이터가 없을 때만)
-      addTestNotice();
+      // Firebase에 데이터 없으면 localStorage 확인
+      loadNoticesFromLocal();
+      return;
     }
     renderHomeNotices();
   } catch (error) {
@@ -220,90 +222,77 @@ async function loadNoticesFromFirebase() {
 }
 
 
-// ==================== localStorage에서 공지사항 로드 ====================
+// ==================== localStorage에서 공지사항 로드 (강제 테스트 공지 포함) ====================
 function loadNoticesFromLocal() {
   console.log('loadNoticesFromLocal 실행');
   try {
     const saved = localStorage.getItem('ch2_notices');
     if (saved) {
-      notices = JSON.parse(saved);
-      console.log('localStorage에서 로드:', notices.length);
-    } else {
-      notices = [];
-      console.log('localStorage에 공지사항 없음, 테스트 공지 추가');
-      // ✅ 테스트 공지 추가 (저장된 데이터가 없을 때만)
-      addTestNotice();
+      const parsed = JSON.parse(saved);
+      if (parsed && parsed.length > 0) {
+        notices = parsed;
+        console.log('localStorage에서 로드:', notices.length);
+        renderHomeNotices();
+        return;
+      }
     }
+    
+    // ✅ 저장된 공지가 없으면 테스트 공지 생성
+    console.log('⚠️ 저장된 공지 없음, 테스트 공지 생성');
+    notices = [
+      {
+        id: 'test1',
+        title: '📢 가좌제일교회 공지사항',
+        content: '공지사항 기능이 정상 작동하고 있습니다. "➕ 공지 작성" 버튼을 클릭하여 새 공지를 등록할 수 있습니다.',
+        timestamp: Date.now(),
+        category: '📢 일반'
+      },
+      {
+        id: 'test2',
+        title: '🙏 수요기도회 안내',
+        content: '매주 수요일 오전 10시 30분, 저녁 7시에 수요기도회가 있습니다. 성도님들의 많은 참여 바랍니다.',
+        timestamp: Date.now() - 86400000,
+        category: '🙏 기도'
+      },
+      {
+        id: 'test3',
+        title: '🎉 부활절 예배 안내',
+        content: '부활절 예배가 4월 9일 오전 11시에 있습니다. 함께 부활의 기쁨을 나누세요.',
+        timestamp: Date.now() - 172800000,
+        category: '🎉 행사'
+      }
+    ];
+    localStorage.setItem('ch2_notices', JSON.stringify(notices));
+    console.log('✅ 테스트 공지 3개 생성됨');
+    
   } catch(e) {
+    console.error('localStorage 오류:', e);
     notices = [];
-    addTestNotice();
   }
   renderHomeNotices();
 }
 
 
-// ==================== 테스트 공지 추가 (문제 확인용) ====================
-function addTestNotice() {
-  // 이미 테스트 공지가 있는지 확인
-  if (notices && notices.length > 0) return;
-  
-  console.log('📢 테스트 공지 추가됨');
-  notices = [
-    {
-      id: 'test_notice_1',
-      title: '📢 가좌제일교회 공지사항 테스트',
-      content: '공지사항 기능이 정상 작동하고 있습니다. 공지 작성 버튼을 클릭하여 새 공지를 등록할 수 있습니다.',
-      timestamp: Date.now(),
-      category: '📢 일반',
-      date: new Date().toISOString()
-    },
-    {
-      id: 'test_notice_2',
-      title: '🙏 수요기도회 안내',
-      content: '매주 수요일 오전 10시 30분, 저녁 7시에 수요기도회가 있습니다. 성도님들의 많은 참여 바랍니다.',
-      timestamp: Date.now() - 86400000,
-      category: '🙏 기도',
-      date: new Date(Date.now() - 86400000).toISOString()
-    },
-    {
-      id: 'test_notice_3',
-      title: '🎉 부활절 예배 안내',
-      content: '부활절 예배가 4월 9일 오전 11시에 있습니다. 함께 부활의 기쁨을 나누세요.',
-      timestamp: Date.now() - 172800000,
-      category: '🎉 행사',
-      date: new Date(Date.now() - 172800000).toISOString()
-    }
-  ];
-  
-  // localStorage에 저장
-  localStorage.setItem('ch2_notices', JSON.stringify(notices));
-  console.log('✅ 테스트 공지 3개가 추가되었습니다.');
-}
-
-
-// ==================== 홈 화면 공지 렌더링 (강화 버전) ====================
+// ==================== 홈 화면 공지 렌더링 ====================
 function renderHomeNotices() {
   console.log('📢 renderHomeNotices 실행, notices:', notices?.length);
   
   const container = document.getElementById('home-notices');
   if (!container) {
-    console.warn('home-notices 요소 없음');
+    console.warn('❌ home-notices 요소 없음!');
     return;
   }
   
   // notices가 없거나 비어있으면 테스트 공지 추가 시도
   if (!notices || notices.length === 0) {
     console.log('notices가 비어있음, 테스트 공지 추가 시도');
-    addTestNotice();
-  }
-  
-  if (!notices || notices.length === 0) {
-    container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text2);">📢 등록된 공지가 없습니다<br><small>➕ 공지 작성 버튼을 클릭하여 공지를 등록하세요</small></div>';
+    loadNoticesFromLocal();
     return;
   }
   
-  const recentNotices = notices.slice(0, 3);
+  // HTML 생성
   let html = '';
+  const recentNotices = notices.slice(0, 3);
   
   for (let i = 0; i < recentNotices.length; i++) {
     const notice = recentNotices[i];
@@ -321,7 +310,7 @@ function renderHomeNotices() {
     container.innerHTML += '<div style="text-align:center;padding:12px;"><button class="btn-secondary" onclick="showAllNotices()">📋 모든 공지 보기 (' + notices.length + '개)</button></div>';
   }
   
-  console.log('✅ renderHomeNotices 완료, 표시된 공지 수:', Math.min(notices.length, 3));
+  console.log('✅ renderHomeNotices 완료, 표시된 공지:', Math.min(notices.length, 3));
 }
 
 
@@ -590,7 +579,7 @@ function escapeHtml(str) {
 
 // ==================== 초기화 ====================
 function initNotices() {
-  console.log('initNotices 실행');
+  console.log('initNotices 실행 - 시작');
   if (typeof firebase !== 'undefined' && firebase.database && window.FB_READY) {
     loadNoticesFromFirebase();
   } else {
@@ -610,7 +599,6 @@ window.showAllNotices = showAllNotices;
 window.noticePhotoPreview = noticePhotoPreview;
 window.renderHomeNotices = renderHomeNotices;
 window.loadNoticesFromFirebase = loadNoticesFromFirebase;
-window.addTestNotice = addTestNotice;  // 테스트용
 
 
 // 자동 실행
@@ -621,4 +609,4 @@ if (document.readyState === 'loading') {
 }
 
 
-console.log('✅ js_notices.js 로드 완료 (테스트 공지 포함)');
+console.log('✅ js_notices.js 로드 완료 (테스트 공지 포함 최종본)');

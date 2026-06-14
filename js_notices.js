@@ -5,30 +5,81 @@ let notices = [];
 let noticePhotos = [];
 
 
-// ==================== 현재 사용자 가져오기 ====================
+// ==================== 현재 사용자 가져오기 (강화 버전) ====================
 function getCurrentUserForNotice() {
-  if (typeof window.currentUser !== 'undefined' && window.currentUser) return window.currentUser;
-  if (typeof currentUser !== 'undefined' && currentUser) return currentUser;
+  console.log('🔍 getCurrentUserForNotice 실행');
+  
+  // 1. window.currentUser 확인
+  if (typeof window.currentUser !== 'undefined' && window.currentUser) {
+    console.log('✅ window.currentUser 있음:', window.currentUser.name, window.currentUser.role);
+    return window.currentUser;
+  }
+  
+  // 2. currentUser 확인
+  if (typeof currentUser !== 'undefined' && currentUser) {
+    console.log('✅ currentUser 있음:', currentUser.name, currentUser.role);
+    return currentUser;
+  }
+  
+  // 3. localStorage에서 직접 확인
   try {
     const saved = localStorage.getItem('ch2_currentUser');
     if (saved) {
       const user = JSON.parse(saved);
-      console.log('localStorage에서 사용자 복원:', user);
+      console.log('✅ localStorage에서 복원:', user.name, user.role);
+      window.currentUser = user;
+      currentUser = user;
       return user;
     }
-  } catch(e) {}
+  } catch(e) { console.error('localStorage 파싱 오류:', e); }
+  
+  // 4. LS 스토리지에서 확인
+  if (typeof LS !== 'undefined') {
+    try {
+      const logged = LS.load('logged', null);
+      if (logged && logged.id) {
+        let foundUser = null;
+        if (typeof ADMIN_ACCOUNTS !== 'undefined') {
+          foundUser = ADMIN_ACCOUNTS.find(a => a.id === logged.id);
+        }
+        if (!foundUser && window.approvedUsers) {
+          foundUser = window.approvedUsers.find(u => u.id === logged.id);
+        }
+        if (foundUser) {
+          console.log('✅ LS에서 사용자 찾음:', foundUser.name, foundUser.role);
+          window.currentUser = foundUser;
+          currentUser = foundUser;
+          return foundUser;
+        }
+      }
+    } catch(e) {}
+  }
+  
+  console.log('❌ 사용자 정보 없음');
   return null;
 }
 
 
-// ==================== 공지 작성 모달 열기 ====================
+// ==================== 공지 작성 모달 열기 (강화 버전) ====================
 function openAddNotice() {
-  console.log('🔧 openAddNotice 실행');
+  console.log('🔧 openAddNotice 실행 - 시작');
   
+  // ✅ 1. 모달 요소 확인
+  const modal = document.getElementById('modal-notice');
+  console.log('📌 modal-notice 요소 확인:', modal);
+  
+  if (!modal) {
+    console.error('❌ modal-notice 요소를 찾을 수 없습니다!');
+    alert('오류: 공지 작성 모달을 찾을 수 없습니다. 페이지를 새로고침 해보세요.');
+    return;
+  }
+  
+  // ✅ 2. 사용자 정보 확인
   const user = getCurrentUserForNotice();
-  console.log('현재 사용자:', user);
+  console.log('📌 현재 사용자:', user);
   
   if (!user) {
+    console.log('⚠️ 로그인 필요');
     if (typeof showToast === 'function') {
       showToast('로그인이 필요합니다.');
     } else {
@@ -39,9 +90,10 @@ function openAddNotice() {
     return;
   }
   
-  console.log('사용자 역할:', user.role);
+  console.log('📌 사용자 역할:', user.role);
   
   if (user.role !== 'admin' && user.role !== 'manager') {
+    console.log('⚠️ 권한 없음 - 관리자/매니저 아님');
     if (typeof showToast === 'function') {
       showToast('⚠️ 관리자 또는 매니저만 공지를 작성할 수 있습니다.');
     } else {
@@ -50,13 +102,7 @@ function openAddNotice() {
     return;
   }
   
-  const modal = document.getElementById('modal-notice');
-  if (!modal) {
-    console.error('❌ modal-notice 요소 없음!');
-    alert('모달을 찾을 수 없습니다.');
-    return;
-  }
-  
+  // ✅ 3. 입력 필드 초기화
   const titleEl = document.getElementById('n-title');
   const catEl = document.getElementById('n-cat');
   const bodyEl = document.getElementById('n-body');
@@ -64,6 +110,12 @@ function openAddNotice() {
   const modalTitleEl = document.getElementById('notice-modal-title');
   const submitBtnEl = document.getElementById('notice-submit-btn');
   const previewDiv = document.getElementById('notice-photo-preview');
+  
+  console.log('📌 입력 필드 확인:', { 
+    titleEl: !!titleEl, 
+    catEl: !!catEl, 
+    bodyEl: !!bodyEl 
+  });
   
   if (titleEl) titleEl.value = '';
   if (catEl) catEl.value = '📢 일반';
@@ -76,6 +128,7 @@ function openAddNotice() {
   noticePhotos = [];
   window._noticeResizedPhotos = null;
   
+  // ✅ 4. 모달 표시
   modal.style.display = 'flex';
   console.log('✅ 공지 작성 모달 열림');
 }
@@ -91,6 +144,7 @@ async function saveNotice() {
   const editIdEl = document.getElementById('n-edit-id');
   
   if (!titleEl || !contentEl) {
+    console.error('폼 요소 없음');
     if (typeof showToast === 'function') showToast('폼 요소를 찾을 수 없습니다');
     return;
   }
@@ -190,7 +244,6 @@ async function loadNoticesFromFirebase() {
   console.log('loadNoticesFromFirebase 실행');
   
   if (typeof firebase === 'undefined' || !firebase.database || !window.FB_READY) {
-    console.log('Firebase 미준비, localStorage 사용');
     loadNoticesFromLocal();
     return;
   }
@@ -210,7 +263,6 @@ async function loadNoticesFromFirebase() {
     } else {
       console.log('Firebase에 공지사항 없음');
       notices = [];
-      // Firebase에 데이터 없으면 localStorage 확인
       loadNoticesFromLocal();
       return;
     }
@@ -222,7 +274,7 @@ async function loadNoticesFromFirebase() {
 }
 
 
-// ==================== localStorage에서 공지사항 로드 (강제 테스트 공지 포함) ====================
+// ==================== localStorage에서 공지사항 로드 ====================
 function loadNoticesFromLocal() {
   console.log('loadNoticesFromLocal 실행');
   try {
@@ -237,27 +289,27 @@ function loadNoticesFromLocal() {
       }
     }
     
-    // ✅ 저장된 공지가 없으면 테스트 공지 생성
+    // 저장된 공지가 없으면 테스트 공지 생성
     console.log('⚠️ 저장된 공지 없음, 테스트 공지 생성');
     notices = [
       {
         id: 'test1',
         title: '📢 가좌제일교회 공지사항',
-        content: '공지사항 기능이 정상 작동하고 있습니다. "➕ 공지 작성" 버튼을 클릭하여 새 공지를 등록할 수 있습니다.',
+        content: '공지사항 기능이 정상 작동하고 있습니다. "➕ 공지 작성" 버튼으로 새 공지를 등록할 수 있습니다.',
         timestamp: Date.now(),
         category: '📢 일반'
       },
       {
         id: 'test2',
         title: '🙏 수요기도회 안내',
-        content: '매주 수요일 오전 10시 30분, 저녁 7시에 수요기도회가 있습니다. 성도님들의 많은 참여 바랍니다.',
+        content: '매주 수요일 오전 10시 30분, 저녁 7시에 수요기도회가 있습니다.',
         timestamp: Date.now() - 86400000,
         category: '🙏 기도'
       },
       {
         id: 'test3',
         title: '🎉 부활절 예배 안내',
-        content: '부활절 예배가 4월 9일 오전 11시에 있습니다. 함께 부활의 기쁨을 나누세요.',
+        content: '부활절 예배가 4월 9일 오전 11시에 있습니다.',
         timestamp: Date.now() - 172800000,
         category: '🎉 행사'
       }
@@ -283,16 +335,13 @@ function renderHomeNotices() {
     return;
   }
   
-  // notices가 없거나 비어있으면 테스트 공지 추가 시도
   if (!notices || notices.length === 0) {
-    console.log('notices가 비어있음, 테스트 공지 추가 시도');
-    loadNoticesFromLocal();
+    container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text2);">📢 등록된 공지가 없습니다</div>';
     return;
   }
   
-  // HTML 생성
-  let html = '';
   const recentNotices = notices.slice(0, 3);
+  let html = '';
   
   for (let i = 0; i < recentNotices.length; i++) {
     const notice = recentNotices[i];
@@ -310,7 +359,7 @@ function renderHomeNotices() {
     container.innerHTML += '<div style="text-align:center;padding:12px;"><button class="btn-secondary" onclick="showAllNotices()">📋 모든 공지 보기 (' + notices.length + '개)</button></div>';
   }
   
-  console.log('✅ renderHomeNotices 완료, 표시된 공지:', Math.min(notices.length, 3));
+  console.log('✅ renderHomeNotices 완료');
 }
 
 
@@ -609,4 +658,4 @@ if (document.readyState === 'loading') {
 }
 
 
-console.log('✅ js_notices.js 로드 완료 (테스트 공지 포함 최종본)');
+console.log('✅ js_notices.js 로드 완료 (공지 작성 모달 열림 문제 해결)');

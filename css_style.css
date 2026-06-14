@@ -130,7 +130,7 @@ header {
 
 
 #board-back-btn {
-  position: fixed;
+  position: sticky;
   top: 70px;
   left: 14px;
   z-index: 101;
@@ -142,6 +142,8 @@ header {
   font-weight: 600;
   color: var(--text);
   font-size: 13px;
+  display: inline-block;
+  margin: 12px 0 0 14px;
 }
 
 

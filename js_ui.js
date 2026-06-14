@@ -180,11 +180,26 @@ function showTab(n) {
 }
 
 
-// ==================== 탭 전환 후 작업 ====================
+// ==================== 탭 전환 후 작업 (공지 버튼 표시 포함) ====================
 function afterTab(n) {
   console.log('afterTab 실행:', n);
   
   if (n === 0) {
+    // ✅ 공지 작성 버튼 표시/숨김 처리
+    const user = getCurrentUser();
+    const noticeBtn = document.querySelector('#p0 .admin-only');
+    
+    if (noticeBtn) {
+      if (user && (user.role === 'admin' || user.role === 'manager')) {
+        noticeBtn.classList.add('visible');
+        console.log('✅ 공지 작성 버튼 표시됨');
+      } else {
+        noticeBtn.classList.remove('visible');
+        console.log('❌ 공지 작성 버튼 숨김');
+      }
+    }
+    
+    // 홈
     if (typeof renderHomeNotices === 'function') renderHomeNotices();
     if (typeof renderServiceView === 'function') renderServiceView();
   }
@@ -249,7 +264,10 @@ function afterTab(n) {
 window.renderMembersAccord = function() {
   console.log('renderMembersAccord 실행');
   const container = document.getElementById('accord-member-list');
-  if (!container) return;
+  if (!container) {
+    console.warn('accord-member-list 요소 없음');
+    return;
+  }
   
   const user = getCurrentUser();
   if (!user || user.role !== 'admin') {
@@ -283,6 +301,9 @@ window.renderMembersAccord = function() {
           `;
         });
         container.innerHTML = html;
+        
+        const totalSpan = document.getElementById('am-total');
+        if (totalSpan) totalSpan.textContent = members.length;
       })
       .catch(err => {
         console.error('멤버 로드 실패:', err);
@@ -765,4 +786,4 @@ function restoreTabStyles() {
 })();
 
 
-console.log('✅ js_ui.js 로드 완료');
+console.log('✅ js_ui.js 로드 완료 (공지 버튼 표시 포함)');

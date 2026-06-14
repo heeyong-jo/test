@@ -17,7 +17,7 @@ body{
   color:var(--text);
   min-height:100dvh;
   overflow-x:hidden;
-  margin-top:120px;  /* 헤더(60px) + 탭(60px) 높이만큼 여백 */
+  margin-top:120px;
 }
 ::-webkit-scrollbar{height:4px;width:4px;background:var(--bg2);}
 ::-webkit-scrollbar-thumb{background:#d4bfa0;border-radius:9px;}
@@ -123,16 +123,25 @@ header {
 }
 
 
-/* ── 게시물 탭 상단 고정 및 뒤로가기 버튼 ── */
+/* ── 게시물 탭 (통일된 높이) ── */
 #board-content {
-  padding-top: 120px !important;
+  display: none;
+  position: fixed;
+  top: 120px;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 120px);
+  background: var(--bg);
+  overflow-y: auto;
+  padding: 12px 14px 100px 14px;
+  z-index: 10;
 }
 
 
+/* 뒤로가기 버튼 */
 #board-back-btn {
   position: sticky;
-  top: 70px;
-  left: 14px;
+  top: 10px;
   z-index: 101;
   background: var(--bg2);
   border: 1.5px solid var(--border);
@@ -143,33 +152,13 @@ header {
   color: var(--text);
   font-size: 13px;
   display: inline-block;
-  margin: 12px 0 0 14px;
+  margin-bottom: 12px;
 }
 
 
-/* ── 모달 헤더 (탭 위에 표시) ── */
-.modal-header {
-  position: relative;
-  z-index: 1001;
-  background: white;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-
-.modal-close {
-  position: relative;
-  z-index: 1001;
-  background: var(--bg2);
-  border: none;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  font-size: 16px;
-  cursor: pointer;
+/* 게시물 목록 */
+#board-post-list {
+  padding-top: 0;
 }
 
 
@@ -382,7 +371,9 @@ textarea.input-field{resize:vertical;min-height:80px;}
   background:rgba(0,0,0,0.55);align-items:flex-end;justify-content:center;}
 .modal-box{background:white;border-radius:24px 24px 0 0;padding:24px 20px 40px;
   width:100%;max-width:520px;max-height:85vh;overflow-y:auto;}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
 .modal-title{font-size:16px;font-weight:800;color:var(--text);}
+.modal-close{background:var(--bg2);border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;}
 
 
 /* 찬송가 탭 스타일 */
@@ -643,19 +634,6 @@ textarea.input-field{resize:vertical;min-height:80px;}
   width: auto;
   padding: 6px 14px;
   font-size: 12px;
-}
-
-
-/* 게시판 본문 */
-#board-content {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--bg);
-  overflow-y: auto;
-  z-index: 10;
 }
 
 

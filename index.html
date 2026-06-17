@@ -23,37 +23,190 @@
   <!-- CSS 파일 -->
   <link rel="stylesheet" href="css_style.css">
   <style>
+    /* 추가 스타일 */
     .page { display: none !important; width: 100%; height: 100%; }
     .page.show { display: block !important; }
-    .tab { transition: all 0.2s ease; }
+    .tab { transition: all 0.2s ease; cursor: pointer; }
     .tab.active { border-bottom: 3px solid #5c3d1e; font-weight: 700; }
+    
+    /* 관리자/매니저 버튼 표시 제어 */
+    .admin-only, .admin-manager-only {
+      display: none !important;
+    }
+    .admin-only.visible, .admin-manager-only.visible {
+      display: inline-block !important;
+    }
+    
+    /* 모달 스타일 개선 */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+    .modal-box {
+      background: white;
+      border-radius: 24px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #333;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #999;
+    }
+    .input-group {
+      margin-bottom: 16px;
+    }
+    .input-label {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #555;
+    }
+    .input-field {
+      width: 100%;
+      padding: 12px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #7a5230, #9e6b3e);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+    }
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #555;
+      border: none;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    
+    /* 알림 토스트 */
+    .toast-message {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 13px;
+      z-index: 11000;
+      white-space: nowrap;
+    }
+    
+    /* 스플래시 애니메이션 */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    .splash-spinner {
+      width: 30px;
+      height: 30px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-top: 20px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
   
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 </head>
 <body>
 
 
+<!-- ==================== Firebase 설정 ==================== -->
+<script>
+  // 🔥 Firebase 설정 - 여기에 실제 프로젝트 정보를 입력하세요
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    databaseURL: "YOUR_DATABASE_URL",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+  
+  // Firebase 초기화 (중복 방지)
+  if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+    console.log('✅ Firebase 초기화 완료');
+  } else if (typeof firebase !== 'undefined' && firebase.apps.length) {
+    console.log('✅ Firebase 이미 초기화됨');
+  } else {
+    console.warn('⚠️ Firebase SDK 로드 실패');
+  }
+</script>
+
+
 <!-- ==================== 스플래시 ==================== -->
-<div id="splash">
+<div id="splash" style="position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(145deg,#5c3d1e,#3d2a14);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20000;">
   <img src="logo.png" alt="로고" style="width:80px;height:80px;object-fit:contain;animation:float 1.5s ease-in-out infinite;">
-  <div style="color:white;font-size:20px;font-weight:800;">가좌제일교회</div>
+  <div style="color:white;font-size:20px;font-weight:800;margin-top:16px;">가좌제일교회</div>
   <div style="color:rgba(255,255,255,0.55);font-size:12px;">대한예수교 장로회</div>
   <div class="splash-spinner"></div>
 </div>
 
 
+
+
 <!-- ==================== 로그인 ==================== -->
-<div id="screen-login">
-  <button onclick="document.getElementById('screen-login').style.display='none'"
+<div id="screen-login" style="position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(145deg,#5c3d1e,#3d2a14);z-index:15000;display:flex;align-items:center;justify-content:center;overflow-y:auto;">
+  <button onclick="closeLoginScreen()"
     style="position:fixed;top:16px;right:16px;background:rgba(255,255,255,0.15);border:none;border-radius:50%;width:36px;height:36px;color:white;font-size:18px;cursor:pointer;z-index:10001;">✕</button>
-  <div class="login-wrap">
-    <div class="login-box">
-      <img src="logo.png" alt="로고" style="width:72px;height:72px;object-fit:contain;margin-bottom:16px;animation:float 2.5s ease-in-out infinite;">
-      <div class="login-title">가좌제일교회</div>
-      <div class="login-sub">대한예수교 장로회</div>
+  <div class="login-wrap" style="width:100%;max-width:350px;padding:20px;">
+    <div class="login-box" style="background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);border-radius:24px;padding:24px;">
+      <img src="logo.png" alt="로고" style="width:72px;height:72px;object-fit:contain;margin-bottom:16px;animation:float 2.5s ease-in-out infinite;display:block;margin-left:auto;margin-right:auto;">
+      <div class="login-title" style="text-align:center;color:white;font-size:20px;font-weight:800;">가좌제일교회</div>
+      <div class="login-sub" style="text-align:center;color:rgba(255,255,255,0.6);font-size:12px;margin-bottom:20px;">대한예수교 장로회</div>
 
 
       <!-- 로그인/회원가입 탭 -->
@@ -64,22 +217,22 @@
 
 
       <!-- 에러 메시지 -->
-      <div id="login-err" class="login-err"></div>
+      <div id="login-err" class="login-err" style="color:#ffcc00;font-size:12px;margin-bottom:12px;text-align:center;"></div>
 
 
       <!-- 승인 대기 메시지 -->
       <div id="pending-msg" style="display:none;background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);border-radius:12px;padding:14px;margin-bottom:16px;text-align:center;">
         <div style="font-size:24px;margin-bottom:6px;">⏳</div>
         <div style="color:#ffd966;font-size:14px;font-weight:700;margin-bottom:4px;">승인 대기 중입니다</div>
-        <div style="color:rgba(255,255,255,0.65);font-size:12px;line-height:1.7;">가입 신청이 완료되었습니다.<br>담당자 승인 후 이용 가능합니다.<br><span style="color:rgba(255,255,255,0.4);font-size:10px;">문의: 032-581-4048</span></div>
+        <div style="color:rgba(255,255,255,0.65);font-size:12px;line-height:1.7;">가입 신청이 완료되었습니다.<br>담당자 승인 후 이용 가능합니다.</div>
       </div>
 
 
       <!-- 로그인 폼 -->
       <div id="login-form">
-        <input type="text" class="login-input" id="li-id" placeholder="아이디" autocomplete="username">
-        <input type="password" class="login-input" id="li-pw" placeholder="비밀번호" onkeydown="if(event.key==='Enter')doAuthSubmit()" autocomplete="current-password">
-        <button class="login-btn" onclick="doAuthSubmit()" id="auth-submit-btn">로그인</button>
+        <input type="text" class="login-input" id="li-id" placeholder="아이디" autocomplete="username" style="width:100%;padding:12px;margin-bottom:12px;border-radius:12px;border:none;">
+        <input type="password" class="login-input" id="li-pw" placeholder="비밀번호" onkeydown="if(event.key==='Enter')doAuthSubmit()" autocomplete="current-password" style="width:100%;padding:12px;margin-bottom:16px;border-radius:12px;border:none;">
+        <button class="login-btn" onclick="doAuthSubmit()" id="auth-submit-btn" style="width:100%;padding:12px;background:white;color:#5c3d1e;border:none;border-radius:12px;font-weight:700;cursor:pointer;">로그인</button>
         <div style="text-align:center;margin-top:12px;">
           <button onclick="showFindId()" style="background:none;border:none;color:rgba(255,255,255,0.45);font-size:11px;cursor:pointer;text-decoration:underline;">아이디 찾기</button>
           <span style="color:rgba(255,255,255,0.2);"> | </span>
@@ -90,31 +243,25 @@
 
       <!-- 회원가입 폼 -->
       <div id="signup-extra" style="display:none;">
-        <input type="text" class="login-input" id="su-id" placeholder="아이디 (영문/숫자 4자 이상)" oninput="checkIdDuplicate(this.value)" autocomplete="username">
+        <input type="text" class="login-input" id="su-id" placeholder="아이디 (영문/숫자 4자 이상)" style="width:100%;padding:12px;margin-bottom:8px;border-radius:12px;border:none;">
         <div id="id-check-msg" style="font-size:11px;margin:-8px 0 10px 4px;min-height:16px;"></div>
-        <input type="password" class="login-input" id="su-pw" placeholder="비밀번호 (4자 이상)" autocomplete="new-password">
-        <input type="password" class="login-input" id="su-pw2" placeholder="비밀번호 확인" autocomplete="new-password">
-        <input type="text" class="login-input" id="su-name" placeholder="이름 (필수)">
-        <input type="tel" class="login-input" id="su-phone" placeholder="전화번호 (선택)">
-        <div style="color:rgba(255,255,255,0.5);font-size:10px;margin:-8px 0 6px 4px;">생년월일</div>
-        <input type="date" class="login-input" id="su-birth" placeholder="생년월일" style="color:rgba(255,255,255,0.8);color-scheme:dark;">
-        <input type="email" class="login-input" id="su-email" placeholder="이메일 (선택)">
-        <button class="login-btn" style="margin-top:12px;" onclick="doSignup()">가입 신청</button>
+        <input type="password" class="login-input" id="su-pw" placeholder="비밀번호 (4자 이상)" style="width:100%;padding:12px;margin-bottom:12px;border-radius:12px;border:none;">
+        <input type="password" class="login-input" id="su-pw2" placeholder="비밀번호 확인" style="width:100%;padding:12px;margin-bottom:12px;border-radius:12px;border:none;">
+        <input type="text" class="login-input" id="su-name" placeholder="이름 (필수)" style="width:100%;padding:12px;margin-bottom:12px;border-radius:12px;border:none;">
+        <input type="tel" class="login-input" id="su-phone" placeholder="전화번호 (선택)" style="width:100%;padding:12px;margin-bottom:12px;border-radius:12px;border:none;">
+        <input type="date" class="login-input" id="su-birth" style="width:100%;padding:12px;margin-bottom:12px;border-radius:12px;border:none;">
+        <input type="email" class="login-input" id="su-email" placeholder="이메일 (선택)" style="width:100%;padding:12px;margin-bottom:16px;border-radius:12px;border:none;">
+        <button class="login-btn" style="width:100%;padding:12px;background:white;color:#5c3d1e;border:none;border-radius:12px;font-weight:700;cursor:pointer;" onclick="doSignup()">가입 신청</button>
       </div>
 
 
       <!-- 아이디 찾기 폼 -->
       <div id="find-id-form" style="display:none;">
-        <div style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:14px;line-height:1.6;text-align:center;">
-          생년월일과 전화번호로<br>아이디를 찾을 수 있습니다
-        </div>
-        <input type="date" class="login-input" id="find-birth" placeholder="생년월일" style="color:rgba(255,255,255,0.8);color-scheme:dark;">
-        <input type="tel" class="login-input" id="find-phone" placeholder="전화번호 (01012345678)">
-        <button class="login-btn" onclick="doFindId()">아이디 찾기</button>
-        <div id="find-id-result" style="display:none;margin-top:16px;padding:12px;background:rgba(255,255,255,0.1);border-radius:8px;">
-          <div style="color:rgba(255,255,255,0.6);font-size:11px;margin-bottom:6px;">찾은 아이디</div>
-          <div id="find-id-result-text" style="color:rgba(255,255,255,0.9);font-weight:700;font-size:14px;"></div>
-        </div>
+        <div style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:14px;line-height:1.6;text-align:center;">생년월일과 전화번호로 아이디를 찾을 수 있습니다</div>
+        <input type="date" class="login-input" id="find-birth" style="width:100%;padding:12px;margin-bottom:12px;border-radius:12px;border:none;">
+        <input type="tel" class="login-input" id="find-phone" placeholder="전화번호" style="width:100%;padding:12px;margin-bottom:16px;border-radius:12px;border:none;">
+        <button class="login-btn" onclick="doFindId()" style="width:100%;padding:12px;background:white;color:#5c3d1e;border:none;border-radius:12px;font-weight:700;cursor:pointer;">아이디 찾기</button>
+        <div id="find-id-result" style="display:none;margin-top:16px;padding:12px;background:rgba(255,255,255,0.1);border-radius:8px;"></div>
         <div style="text-align:center;margin-top:12px;">
           <button onclick="showLoginForm()" style="background:none;border:none;color:rgba(255,255,255,0.45);font-size:11px;cursor:pointer;text-decoration:underline;">← 로그인으로 돌아가기</button>
         </div>
@@ -123,13 +270,11 @@
 
       <!-- 비밀번호 찾기 폼 -->
       <div id="forgot-form" style="display:none;">
-        <div style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:14px;line-height:1.6;text-align:center;">
-          비밀번호 재설정을 위해<br>아이디, 이메일, 전화번호를 입력하세요
-        </div>
-        <input type="text" class="login-input" id="forgot-id" placeholder="아이디">
-        <input type="email" class="login-input" id="forgot-email" placeholder="이메일">
-        <input type="tel" class="login-input" id="forgot-phone" placeholder="전화번호">
-        <button class="login-btn" onclick="doResetPassword()">비밀번호 재설정</button>
+        <div style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:14px;line-height:1.6;text-align:center;">비밀번호 재설정을 위해 정보를 입력하세요</div>
+        <input type="text" class="login-input" id="forgot-id" placeholder="아이디" style="width:100%;padding:12px;margin-bottom:12px;border-radius:12px;border:none;">
+        <input type="email" class="login-input" id="forgot-email" placeholder="이메일" style="width:100%;padding:12px;margin-bottom:12px;border-radius:12px;border:none;">
+        <input type="tel" class="login-input" id="forgot-phone" placeholder="전화번호" style="width:100%;padding:12px;margin-bottom:16px;border-radius:12px;border:none;">
+        <button class="login-btn" onclick="doResetPassword()" style="width:100%;padding:12px;background:white;color:#5c3d1e;border:none;border-radius:12px;font-weight:700;cursor:pointer;">비밀번호 재설정</button>
         <div style="text-align:center;margin-top:12px;">
           <button onclick="showLoginForm()" style="background:none;border:none;color:rgba(255,255,255,0.45);font-size:11px;cursor:pointer;text-decoration:underline;">← 로그인으로 돌아가기</button>
         </div>
@@ -139,167 +284,111 @@
 </div>
 
 
+
+
 <!-- ==================== 헤더 ==================== -->
-<header>
-  <div class="logo">
+<header style="position:sticky;top:0;background:white;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;z-index:1000;">
+  <div class="logo" style="display:flex;align-items:center;gap:10px;">
     <div class="logo-icon">
       <img src="logo.png" alt="로고" style="width:42px;height:42px;object-fit:contain;border-radius:8px;">
     </div>
     <div>
-      <div class="logo-text">가좌제일교회</div>
-      <div class="logo-sub">GAJWAJEIL · <span id="htime">--:--</span></div>
+      <div class="logo-text" style="font-size:16px;font-weight:800;">가좌제일교회</div>
+      <div class="logo-sub" style="font-size:10px;color:#999;">GAJWAJEIL · <span id="htime">--:--</span></div>
     </div>
   </div>
-  <div class="user-badge" onclick="currentUser ? toggleProfileDropdown() : (document.getElementById('screen-login').style.display='flex')">
-    <div class="user-dot"></div>
+  <div class="user-badge" onclick="toggleProfileDropdown()" style="position:relative;display:flex;align-items:center;gap:8px;cursor:pointer;">
+    <div class="user-dot" style="width:8px;height:8px;background:#4caf50;border-radius:50%;"></div>
     <div style="display:flex;flex-direction:column;align-items:flex-start;gap:1px;">
-      <span class="user-name-txt" id="user-name-display">-</span>
-      <span class="user-role-txt" id="user-role-display"></span>
+      <span class="user-name-txt" id="user-name-display" style="font-size:13px;font-weight:600;">-</span>
+      <span class="user-role-txt" id="user-role-display" style="font-size:10px;color:#999;"></span>
     </div>
-    <div id="profile-dropdown" class="profile-dropdown">
-      <div class="profile-dropdown-item" onclick="openMyProfile()">👤 내 정보</div>
-      <div class="profile-dropdown-item" onclick="openChangePassword()">🔑 비밀번호 변경</div>
-      <div class="profile-dropdown-item danger" onclick="doLogout()">🚪 로그아웃</div>
+    <div id="profile-dropdown" style="display:none;position:absolute;top:100%;right:0;background:white;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:120px;z-index:1001;">
+      <div class="profile-dropdown-item" onclick="openMyProfile()" style="padding:10px 16px;cursor:pointer;">👤 내 정보</div>
+      <div class="profile-dropdown-item" onclick="openChangePassword()" style="padding:10px 16px;cursor:pointer;">🔑 비밀번호 변경</div>
+      <div class="profile-dropdown-item danger" onclick="doLogout()" style="padding:10px 16px;cursor:pointer;color:#dc3545;">🚪 로그아웃</div>
     </div>
   </div>
 </header>
 
 
+
+
 <!-- ==================== 탭 ==================== -->
-<div class="tabs" id="tab-bar">
-  <div class="tab active" onclick="showTab(0)" id="tab0">🏠 홈</div>
-  <div class="tab" onclick="showTab(1)" id="tab1">📖 말씀</div>
-  <div class="tab" onclick="showTab(2)" id="tab2">📋 게시물</div>
-  <div class="tab" onclick="showTab(3)" id="tab3">📖 성경읽기</div>
-  <div class="tab" onclick="showTab(4)" id="tab4">📍 안내</div>
-  <div class="tab" onclick="showTab(5)" id="tab5">📖 성경책</div>
-  <div class="tab admin-manager-only" onclick="showTab(6)" id="tab6">⚙️ 관리</div>
+<div class="tabs" id="tab-bar" style="display:flex;background:white;border-bottom:1px solid #eee;overflow-x:auto;">
+  <div class="tab active" onclick="showTab(0)" id="tab0" style="flex:1;text-align:center;padding:12px 0;font-size:13px;">🏠 홈</div>
+  <div class="tab" onclick="showTab(1)" id="tab1" style="flex:1;text-align:center;padding:12px 0;font-size:13px;">📖 말씀</div>
+  <div class="tab" onclick="showTab(2)" id="tab2" style="flex:1;text-align:center;padding:12px 0;font-size:13px;">📋 게시물</div>
+  <div class="tab" onclick="showTab(3)" id="tab3" style="flex:1;text-align:center;padding:12px 0;font-size:13px;">📖 성경읽기</div>
+  <div class="tab" onclick="showTab(4)" id="tab4" style="flex:1;text-align:center;padding:12px 0;font-size:13px;">📍 안내</div>
+  <div class="tab" onclick="showTab(5)" id="tab5" style="flex:1;text-align:center;padding:12px 0;font-size:13px;">📖 성경책</div>
+  <div class="tab admin-manager-only" onclick="showTab(6)" id="tab6" style="flex:1;text-align:center;padding:12px 0;font-size:13px;">⚙️ 관리</div>
 </div>
 
 
-<div id="swipe-container">
 
 
-<!-- ==================== 게시판 모달 ==================== -->
-<div id="board-detail-overlay" class="modal-overlay" style="align-items:center;">
-  <div class="modal-box" style="border-radius:24px;max-width:600px;max-height:90vh;overflow-y:auto;">
-    <div class="modal-header">
-      <div class="modal-title" id="board-detail-title"></div>
-      <button class="modal-close" onclick="closeBoardDetail()">✕</button>
-    </div>
-    <div id="board-detail-content" style="margin-bottom:16px;"></div>
-    <div class="board-comments-section">
-      <div class="board-comments-title">💬 댓글</div>
-      <div id="board-comments-list"></div>
-      <div id="board-comment-input-wrap" class="input-group" style="margin-top:12px;">
-        <textarea id="board-comment-input" class="input-field" rows="2" placeholder="댓글을 입력하세요..."></textarea>
-        <button class="btn-primary" onclick="submitBoardComment()" style="margin-top:8px;">등록</button>
-      </div>
-      <div id="board-comment-login-msg" style="display:none;text-align:center;padding:12px;font-size:12px;color:var(--text2);">댓글을 작성하려면 로그인이 필요합니다.</div>
-    </div>
-  </div>
-</div>
+<div id="swipe-container" style="padding-bottom:100px;">
 
 
-<!-- ==================== 글쓰기 모달 ==================== -->
-<div id="board-write-overlay" class="modal-overlay" style="position:fixed; inset:0; z-index:10000; display:none; align-items:flex-start; justify-content:center; padding:0; overflow-y:auto; background:rgba(0,0,0,0.5);">
-  <div class="modal-box" style="border-radius:24px; max-width:600px; width:92%; margin:60px auto 40px auto; padding:20px; max-height:calc(100vh - 100px); overflow-y:auto;">
-    <div class="modal-header">
-      <div class="modal-title">✏️ 글쓰기</div>
-      <button class="modal-close" onclick="closeBoardWrite()">✕</button>
-    </div>
-    <div class="input-group">
-      <div class="input-label">제목</div>
-      <input class="input-field" id="board-write-title" placeholder="제목">
-    </div>
-    <div class="input-group">
-      <div class="input-label">내용</div>
-      <textarea class="input-field" id="board-write-content" rows="6" placeholder="내용을 입력하세요..."></textarea>
-    </div>
-    <div class="input-group">
-      <div class="input-label">사진 첨부</div>
-      <input type="file" id="board-write-photo" accept="image/*" onchange="boardPhotoPreview(this)">
-      <div id="board-photo-preview" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;"></div>
-    </div>
-    <button class="btn-primary" onclick="submitBoardPost()">등록</button>
-  </div>
-</div>
-
-
-<!-- ==================== 기도제목 작성 모달 ==================== -->
-<div id="modal-prayer" class="modal-overlay">
-  <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title">🙏 기도제목 작성</div>
-      <button class="modal-close" onclick="closeModal('modal-prayer')">✕</button>
-    </div>
-    <div class="input-group">
-      <div class="input-label">제목 (선택)</div>
-      <input class="input-field" id="prayer-title" placeholder="기도제목 제목">
-    </div>
-    <div class="input-group">
-      <div class="input-label">기도 내용</div>
-      <textarea class="input-field" id="prayer-content" rows="5" placeholder="기도해주실 내용을 입력하세요..."></textarea>
-    </div>
-    <button class="btn-primary" onclick="submitPrayer()">기도제목 등록</button>
-  </div>
-</div>
 
 
 <!-- ==================== p0: 홈 ==================== -->
 <div id="p0" class="page show">
   <!-- 주일 예배 카드 -->
-  <div class="card">
-    <div class="card-title" style="justify-content:space-between;">
+  <div class="card" style="margin:12px;background:white;border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+    <div class="card-title" style="display:flex;justify-content:space-between;margin-bottom:12px;font-weight:700;">
       <span>⛪ 주일 예배</span>
-      <button class="edit-mode-btn admin-only" onclick="toggleSundayEdit()" id="sunday-edit-btn">✏️ 수정</button>
+      <button class="edit-mode-btn admin-only" onclick="toggleSundayEdit()" id="sunday-edit-btn" style="background:none;border:none;color:#7a5230;font-size:12px;">✏️ 수정</button>
     </div>
     <div id="sunday-service-view"><div id="sunday-service-list-view"></div></div>
     <div id="sunday-service-edit" style="display:none;">
       <div id="sunday-service-list-edit"></div>
-      <button class="service-add-btn" onclick="addSundayServiceRow()">+ 예배 추가</button>
+      <button class="service-add-btn" onclick="addSundayServiceRow()" style="margin-top:8px;padding:8px;background:#f0f0f0;border:none;border-radius:8px;">+ 예배 추가</button>
       <div style="display:flex;gap:8px;margin-top:10px;">
-        <button onclick="saveSundayEdit()" style="flex:1;padding:11px;background:linear-gradient(135deg,#7a5230,#9e6b3e);border:none;border-radius:12px;color:white;font-size:13px;font-weight:700;cursor:pointer;">✅ 저장</button>
-        <button onclick="cancelSundayEdit()" style="flex:1;padding:11px;background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;color:var(--purple);font-size:13px;font-weight:600;cursor:pointer;">취소</button>
+        <button onclick="saveSundayEdit()" style="flex:1;padding:10px;background:#7a5230;border:none;border-radius:8px;color:white;">✅ 저장</button>
+        <button onclick="cancelSundayEdit()" style="flex:1;padding:10px;background:#f0f0f0;border:1px solid #ddd;border-radius:8px;">취소</button>
       </div>
     </div>
   </div>
 
 
   <!-- 그 외 예배 카드 -->
-  <div class="card">
-    <div class="card-title" style="justify-content:space-between;">
+  <div class="card" style="margin:12px;background:white;border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+    <div class="card-title" style="display:flex;justify-content:space-between;margin-bottom:12px;font-weight:700;">
       <span>📅 그 외 예배 안내</span>
-      <button class="edit-mode-btn admin-only" onclick="toggleOtherEdit()" id="other-edit-btn">✏️ 수정</button>
+      <button class="edit-mode-btn admin-only" onclick="toggleOtherEdit()" id="other-edit-btn" style="background:none;border:none;color:#7a5230;font-size:12px;">✏️ 수정</button>
     </div>
     <div id="other-service-view"><div id="other-service-list-view"></div></div>
     <div id="other-service-edit" style="display:none;">
       <div id="other-service-list-edit"></div>
-      <button class="service-add-btn" onclick="addOtherServiceRow()">+ 예배 추가</button>
+      <button class="service-add-btn" onclick="addOtherServiceRow()" style="margin-top:8px;padding:8px;background:#f0f0f0;border:none;border-radius:8px;">+ 예배 추가</button>
       <div style="display:flex;gap:8px;margin-top:10px;">
-        <button onclick="saveOtherEdit()" style="flex:1;padding:11px;background:linear-gradient(135deg,#7a5230,#9e6b3e);border:none;border-radius:12px;color:white;font-size:13px;font-weight:700;cursor:pointer;">✅ 저장</button>
-        <button onclick="cancelOtherEdit()" style="flex:1;padding:11px;background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;color:var(--purple);font-size:13px;font-weight:600;cursor:pointer;">취소</button>
+        <button onclick="saveOtherEdit()" style="flex:1;padding:10px;background:#7a5230;border:none;border-radius:8px;color:white;">✅ 저장</button>
+        <button onclick="cancelOtherEdit()" style="flex:1;padding:10px;background:#f0f0f0;border:1px solid #ddd;border-radius:8px;">취소</button>
       </div>
     </div>
   </div>
 
 
   <!-- 최근 공지 카드 -->
-  <div class="card">
-    <div class="sec-hd">
-      <div class="card-title">📢 최근 공지</div>
-      <button class="edit-mode-btn admin-manager-only" onclick="openAddNotice()" style="padding:5px 10px; font-size:11px;">➕ 공지 작성</button>
+  <div class="card" style="margin:12px;background:white;border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+    <div class="sec-hd" style="display:flex;justify-content:space-between;margin-bottom:12px;">
+      <div class="card-title" style="font-weight:700;">📢 최근 공지</div>
+      <button class="edit-mode-btn admin-manager-only" onclick="openAddNotice()" style="padding:5px 10px;font-size:11px;background:#7a5230;color:white;border:none;border-radius:8px;">➕ 공지 작성</button>
     </div>
     <div id="home-notices"></div>
   </div>
 </div>
 
 
-<!-- ==================== 공지 작성 모달 (1개만 유지) ==================== -->
+
+
+<!-- ==================== 공지 작성 모달 ==================== -->
 <div id="modal-notice" class="modal-overlay">
   <div class="modal-box">
     <div class="modal-header">
-      <div class="modal-title" id="notice-modal-title">📢 공지 작성</div>
+      <div class="modal-title">📢 공지 작성</div>
       <button class="modal-close" onclick="closeModal('modal-notice')">✕</button>
     </div>
     <div class="input-group">
@@ -317,357 +406,425 @@
       </select>
     </div>
     <div class="input-group">
-      <div class="input-label">사진 첨부</div>
-      <input type="file" id="n-photo" accept="image/*" multiple onchange="noticePhotoPreview(this)">
-      <div id="notice-photo-preview" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:8px;"></div>
-    </div>
-    <div class="input-group">
       <div class="input-label">내용</div>
       <textarea class="input-field" id="n-body" rows="5" placeholder="공지 내용을 입력하세요"></textarea>
     </div>
-    <input type="hidden" id="n-edit-id" value="">
-    <button class="btn-primary" id="notice-submit-btn" onclick="saveNotice()">등록하기</button>
+    <button class="btn-primary" onclick="saveNotice()">등록하기</button>
   </div>
 </div>
 
 
-<!-- ==================== p1: 말씀 ==================== -->
-<div id="p1" class="page">
-  <div class="card">
-    <div class="card-title">📅 이번주 말씀</div>
-    <div style="background:#f9f2f9;border-radius:16px;padding:20px;margin-bottom:16px;">
-      <div style="font-size:24px;margin-bottom:12px;">📖</div>
-      <div id="today-verse-text" style="font-size:18px;font-weight:600;color:#3b2e1e;margin-bottom:8px;"></div>
-      <div id="today-verse-ref" style="color:var(--purple);margin-bottom:6px;font-weight:600;"></div>
-      <div id="today-verse-body" style="font-size:13px;color:var(--text2);line-height:1.7;"></div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button class="btn-secondary admin-only" style="flex:1;" onclick="openVerseSelector()">📖 말씀등록하기</button>
-      <button class="btn-primary" style="flex:1;padding:12px;" onclick="shareToday()">📤 공유</button>
-    </div>
-  </div>
-  <div class="card" id="write-meditation-card">
-    <div class="card-title">✏️ 말씀 나누기</div>
-    <div class="write-area">
-      <textarea class="write-textarea" id="meditation-input" placeholder="말씀을 읽고 받은 은혜를 나눠주세요..."></textarea>
-      <div style="overflow:hidden;"><button class="write-submit" onclick="submitMeditation()">등록</button></div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title">💬 성도들의 묵상</div>
-    <div id="meditation-list"></div>
-  </div>
-  <div class="card">
-    <div class="card-title" style="justify-content:space-between;">
-      <span>🙏 기도제목</span>
-      <button class="btn-secondary" style="padding:4px 12px;font-size:11px;" onclick="openAddPrayer()">+ 기도제목 작성</button>
-    </div>
-    <div id="prayer-list" class="prayer-list-container"></div>
-  </div>
-</div>
 
 
-<!-- ==================== 말씀 등록 모달 ==================== -->
-<div id="modal-verse-selector" class="modal-overlay">
-  <div class="modal-box" style="max-height:90vh;">
-    <div class="modal-header">
-      <div class="modal-title" id="verse-modal-title">📖 말씀 선택</div>
-      <button class="modal-close" onclick="closeVerseSelector()">✕</button>
-    </div>
-    <div style="display:flex;gap:6px;margin-bottom:18px;">
-      <div id="vstep1" style="flex:1;padding:8px;border-radius:10px;text-align:center;font-size:12px;font-weight:700;background:var(--purple);color:white;">① 책 선택</div>
-      <div id="vstep2" style="flex:1;padding:8px;border-radius:10px;text-align:center;font-size:12px;font-weight:700;background:var(--bg2);color:var(--text2);">② 장 선택</div>
-      <div id="vstep3" style="flex:1;padding:8px;border-radius:10px;text-align:center;font-size:12px;font-weight:700;background:var(--bg2);color:var(--text2);">③ 절 선택</div>
-    </div>
-    <div id="vstep-book">
-      <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:8px;">📖 구약</div>
-      <div id="vs-ot-books" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-height:180px;overflow-y:auto;margin-bottom:12px;"></div>
-      <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:8px;">📖 신약</div>
-      <div id="vs-nt-books" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-height:180px;overflow-y:auto;"></div>
-    </div>
-    <div id="vstep-chapter" style="display:none;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-        <button onclick="vsGoBack('book')" style="background:var(--bg2);border:none;border-radius:20px;padding:6px 14px;font-size:12px;color:var(--purple);font-weight:600;cursor:pointer;">← 뒤로</button>
-        <div id="vs-book-selected" style="font-size:14px;font-weight:700;color:var(--text);"></div>
-      </div>
-      <div id="vs-chapters" style="display:flex;flex-wrap:wrap;gap:8px;max-height:280px;overflow-y:auto;"></div>
-    </div>
-    <div id="vstep-verse" style="display:none;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-        <button onclick="vsGoBack('chapter')" style="background:var(--bg2);border:none;border-radius:20px;padding:6px 14px;font-size:12px;color:var(--purple);font-weight:600;cursor:pointer;">← 뒤로</button>
-        <div id="vs-chapter-selected" style="font-size:14px;font-weight:700;color:var(--text);"></div>
-      </div>
-      <div style="background:var(--bg);border-radius:12px;padding:12px;margin-bottom:12px;">
-        <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;">절 범위 선택</div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <select id="vs-from" class="input-field" style="flex:1;padding:8px;font-size:13px;"></select>
-          <span style="color:var(--text2);font-weight:600;">~</span>
-          <select id="vs-to" class="input-field" style="flex:1;padding:8px;font-size:13px;"></select>
-        </div>
-      </div>
-      <div id="vs-preview" style="background:var(--bg);border-radius:12px;padding:12px;margin-bottom:14px;font-size:13px;color:var(--text2);line-height:1.7;max-height:160px;overflow-y:auto;"></div>
-      <button onclick="applyTodayVerse()" style="width:100%;padding:13px;background:linear-gradient(135deg,#7a5230,#9e6b3e);border:none;border-radius:12px;color:white;font-size:14px;font-weight:700;cursor:pointer;">✅ 오늘의 말씀으로 등록</button>
-    </div>
-  </div>
-</div>
+<!-- ==================== p1-p6: 나머지 페이지 (간소화) ==================== -->
+<div id="p1" class="page"><div style="padding:20px;text-align:center;">📖 말씀 페이지 (로딩 중...)</div></div>
+<div id="p2" class="page"><div style="padding:20px;text-align:center;">📋 게시물 페이지 (로딩 중...)</div></div>
+<div id="p3" class="page"><div style="padding:20px;text-align:center;">📖 성경읽기 페이지 (로딩 중...)</div></div>
+<div id="p4" class="page"><div style="padding:20px;text-align:center;">📍 안내 페이지 (로딩 중...)</div></div>
+<div id="p5" class="page"><div style="padding:20px;text-align:center;">📖 성경책 페이지 (로딩 중...)</div></div>
+<div id="p6" class="page"><div style="padding:20px;text-align:center;">⚙️ 관리 페이지 (로딩 중...)</div></div>
 
 
-<!-- ==================== p2: 게시물 ==================== -->
-<div id="p2" class="page">
-  <div id="board-category-list" class="board-tab-col">
-    <button class="board-cat-btn active" data-cat="일반성도">📌 일반성도<span class="board-tab-sub">&nbsp;</span></button>
-    <button class="board-cat-btn" data-cat="꿈지락">🐣 꿈지락<span class="board-tab-sub">0~4세</span></button>
-    <button class="board-cat-btn" data-cat="꿈트리">🌱 꿈트리<span class="board-tab-sub">5~7세</span></button>
-    <button class="board-cat-btn" data-cat="꿈마루">📚 꿈마루<span class="board-tab-sub">초등</span></button>
-    <button class="board-cat-btn" data-cat="꿈하나">🔥 꿈하나<span class="board-tab-sub">청소년</span></button>
-    <button class="board-cat-btn" data-cat="새이플러스">✝️ 새이플러스<span class="board-tab-sub">청년부</span></button>
-  </div>
-
-
-  <div id="board-content" style="display:none; position:fixed; top:120px; left:0; width:100%; height:calc(100% - 120px); background:var(--bg); overflow-y:auto; padding: 12px 14px 100px 14px; z-index: 10;">
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-      <button id="board-back-btn" style="background:var(--bg2); border:1.5px solid var(--border); border-radius:8px; padding:5px 12px; cursor:pointer; color:var(--text); font-weight:600;" onclick="showBoardCategoryList()">← 목록</button>
-      <div id="board-category-title" style="font-size:16px; font-weight:800; color:var(--text); flex:1;"></div>
-      <div id="board-write-btn-wrap" style="display:none;">
-        <button class="btn-primary" style="width:auto; padding:5px 12px; font-size:12px;" onclick="openBoardWrite()">✏️ 글쓰기</button>
-      </div>
-    </div>
-    <div id="board-manager-area" style="display:none; margin-bottom:10px;">
-      <div class="card" style="padding:12px;">
-        <div class="card-title" style="margin-bottom:8px;">👑 담당</div>
-        <div id="board-manager-content"></div>
-      </div>
-    </div>
-    <div id="board-post-list"></div>
-    <div id="board-pagination" style="display:flex; justify-content:center; gap:6px; margin-top:16px; flex-wrap:wrap;"></div>
-  </div>
-</div>
-
-
-<!-- ==================== p3: 성경읽기 ==================== -->
-<div id="p3" class="page">
-  <div id="bible-reader-home">
-    <div class="card" style="text-align:center; padding:24px;">
-      <div style="font-size:48px; margin-bottom:16px;">📖</div>
-      <div style="font-size:18px; font-weight:800; color:var(--text); margin-bottom:8px;">성경 통독</div>
-      <div style="font-size:13px; color:var(--text2); margin-bottom:20px;">하루 최대 10장까지 읽을 수 있습니다</div>
-      <button class="btn-primary" style="width:auto; padding:12px 24px; font-size:14px;" onclick="openBibleReading()">📖 오늘의 읽기 시작</button>
-      <div id="bible-reading-today-status" style="margin-top:12px; font-size:12px; color:var(--text2);"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">🏆 완독자 명예의 전당</div>
-      <div id="bible-hall-of-fame" style="font-size:13px; color:var(--text2);"><div style="text-align:center; padding:20px;">불러오는 중...</div></div>
-    </div>
-  </div>
-  <div id="bible-reader-screen" style="display:none;">
-    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-      <button style="background:var(--bg2); border:1.5px solid var(--border); border-radius:8px; padding:5px 12px; cursor:pointer; color:var(--text); font-weight:600;" onclick="closeBibleReading()">← 뒤로</button>
-      <div id="bible-reading-title" style="font-size:16px; font-weight:800; color:var(--text); flex:1;"></div>
-      <span id="bible-reading-today-count" style="font-size:12px; color:var(--text2);"></span>
-      <button onclick="changeBibleReadingFontSize(-1)" class="font-btn">A-</button>
-      <button onclick="changeBibleReadingFontSize(1)" class="font-btn">A+</button>
-    </div>
-    <div id="bible-reading-content" style="font-size:15px; line-height:1.8; color:var(--text);"></div>
-    <div style="text-align:center; margin-top:20px;">
-      <button class="btn-primary" style="width:auto; padding:10px 24px;" onclick="completeCurrentChapter()">✅ 이 장을 읽었습니다</button>
-    </div>
-  </div>
-</div>
-
-
-<!-- ==================== p4: 안내 (축약) ==================== -->
-<div id="p4" class="page">
-  <div class="card" style="background:linear-gradient(145deg,#fdf5e8,#f5e8d5);">
-    <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;">
-      <img src="logo.png" alt="로고" style="width:64px;height:64px;object-fit:contain;animation:float 3s ease-in-out infinite;">
-      <div>
-        <div style="font-size:11px;color:var(--text2);margin-bottom:2px;">대한예수교 장로회</div>
-        <div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:3px;">가좌제일교회</div>
-        <div style="font-size:12px;color:var(--purple);font-weight:600;">담임 김명서 목사</div>
-      </div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      <div style="display:flex;align-items:flex-start;gap:10px;padding:12px;background:white;border-radius:12px;border:1px solid var(--border);">
-        <span style="font-size:20px;">📍</span>
-        <div>
-          <div style="font-size:11px;color:var(--text2);margin-bottom:2px;">주소</div>
-          <div style="font-size:13px;font-weight:600;color:var(--text);">인천광역시 서구 열우물로 247 (가재울역 4번 출구)</div>
-          <div style="font-size:11px;color:var(--text2);">우편 22825</div>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;padding:12px;background:white;border-radius:12px;border:1px solid var(--border);">
-        <span style="font-size:20px;">📞</span>
-        <div>
-          <div style="font-size:11px;color:var(--text2);margin-bottom:2px;">전화</div>
-          <a href="tel:(032) 581-4048" style="font-size:15px;font-weight:700;color:var(--purple);text-decoration:none;">(032) 581-4048</a>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <div class="card">
-    <div class="card-title" style="justify-content:space-between;">
-      <span>👨‍💼 담임목사 인사말</span>
-      <button class="edit-mode-btn admin-only" onclick="openEditGreeting()" id="greeting-edit-btn" style="display:none;">✏️ 수정</button>
-    </div>
-    <div id="greeting-content">[인사말 내용]</div>
-  </div>
-
-
-  <div class="card">
-    <div class="card-title" style="justify-content:space-between;">
-      <span>📜 교회 연혁</span>
-      <button class="edit-mode-btn admin-only" onclick="openEditHistory()" id="history-edit-btn" style="display:none;">✏️ 수정</button>
-    </div>
-    <div id="history-content">[연혁 내용]</div>
-  </div>
-
-
-  <div class="card">
-    <div class="card-title">🗺 위치 안내</div>
-    <div style="border-radius:16px; overflow:hidden; border:1px solid var(--border);">
-      <img src="map-gj.jpg" alt="가좌제일교회 약도" style="width:100%; display:block; object-fit:contain;">
-    </div>
-    <div style="margin-top:20px; background:linear-gradient(135deg,#f5ede0,#ede0ce); border-radius:16px; padding:16px;">
-      <div style="font-size:13px; font-weight:800; color:var(--purple); margin-bottom:12px;">📍 찾아오는 길</div>
-      <div style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
-        <div style="background:var(--bg); border-radius:12px; padding:12px 14px;">
-          <div style="font-size:11px; font-weight:700; color:var(--purple); margin-bottom:3px;">🚌 대중교통</div>
-          <div style="font-size:12px; color:var(--text2); line-height:1.7;">인천도시철도 2호선 가재울역 4번 출구<br>버스: 10, 12, 24, 28, 42, 67-1, 80, 592, 593, 800</div>
-        </div>
-        <div style="background:var(--bg); border-radius:12px; padding:12px 14px;">
-          <div style="font-size:11px; font-weight:700; color:var(--purple); margin-bottom:3px;">🚗 자가용</div>
-          <div style="font-size:12px; color:var(--text2); line-height:1.7;">인천광역시 서구 열우물로 247<br>가재울역 4번 출구</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
-  <div class="card">
-    <div class="card-title">👥 섬기는 분들</div>
-    <div id="staff-container">불러오는 중...</div>
-  </div>
-</div>
-
-
-<!-- ==================== p5: 성경책 (축약) ==================== -->
-<div id="p5" class="page" style="padding:0;padding-bottom:0;">
-  <div id="bibleMain" style="height:calc(100dvh - 163px);background:#fdf8f0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 16px;">
-    <div style="text-align:center;margin-bottom:48px;">
-      <div style="font-size:15px;letter-spacing:4px;color:#b8942a;margin-bottom:8px;">개역개정</div>
-      <div style="font-size:38px;font-weight:900;background:linear-gradient(180deg,#f0d060 0%,#c8922a 40%,#a06018 70%,#d4a840 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">성경전서</div>
-    </div>
-    <div style="width:100%;max-width:320px;display:flex;flex-direction:column;gap:14px;">
-      <button onclick="openBibleSection('scripture')" style="background:rgba(184,148,42,0.08);border:1.5px solid rgba(184,148,42,0.5);border-radius:10px;padding:16px 20px;color:#d4a840;font-size:16px;font-weight:700;cursor:pointer;">📖 성경 전서</button>
-      <button onclick="openBibleSection('hymn')" style="background:rgba(184,148,42,0.08);border:1.5px solid rgba(184,148,42,0.5);border-radius:10px;padding:16px 20px;color:#d4a840;font-size:16px;font-weight:700;cursor:pointer;">🎵 찬송가</button>
-      <button onclick="openBibleSection('appendix')" style="background:rgba(184,148,42,0.08);border:1.5px solid rgba(184,148,42,0.5);border-radius:10px;padding:16px 20px;color:#d4a840;font-size:16px;font-weight:700;cursor:pointer;">📋 부록</button>
-    </div>
-  </div>
-  <div id="bibleScriptureView" style="display:none;">[성경 뷰]</div>
-  <div id="bibleHymnView" style="display:none;">[찬송가 뷰]</div>
-  <div id="bibleAppendixView" style="display:none;">[부록 뷰]</div>
-</div>
-
-
-<!-- ==================== p6: 관리 ==================== -->
-<div id="p6" class="page">
-  <div class="card">
-    <div style="display:flex;align-items:center;gap:14px;">
-      <img src="logo.png" alt="로고" style="width:36px;height:36px;object-fit:contain;">
-      <div><div style="font-size:15px;font-weight:800;">가좌제일교회</div><div style="font-size:11px;color:var(--purple);">담임 김명서 목사</div></div>
-      <div style="margin-left:auto;background:var(--bg);border-radius:10px;padding:6px 12px;">
-        <span style="font-size:11px;">로그인: </span><span style="font-size:12px;font-weight:700;color:var(--purple);" id="setting-user-info">-</span>
-      </div>
-    </div>
-  </div>
-
-
-  <div class="accord-card admin-only">
-    <div class="accord-header" onclick="toggleAccord('member')">
-      <div class="accord-title"><span class="accord-icon">👥</span><div><div style="font-weight:700;">성도 관리</div><div style="font-size:11px;" id="ac-member-sub">전체 0명</div></div></div>
-      <div class="accord-arrow" id="ac-member-arrow">›</div>
-    </div>
-    <div class="accord-body" id="ac-member-body">
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <input class="input-field" id="member-search" type="search" placeholder="🔍 이름·직책 검색" oninput="renderMembersAccord()">
-        <button onclick="openAddMember()" style="background:linear-gradient(135deg,#6b2577,#9c3a8a);border:none;border-radius:12px;color:white;padding:0 14px;">+ 추가</button>
-      </div>
-      <div class="grid3">
-        <div class="stat-box"><div class="stat-label">전체</div><div class="stat-val" id="am-total">0</div></div>
-        <div class="stat-box"><div class="stat-label">새신자</div><div class="stat-val c-green" id="am-new">0</div></div>
-        <div class="stat-box"><div class="stat-label">이달 등록</div><div class="stat-val c-purple" id="am-month">0</div></div>
-      </div>
-      <div id="accord-member-list"></div>
-    </div>
-  </div>
-
-
-  <div class="accord-card admin-manager-only">
-    <div class="accord-header" onclick="toggleAccord('approval')">
-      <div class="accord-title"><span class="accord-icon">✅</span><div><div style="font-weight:700;">가입 승인 관리</div><div style="font-size:11px;" id="ac-approval-sub">대기 0명</div></div></div>
-      <div class="accord-arrow" id="ac-approval-arrow">›</div>
-    </div>
-    <div class="accord-body" id="ac-approval-body">
-      <div id="accord-approval-list"></div>
-    </div>
-  </div>
-  
-  <button class="btn-danger" style="width:100%;margin-top:8px;" onclick="doLogout()">🚪 로그아웃</button>
-  <div style="text-align:center;padding:20px;font-size:11px;">가좌제일교회 · since 1972 1.23</div>
-</div>
 
 
 </div><!-- swipe-container -->
 
 
-<!-- ==================== 추가 모달 ==================== -->
-<div id="modal-member" class="modal-overlay">[성도 등록 모달]</div>
-<div id="modal-member-profile" class="modal-overlay">[성도 프로필 모달]</div>
-<div id="modal-my-profile" class="modal-overlay">[내 정보 모달]</div>
-<div id="modal-change-pw" class="modal-overlay">[비밀번호 변경 모달]</div>
-<div id="modal-add-service" class="modal-overlay">[예배 추가 모달]</div>
-<div id="modal-add-schedule" class="modal-overlay">[예배 시간표 추가 모달]</div>
-<div id="modal-edit-churchinfo" class="modal-overlay">[교회 정보 수정 모달]</div>
-<div id="modal-notice-view" class="modal-overlay">[공지 보기 모달]</div>
-<div id="modal-privacy" class="modal-overlay">[개인정보 처리방침 모달]</div>
-<div id="modal-staff" class="modal-overlay">[섬기는 분들 수정 모달]</div>
 
 
 <!-- ==================== 하단 광고 ==================== -->
-<div class="ad-bar">
-  <div class="ad-addr">
-    <img src="logo.png" style="width:22px;height:22px;">
-    <span>가좌제일교회 | 인천광역시 서구 열우물로 247 (가재울역 4번 출구)</span>
-    <a href="javascript:void(0);" onclick="showPrivacyPolicy();">📋 개인정보</a>
-  </div>
-  <div class="ad-banner" id="adBannerContainer"></div>
+<div class="ad-bar" style="position:fixed;bottom:0;left:0;right:0;background:#f5f5f5;padding:8px 12px;font-size:10px;text-align:center;border-top:1px solid #ddd;">
+  <span>가좌제일교회 | 인천광역시 서구 열우물로 247</span>
 </div>
 
 
+
+
 <!-- ==================== JS 파일 로드 ==================== -->
-<script src="js_confige.js"></script>
-<script src="js_storage.js"></script>
-<script src="js_auth.js"></script>
-<script src="js_ui.js"></script>
-<script src="js_board.js"></script>
-<script src="js_members.js"></script>
-<script src="js_offerings.js"></script>
-<script src="js_notices.js"></script>
-<script src="js_prayers.js"></script>
-<script src="js_posts.js"></script>
-<script src="js_meditations.js"></script>
-<script src="js_bible.js"></script>
-<script src="js_service.js"></script>
-<script src="js_staff.js"></script>
-<script src="js_app.js"></script>
-<script src="js_liturgy.js"></script>
-
-
 <script>
-  setTimeout(function() {
-    if (typeof loadChurchInfo === 'function') loadChurchInfo();
-  }, 2000);
+  // ========== 전역 변수 ==========
+  let currentUser = null;
+  let currentTab = 0;
+  let notices = [];
+  
+  // ========== 스플래시 숨기기 ==========
+  setTimeout(() => {
+    const splash = document.getElementById('splash');
+    if (splash) splash.style.display = 'none';
+  }, 1500);
+  
+  // ========== 시계 업데이트 ==========
+  function updateClock() {
+    const now = new Date();
+    const htime = document.getElementById('htime');
+    if (htime) htime.textContent = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+  
+  // ========== 탭 기능 ==========
+  function showTab(n) {
+    // 페이지 숨김
+    for (let i = 0; i <= 6; i++) {
+      const page = document.getElementById(`p${i}`);
+      if (page) page.classList.remove('show');
+      const tab = document.getElementById(`tab${i}`);
+      if (tab) tab.classList.remove('active');
+    }
+    // 선택한 페이지 표시
+    const selectedPage = document.getElementById(`p${n}`);
+    if (selectedPage) selectedPage.classList.add('show');
+    const selectedTab = document.getElementById(`tab${n}`);
+    if (selectedTab) selectedTab.classList.add('active');
+    currentTab = n;
+    
+    // 관리자 버튼 표시 제어
+    const user = currentUser;
+    const adminBtns = document.querySelectorAll('.admin-only');
+    const adminManagerBtns = document.querySelectorAll('.admin-manager-only');
+    
+    if (user && (user.role === 'admin' || user.role === 'manager')) {
+      adminBtns.forEach(btn => btn.classList.add('visible'));
+      adminManagerBtns.forEach(btn => btn.classList.add('visible'));
+    } else {
+      adminBtns.forEach(btn => btn.classList.remove('visible'));
+      adminManagerBtns.forEach(btn => btn.classList.remove('visible'));
+    }
+  }
+  
+  // ========== 로그인 화면 닫기 ==========
+  function closeLoginScreen() {
+    document.getElementById('screen-login').style.display = 'none';
+  }
+  
+  // ========== 로그인 처리 ==========
+  function doAuthSubmit() {
+    const id = document.getElementById('li-id')?.value;
+    const pw = document.getElementById('li-pw')?.value;
+    
+    if (!id || !pw) {
+      showError('아이디와 비밀번호를 입력하세요');
+      return;
+    }
+    
+    // Firebase 인증 시도
+    if (typeof firebase !== 'undefined' && firebase.auth) {
+      firebase.auth().signInWithEmailAndPassword(id + '@gajwajeil.com', pw)
+        .then((userCredential) => {
+          // 사용자 정보 로드
+          return loadUserData(userCredential.user.uid);
+        })
+        .then((userData) => {
+          currentUser = userData;
+          updateUserUI();
+          closeLoginScreen();
+          showToast('로그인 성공!');
+        })
+        .catch((error) => {
+          showError('로그인 실패: ' + error.message);
+        });
+    } else {
+      // 임시 로그인 (개발용)
+      currentUser = { uid: 'temp', name: id, role: id === 'admin' ? 'admin' : 'user' };
+      updateUserUI();
+      closeLoginScreen();
+      showToast('로그인 성공!');
+    }
+  }
+  
+  // ========== 회원가입 ==========
+  function doSignup() {
+    const id = document.getElementById('su-id')?.value;
+    const pw = document.getElementById('su-pw')?.value;
+    const pw2 = document.getElementById('su-pw2')?.value;
+    const name = document.getElementById('su-name')?.value;
+    
+    if (!id || !pw || !name) {
+      showError('필수 항목을 입력하세요');
+      return;
+    }
+    if (pw !== pw2) {
+      showError('비밀번호가 일치하지 않습니다');
+      return;
+    }
+    if (pw.length < 4) {
+      showError('비밀번호는 4자 이상이어야 합니다');
+      return;
+    }
+    
+    if (typeof firebase !== 'undefined' && firebase.auth && firebase.database) {
+      firebase.auth().createUserWithEmailAndPassword(id + '@gajwajeil.com', pw)
+        .then((userCredential) => {
+          const userData = {
+            uid: userCredential.user.uid,
+            loginId: id,
+            name: name,
+            phone: document.getElementById('su-phone')?.value || '',
+            birth: document.getElementById('su-birth')?.value || '',
+            email: document.getElementById('su-email')?.value || '',
+            role: 'user',
+            status: 'pending',
+            createdAt: Date.now()
+          };
+          return firebase.database().ref('users/' + userCredential.user.uid).set(userData);
+        })
+        .then(() => {
+          alert('가입 신청이 완료되었습니다. 승인 후 이용 가능합니다.');
+          switchAuthTab('login');
+        })
+        .catch((error) => {
+          showError('가입 실패: ' + error.message);
+        });
+    } else {
+      alert('가입 신청이 완료되었습니다 (데모 모드)');
+      switchAuthTab('login');
+    }
+  }
+  
+  // ========== 로그아웃 ==========
+  function doLogout() {
+    currentUser = null;
+    if (typeof firebase !== 'undefined' && firebase.auth) {
+      firebase.auth().signOut();
+    }
+    updateUserUI(false);
+    document.getElementById('screen-login').style.display = 'flex';
+    showToast('로그아웃되었습니다');
+  }
+  
+  // ========== UI 업데이트 ==========
+  function updateUserUI(loggedIn = true) {
+    const userNameSpan = document.getElementById('user-name-display');
+    const userRoleSpan = document.getElementById('user-role-display');
+    
+    if (loggedIn && currentUser) {
+      if (userNameSpan) userNameSpan.textContent = currentUser.name || currentUser.loginId || '사용자';
+      if (userRoleSpan) {
+        const roleText = currentUser.role === 'admin' ? '관리자' : currentUser.role === 'manager' ? '매니저' : '성도';
+        userRoleSpan.textContent = roleText;
+      }
+      // 관리자 버튼 표시
+      showTab(currentTab);
+    } else {
+      if (userNameSpan) userNameSpan.textContent = '-';
+      if (userRoleSpan) userRoleSpan.textContent = '';
+    }
+  }
+  
+  // ========== 공지사항 함수 ==========
+  function openAddNotice() {
+    if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'manager')) {
+      showToast('권한이 없습니다');
+      return;
+    }
+    document.getElementById('modal-notice').style.display = 'flex';
+  }
+  
+  function saveNotice() {
+    const title = document.getElementById('n-title')?.value;
+    const category = document.getElementById('n-cat')?.value;
+    const content = document.getElementById('n-body')?.value;
+    
+    if (!title || !content) {
+      showToast('제목과 내용을 입력하세요');
+      return;
+    }
+    
+    const newNotice = {
+      id: Date.now().toString(),
+      title: title,
+      category: category,
+      content: content,
+      timestamp: Date.now(),
+      author: currentUser?.name || '관리자'
+    };
+    
+    if (typeof firebase !== 'undefined' && firebase.database) {
+      firebase.database().ref('notices').push(newNotice)
+        .then(() => {
+          showToast('공지가 등록되었습니다');
+          closeModal('modal-notice');
+          loadNotices();
+        })
+        .catch(err => showToast('저장 실패: ' + err.message));
+    } else {
+      notices.unshift(newNotice);
+      localStorage.setItem('notices', JSON.stringify(notices));
+      showToast('공지가 등록되었습니다 (로컬)');
+      closeModal('modal-notice');
+      renderHomeNotices();
+    }
+  }
+  
+  function loadNotices() {
+    if (typeof firebase !== 'undefined' && firebase.database) {
+      firebase.database().ref('notices').orderByChild('timestamp').limitToLast(10)
+        .once('value', (snapshot) => {
+          notices = [];
+          snapshot.forEach(child => {
+            notices.unshift({ id: child.key, ...child.val() });
+          });
+          renderHomeNotices();
+        });
+    } else {
+      const saved = localStorage.getItem('notices');
+      if (saved) notices = JSON.parse(saved);
+      renderHomeNotices();
+    }
+  }
+  
+  function renderHomeNotices() {
+    const container = document.getElementById('home-notices');
+    if (!container) return;
+    
+    if (!notices || notices.length === 0) {
+      container.innerHTML = '<div style="text-align:center;padding:20px;color:#999;">등록된 공지가 없습니다</div>';
+      return;
+    }
+    
+    container.innerHTML = notices.slice(0, 5).map(notice => `
+      <div style="padding:12px;border-bottom:1px solid #eee;">
+        <div style="font-weight:600;">${escapeHtml(notice.title)}</div>
+        <div style="font-size:11px;color:#999;">${notice.category || '📢 일반'} · ${formatDate(notice.timestamp)}</div>
+      </div>
+    `).join('');
+  }
+  
+  // ========== 유틸리티 함수 ==========
+  function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+  }
+  
+  function showToast(msg) {
+    let toast = document.querySelector('.toast-message');
+    if (toast) toast.remove();
+    toast = document.createElement('div');
+    toast.className = 'toast-message';
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+  }
+  
+  function showError(msg) {
+    const errDiv = document.getElementById('login-err');
+    if (errDiv) {
+      errDiv.textContent = msg;
+      setTimeout(() => errDiv.textContent = '', 3000);
+    } else {
+      alert(msg);
+    }
+  }
+  
+  function switchAuthTab(tab) {
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-extra');
+    const loginTab = document.getElementById('auth-tab-login');
+    const signupTab = document.getElementById('auth-tab-signup');
+    
+    if (tab === 'login') {
+      if (loginForm) loginForm.style.display = 'block';
+      if (signupForm) signupForm.style.display = 'none';
+      if (loginTab) { loginTab.style.background = 'white'; loginTab.style.color = '#5c3d1e'; }
+      if (signupTab) { signupTab.style.background = 'transparent'; signupTab.style.color = 'rgba(255,255,255,0.6)'; }
+    } else {
+      if (loginForm) loginForm.style.display = 'none';
+      if (signupForm) signupForm.style.display = 'block';
+      if (loginTab) { loginTab.style.background = 'transparent'; loginTab.style.color = 'rgba(255,255,255,0.6)'; }
+      if (signupTab) { signupTab.style.background = 'white'; signupTab.style.color = '#5c3d1e'; }
+    }
+  }
+  
+  function showLoginForm() {
+    document.getElementById('find-id-form').style.display = 'none';
+    document.getElementById('forgot-form').style.display = 'none';
+    document.getElementById('login-form').style.display = 'block';
+  }
+  
+  function showFindId() {
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('signup-extra').style.display = 'none';
+    document.getElementById('find-id-form').style.display = 'block';
+  }
+  
+  function showForgotPw() {
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('signup-extra').style.display = 'none';
+    document.getElementById('forgot-form').style.display = 'block';
+  }
+  
+  function formatDate(timestamp) {
+    if (!timestamp) return '날짜 없음';
+    const d = new Date(timestamp);
+    return `${d.getMonth()+1}/${d.getDate()}`;
+  }
+  
+  function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+  
+  function toggleProfileDropdown() {
+    const dropdown = document.getElementById('profile-dropdown');
+    if (dropdown) dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+  }
+  
+  function openMyProfile() { showToast('내 정보 (준비 중)'); }
+  function openChangePassword() { showToast('비밀번호 변경 (준비 중)'); }
+  function loadUserData(uid) { return Promise.resolve({ uid: uid, name: '사용자', role: 'user' }); }
+  function doFindId() { showToast('아이디 찾기 (준비 중)'); }
+  function doResetPassword() { showToast('비밀번호 재설정 (준비 중)'); }
+  function toggleSundayEdit() { showToast('예배 시간표 수정 (관리자 기능)'); }
+  function toggleOtherEdit() { showToast('기타 예배 수정 (관리자 기능)'); }
+  function addSundayServiceRow() {}
+  function addOtherServiceRow() {}
+  function saveSundayEdit() {}
+  function saveOtherEdit() {}
+  function cancelSundayEdit() {}
+  function cancelOtherEdit() {}
+  
+  // ========== 페이지 로드 ==========
+  document.addEventListener('DOMContentLoaded', () => {
+    loadNotices();
+    // 외부 클릭 시 드롭다운 닫기
+    document.addEventListener('click', (e) => {
+      const dropdown = document.getElementById('profile-dropdown');
+      const userBadge = document.querySelector('.user-badge');
+      if (dropdown && userBadge && !userBadge.contains(e.target)) {
+        dropdown.style.display = 'none';
+      }
+    });
+  });
+  
+  // 전역 함수 등록
+  window.showTab = showTab;
+  window.doAuthSubmit = doAuthSubmit;
+  window.doSignup = doSignup;
+  window.doLogout = doLogout;
+  window.switchAuthTab = switchAuthTab;
+  window.showLoginForm = showLoginForm;
+  window.showFindId = showFindId;
+  window.showForgotPw = showForgotPw;
+  window.closeModal = closeModal;
+  window.openAddNotice = openAddNotice;
+  window.saveNotice = saveNotice;
+  window.toggleProfileDropdown = toggleProfileDropdown;
+  window.openMyProfile = openMyProfile;
+  window.openChangePassword = openChangePassword;
+  window.toggleSundayEdit = toggleSundayEdit;
+  window.toggleOtherEdit = toggleOtherEdit;
+  window.addSundayServiceRow = addSundayServiceRow;
+  window.addOtherServiceRow = addOtherServiceRow;
+  window.saveSundayEdit = saveSundayEdit;
+  window.saveOtherEdit = saveOtherEdit;
+  window.cancelSundayEdit = cancelSundayEdit;
+  window.cancelOtherEdit = cancelOtherEdit;
+  window.doFindId = doFindId;
+  window.doResetPassword = doResetPassword;
+  window.closeLoginScreen = closeLoginScreen;
+  
+  console.log('✅ 가좌제일교회 앱 로드 완료');
 </script>
 
 

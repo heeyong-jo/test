@@ -4,6 +4,8 @@ let currentTab = 0;
 let originalAfterTab = null;
 
 
+
+
 // ========== 초기화 ==========
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 UI 초기화 시작');
@@ -24,6 +26,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
+
+
 // ========== 탭 초기화 ==========
 function initTabs() {
     const tabBtns = document.querySelectorAll('.tab-btn');
@@ -36,6 +40,8 @@ function initTabs() {
     
     console.log('✅ 탭 초기화 완료');
 }
+
+
 
 
 // ========== 탭 전환 ==========
@@ -67,6 +73,8 @@ function switchTab(n) {
     // 탭 전환 후 처리
     afterTab(n);
 }
+
+
 
 
 // ========== 탭 전환 후 처리 함수 (수정됨) ==========
@@ -121,6 +129,8 @@ function afterTab(n) {
 }
 
 
+
+
 // ========== 로그인 상태 확인 ==========
 function checkLoginStatus() {
     // localStorage에서 사용자 정보 확인
@@ -144,6 +154,8 @@ function checkLoginStatus() {
         updateUserUI(false);
     }
 }
+
+
 
 
 // ========== UI 업데이트 ==========
@@ -188,6 +200,8 @@ function updateUserUI(isLoggedIn = true) {
 }
 
 
+
+
 // ========== 역할 텍스트 변환 ==========
 function getRoleText(role) {
     switch(role) {
@@ -199,6 +213,8 @@ function getRoleText(role) {
 }
 
 
+
+
 // ========== HTML 이스케이프 ==========
 function escapeHtml(text) {
     if (!text) return '';
@@ -206,6 +222,8 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+
+
 
 
 // ========== 로그인 폼 표시 ==========
@@ -250,6 +268,8 @@ function showLoginForm() {
 }
 
 
+
+
 // ========== 인증 모드 전환 ==========
 function toggleAuthMode() {
     window.isAdminMode = !window.isAdminMode;
@@ -267,6 +287,8 @@ function toggleAuthMode() {
         if (nameGroup) nameGroup.style.display = 'block';
     }
 }
+
+
 
 
 // ========== 인증 처리 ==========
@@ -379,6 +401,8 @@ async function handleAuth(event) {
 }
 
 
+
+
 // ========== 로그인 성공 처리 ==========
 function loginSuccess(user) {
     currentUser = user;
@@ -405,6 +429,8 @@ function loginSuccess(user) {
         showToast(`환영합니다, ${user.name}님!`);
     }, 500);
 }
+
+
 
 
 // ========== 로그아웃 ==========
@@ -434,6 +460,8 @@ function logout() {
 }
 
 
+
+
 // ========== 토스트 메시지 ==========
 function showToast(message, duration = 3000) {
     // 기존 토스트 제거
@@ -453,6 +481,8 @@ function showToast(message, duration = 3000) {
 }
 
 
+
+
 // ========== 전역 함수 등록 ==========
 function registerGlobalFunctions() {
     window.switchTab = switchTab;
@@ -465,6 +495,8 @@ function registerGlobalFunctions() {
     
     console.log('✅ 전역 함수 등록 완료');
 }
+
+
 
 
 // ========== 관리자 패널 로드 (Firebase 연동) ==========
@@ -561,6 +593,8 @@ async function loadAdminPanel() {
 }
 
 
+
+
 // ========== 사용자 권한 변경 ==========
 async function changeUserRole(userId, newRole) {
     if (!currentUser || currentUser.role !== 'admin') {
@@ -599,9 +633,42 @@ async function changeUserRole(userId, newRole) {
 }
 
 
+
+
+// ==================== 개인정보 처리방침 ====================
+
+
+/**
+ * 개인정보 처리방침 모달 열기
+ */
+function showPrivacyPolicy() {
+    const modal = document.getElementById('modal-privacy');
+    if (!modal) {
+        console.error('❌ modal-privacy 요소를 찾을 수 없음');
+        alert('개인정보 처리방침을 불러올 수 없습니다.');
+        return;
+    }
+    
+    // 모달 표시 (HTML에 이미 내용이 포함되어 있음)
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.position = 'fixed';
+    modal.style.inset = '0';
+    modal.style.zIndex = '10001';
+    modal.style.background = 'rgba(0,0,0,0.6)';
+    modal.style.padding = '16px';
+}
+
+
+
+
 // 전역 함수 등록
 window.changeUserRole = changeUserRole;
 window.loadAdminPanel = loadAdminPanel;
+window.showPrivacyPolicy = showPrivacyPolicy;
+
+
 
 
 console.log('✅ js_ui.js 로드 완료');

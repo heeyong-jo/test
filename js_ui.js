@@ -599,56 +599,6 @@ async function changeUserRole(userId, newRole) {
 }
 
 
-// ==================== 개인정보 처리방침 ====================
-
-
-function showPrivacyPolicy() {
-    const modal = document.getElementById('modal-privacy');
-    if (!modal) {
-        console.error('❌ modal-privacy 요소를 찾을 수 없음');
-        return;
-    }
-    
-    modal.innerHTML = `
-        <div class="modal-box" style="max-width: 600px; max-height: 90vh; overflow-y: auto; background: var(--bg); border-radius: 24px; width: 92%; margin: 20px auto; padding: 0; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
-            <div class="modal-header" style="padding: 16px 20px; background: linear-gradient(135deg, #5c3d1e, #8b6b4a); border-radius: 24px 24px 0 0; display: flex; justify-content: space-between; align-items: center;">
-                <div class="modal-title" style="color: white; font-size: 18px; font-weight: 700;">📋 개인정보 처리방침</div>
-                <button class="modal-close" onclick="closeModal('modal-privacy')" style="background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 36px; height: 36px; color: white; font-size: 20px; cursor: pointer;">✕</button>
-            </div>
-            <div style="padding: 24px 20px; font-size: 13px; color: var(--text); line-height: 1.9; max-height: calc(90vh - 80px); overflow-y: auto;">
-                <h3 style="font-size: 15px; color: #5c3d1e; margin: 16px 0 8px 0; border-left: 4px solid #d4a840; padding-left: 12px;">제1조 (개인정보의 처리 목적)</h3>
-                <p style="margin-bottom: 8px; color: var(--text2);">가좌제일교회는 다음의 목적을 위하여 개인정보를 처리합니다.</p>
-                <ul style="padding-left: 24px; margin-bottom: 12px; color: var(--text2);">
-                    <li>교회 회원 관리 및 식별</li>
-                    <li>예배 및 행사 안내</li>
-                    <li>기도제목 및 교제 공유</li>
-                    <li>교회 소식 및 공지사항 전달</li>
-                    <li>성경 통독 및 묵상 기록 관리</li>
-                </ul>
-                <h3 style="font-size: 15px; color: #5c3d1e; margin: 16px 0 8px 0; border-left: 4px solid #d4a840; padding-left: 12px;">제2조 (처리하는 개인정보 항목)</h3>
-                <ul style="padding-left: 24px; margin-bottom: 12px; color: var(--text2);">
-                    <li><strong>필수항목:</strong> 이름, 아이디, 비밀번호, 생년월일</li>
-                    <li><strong>선택항목:</strong> 전화번호, 이메일</li>
-                </ul>
-                <h3 style="font-size: 15px; color: #5c3d1e; margin: 16px 0 8px 0; border-left: 4px solid #d4a840; padding-left: 12px;">제3조 (개인정보의 보유 및 이용기간)</h3>
-                <p style="margin-bottom: 8px; color: var(--text2);">회원 탈퇴 시 즉시 파기합니다. 단, 관계법령에 따라 보관이 필요한 경우 해당 기간 동안 보관합니다.</p>
-                <h3 style="font-size: 15px; color: #5c3d1e; margin: 16px 0 8px 0; border-left: 4px solid #d4a840; padding-left: 12px;">제4조 (개인정보의 제3자 제공)</h3>
-                <p style="margin-bottom: 8px; color: var(--text2);">가좌제일교회는 원칙적으로 회원의 개인정보를 제3자에게 제공하지 않습니다. 단, 법령에 의한 경우는 예외로 합니다.</p>
-                <h3 style="font-size: 15px; color: #5c3d1e; margin: 16px 0 8px 0; border-left: 4px solid #d4a840; padding-left: 12px;">제5조 (개인정보 보호책임자)</h3>
-                <div style="background: rgba(92, 61, 30, 0.06); border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; color: var(--text2);">
-                    <div><strong>담당자:</strong> 김명서 목사</div>
-                    <div><strong>연락처:</strong> (032) 581-4048</div>
-                    <div><strong>이메일:</strong> gajwajeil@example.com</div>
-                </div>
-                <h3 style="font-size: 15px; color: #5c3d1e; margin: 16px 0 8px 0; border-left: 4px solid #d4a840; padding-left: 12px;">제6조 (개인정보 자동 수집 장치의 설치·운영)</h3>
-                <p style="margin-bottom: 8px; color: var(--text2);">본 앱은 쿠키를 사용하지 않으며, 로컬 스토리지에 로그인 정보를 임시 저장합니다.</p>
-                <div style="font-size: 11px; color: var(--text2); opacity: 0.6; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); text-align: center;">
-                    시행일: 2024년 1월 1일<br>
-                    <span style="font-size: 10px;">본 방침은 2024년 1월 1일부터 시행됩니다.</span>
-                </div>
-            </div>
-        </div>
-    `;
     
     modal.style.display = 'flex';
     modal.style.alignItems = 'center';

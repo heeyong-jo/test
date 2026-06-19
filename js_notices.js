@@ -4,17 +4,19 @@ let currentNoticeId = null;
 let noticePhotoFiles = [];
 
 
-// ========== 현재 사용자 가져오기 ==========
-function getCurrentUser() {
-    if (typeof window.currentUser !== 'undefined' && window.currentUser) return window.currentUser;
-    if (typeof currentUser !== 'undefined' && currentUser) return currentUser;
-    return null;
-}
-
-
 // ========== 공지사항 초기화 ==========
 document.addEventListener('DOMContentLoaded', function() {
     console.log('📢 공지사항 모듈 초기화');
+    
+    // getCurrentUser는 window 객체에서 가져옴
+    if (typeof window.getCurrentUser !== 'function') {
+        console.warn('⚠️ getCurrentUser 함수 없음, 대체 함수 등록');
+        window.getCurrentUser = function() {
+            if (typeof window.currentUser !== 'undefined' && window.currentUser) return window.currentUser;
+            if (typeof currentUser !== 'undefined' && currentUser) return currentUser;
+            return null;
+        };
+    }
     
     if (typeof loadNoticesFromFirebase === 'function') {
         loadNoticesFromFirebase();
@@ -24,6 +26,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     initModalEvents();
 });
+
+
 
 
 // ========== 모달 이벤트 초기화 ==========
@@ -46,6 +50,8 @@ function initModalEvents() {
         }
     });
 }
+
+
 
 
 // ========== 사진 미리보기 ==========
@@ -88,7 +94,6 @@ function noticePhotoPreview(input) {
                     noticePhotoFiles.splice(index, 1);
                 }
                 wrapper.remove();
-                // input 초기화
                 const dt = new DataTransfer();
                 noticePhotoFiles.forEach(f => dt.items.add(f));
                 input.files = dt.files;
@@ -101,6 +106,8 @@ function noticePhotoPreview(input) {
 }
 
 
+
+
 // ========== 카테고리별 색상 ==========
 function getCategoryColor(category) {
     if (!category) return '#6c757d';
@@ -109,6 +116,8 @@ function getCategoryColor(category) {
     if (category.includes('일반')) return '#3498db';
     return '#6c757d';
 }
+
+
 
 
 // ========== Firebase에서 공지사항 로드 ==========
@@ -152,6 +161,8 @@ function loadNoticesFromFirebase() {
 }
 
 
+
+
 // ========== 실시간 리스너 ==========
 let noticesListener = null;
 
@@ -185,6 +196,8 @@ function setupRealtimeNoticesListener() {
 }
 
 
+
+
 // ========== localStorage에서 로드 ==========
 function loadNoticesFromLocalStorage() {
     try {
@@ -212,6 +225,8 @@ function loadNoticesFromLocalStorage() {
         renderJuboNotices();
     }
 }
+
+
 
 
 // ========== 홈 화면 공지사항 렌더링 ==========
@@ -250,6 +265,8 @@ function renderHomeNotices() {
 }
 
 
+
+
 // ========== 주보란 렌더링 ==========
 function renderJuboNotices() {
     const container = document.getElementById('jubo-notices');
@@ -280,6 +297,8 @@ function renderJuboNotices() {
         </div>
     `;
 }
+
+
 
 
 // ========== 새 창에서 공지 열기 ==========
@@ -375,6 +394,8 @@ function openNoticeInNewWindow(noticeId) {
 }
 
 
+
+
 // ========== 빈 공지사항 렌더링 ==========
 function renderEmptyNotices(container = null) {
     const targetContainer = container || document.getElementById('home-notices');
@@ -389,6 +410,8 @@ function renderEmptyNotices(container = null) {
 }
 
 
+
+
 // ========== 공지 상세 보기 (모달) ==========
 function viewNoticeDetail(noticeId) {
     const notice = notices.find(n => n.id === noticeId);
@@ -398,6 +421,8 @@ function viewNoticeDetail(noticeId) {
     }
     openNoticeInNewWindow(noticeId);
 }
+
+
 
 
 // ========== 공지 삭제 ==========
@@ -425,6 +450,8 @@ function deleteNotice(noticeId) {
 }
 
 
+
+
 function deleteFromLocalStorage(noticeId) {
     const index = notices.findIndex(n => n.id === noticeId);
     if (index !== -1) {
@@ -437,11 +464,14 @@ function deleteFromLocalStorage(noticeId) {
 }
 
 
+
+
 // ========== 공지 작성 모달 열기 ==========
 function openAddNotice() {
     console.log('➕ openAddNotice 실행');
     
-    const user = getCurrentUser();
+    // window.getCurrentUser 사용
+    const user = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
     if (!user || (user.role !== 'admin' && user.role !== 'manager')) {
         alert('⚠️ 공지사항 작성 권한이 없습니다.\n매니저 또는 관리자만 작성 가능합니다.');
         return;
@@ -469,11 +499,13 @@ function openAddNotice() {
 }
 
 
+
+
 // ========== 공지 저장 ==========
 async function saveNotice() {
     console.log('💾 saveNotice 실행');
     
-    const user = getCurrentUser();
+    const user = typeof window.getCurrentUser === 'function' ? window.getCurrentUser() : null;
     if (!user || (user.role !== 'admin' && user.role !== 'manager')) {
         alert('⚠️ 공지 작성 권한이 없습니다.');
         return;
@@ -560,6 +592,8 @@ async function saveNotice() {
 }
 
 
+
+
 function saveToLocalStorage(notice) {
     try {
         let existingNotices = [];
@@ -578,6 +612,8 @@ function saveToLocalStorage(notice) {
 }
 
 
+
+
 // ========== 모달 닫기 ==========
 function closeNoticeModal() {
     const modal = document.getElementById('modal-notice');
@@ -591,6 +627,8 @@ function closeNoticeModal() {
 }
 
 
+
+
 // ========== 유틸리티 ==========
 function formatDate(timestamp) {
     if (!timestamp) return '날짜 없음';
@@ -600,12 +638,16 @@ function formatDate(timestamp) {
 }
 
 
+
+
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
+
+
 
 
 // ========== 전역 함수 등록 ==========
@@ -620,8 +662,9 @@ window.renderHomeNotices = renderHomeNotices;
 window.renderJuboNotices = renderJuboNotices;
 window.openNoticeInNewWindow = openNoticeInNewWindow;
 window.noticePhotoPreview = noticePhotoPreview;
-window.getCurrentUser = getCurrentUser;
 window.notices = notices;
+
+
 
 
 console.log('✅ js_notices.js 로드 완료');

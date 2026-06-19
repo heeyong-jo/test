@@ -599,19 +599,6 @@ async function changeUserRole(userId, newRole) {
 }
 
 
-    
-    modal.style.display = 'flex';
-    modal.style.alignItems = 'center';
-    modal.style.justifyContent = 'center';
-    modal.style.position = 'fixed';
-    modal.style.inset = '0';
-    modal.style.zIndex = '10001';
-    modal.style.background = 'rgba(0,0,0,0.6)';
-    modal.style.padding = '16px';
-}
-
-
-window.showPrivacyPolicy = showPrivacyPolicy;
 // 전역 함수 등록
 window.changeUserRole = changeUserRole;
 window.loadAdminPanel = loadAdminPanel;

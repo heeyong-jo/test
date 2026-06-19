@@ -36,6 +36,8 @@
 <body>
 
 
+
+
 <!-- ==================== 스플래시 ==================== -->
 <div id="splash">
   <img src="logo.png" alt="로고" style="width:80px;height:80px;object-fit:contain;animation:float 1.5s ease-in-out infinite;">
@@ -43,6 +45,8 @@
   <div style="color:rgba(255,255,255,0.55);font-size:12px;">대한예수교 장로회</div>
   <div class="splash-spinner"></div>
 </div>
+
+
 
 
 <!-- ==================== 로그인 ==================== -->
@@ -139,6 +143,8 @@
 </div>
 
 
+
+
 <!-- ==================== 헤더 ==================== -->
 <header>
   <div class="logo">
@@ -165,6 +171,8 @@
 </header>
 
 
+
+
 <!-- ==================== 탭 ==================== -->
 <div class="tabs" id="tab-bar">
   <div class="tab active" onclick="showTab(0)" id="tab0">🏠 홈</div>
@@ -177,7 +185,11 @@
 </div>
 
 
+
+
 <div id="swipe-container">
+
+
 
 
 <!-- ==================== 게시판 모달 ==================== -->
@@ -199,6 +211,8 @@
     </div>
   </div>
 </div>
+
+
 
 
 <!-- ==================== 글쓰기 모달 ==================== -->
@@ -226,6 +240,8 @@
 </div>
 
 
+
+
 <!-- ==================== 기도제목 작성 모달 ==================== -->
 <div id="modal-prayer" class="modal-overlay">
   <div class="modal-box">
@@ -246,8 +262,11 @@
 </div>
 
 
+
+
 <!-- ==================== p0: 홈 ==================== -->
 <div id="p0" class="page show">
+  <!-- 주일 예배 카드 -->
   <div class="card">
     <div class="card-title" style="justify-content:space-between;">
       <span>⛪ 주일 예배</span>
@@ -265,6 +284,7 @@
   </div>
 
 
+  <!-- 그 외 예배 카드 -->
   <div class="card">
     <div class="card-title" style="justify-content:space-between;">
       <span>📅 그 외 예배 안내</span>
@@ -282,22 +302,34 @@
   </div>
 
 
-  <!-- 📢 최근 공지 카드 (새로 작성) -->
+  <!-- 📢 최근 공지 카드 -->
   <div class="card">
     <div class="sec-hd">
       <div class="card-title">📢 최근 공지</div>
-      <button class="btn-secondary" onclick="openNoticeModal()" style="padding:5px 10px; font-size:11px;">➕ 공지 작성</button>
+      <button class="edit-mode-btn admin-manager-only" onclick="openAddNotice()" style="padding:5px 10px; font-size:11px;">➕ 공지 작성</button>
     </div>
     <div id="home-notices">
-      <div style="text-align:center; padding:30px; color:var(--text2);">
-        ⏳ 로딩 중...
-      </div>
+      <div style="text-align:center; padding:30px; color:var(--text2);">⏳ 로딩 중...</div>
+    </div>
+  </div>
+
+
+  <!-- 📖 주보란 -->
+  <div class="card" style="background:linear-gradient(135deg,#f0fff4,#e8f5e9);">
+    <div class="card-title" style="color:#2e7d32;">
+      <span>📖 주보란</span>
+      <span style="font-size:11px;color:var(--text2);font-weight:400;">주보 공지입니다</span>
+    </div>
+    <div id="jubo-notices">
+      <div style="text-align:center; padding:20px; color:var(--text2); font-size:13px;">⏳ 로딩 중...</div>
     </div>
   </div>
 </div>
 
 
-<!-- ==================== 공지 작성 모달 (새로 작성) ==================== -->
+
+
+<!-- ==================== 공지 작성 모달 ==================== -->
 <div id="modal-notice" class="modal-overlay">
   <div class="modal-box">
     <div class="modal-header">
@@ -306,15 +338,32 @@
     </div>
     <div class="input-group">
       <div class="input-label">제목</div>
-      <input class="input-field" id="notice-title-input" placeholder="공지 제목">
+      <input class="input-field" id="n-title" placeholder="공지 제목">
+    </div>
+    <div class="input-group">
+      <div class="input-label">카테고리</div>
+      <select class="input-field" id="n-cat">
+        <option>📢 일반</option>
+        <option>🎉 행사</option>
+        <option>📅 주보</option>
+      </select>
+    </div>
+    <!-- 사진 첨부 (여러장) -->
+    <div class="input-group">
+      <div class="input-label">📷 사진 첨부 (여러장 가능)</div>
+      <input type="file" id="n-photo" accept="image/*" multiple onchange="noticePhotoPreview(this)">
+      <div id="notice-photo-preview" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:8px;"></div>
     </div>
     <div class="input-group">
       <div class="input-label">내용</div>
-      <textarea class="input-field" id="notice-content-input" rows="5" placeholder="공지 내용을 입력하세요"></textarea>
+      <textarea class="input-field" id="n-body" rows="5" placeholder="공지 내용을 입력하세요"></textarea>
     </div>
-    <button class="btn-primary" onclick="saveNoticeData()">등록하기</button>
+    <input type="hidden" id="n-edit-id" value="">
+    <button class="btn-primary" id="notice-submit-btn" onclick="saveNotice()">등록하기</button>
   </div>
 </div>
+
+
 
 
 <!-- ==================== p1: 말씀 ==================== -->
@@ -351,6 +400,8 @@
     <div id="prayer-list" class="prayer-list-container"></div>
   </div>
 </div>
+
+
 
 
 <!-- ==================== 말씀 등록 모달 ==================== -->
@@ -398,6 +449,8 @@
 </div>
 
 
+
+
 <!-- ==================== p2: 게시물 ==================== -->
 <div id="p2" class="page">
   <div id="board-category-list" class="board-tab-col">
@@ -430,6 +483,8 @@
 </div>
 
 
+
+
 <!-- ==================== p3: 성경읽기 ==================== -->
 <div id="p3" class="page">
   <div id="bible-reader-home">
@@ -459,6 +514,8 @@
     </div>
   </div>
 </div>
+
+
 
 
 <!-- ==================== p4: 안내 ==================== -->
@@ -537,6 +594,8 @@
 </div>
 
 
+
+
 <!-- ==================== p5: 성경책 ==================== -->
 <div id="p5" class="page" style="padding:0;padding-bottom:0;">
   <div id="bibleMain" style="height:calc(100dvh - 163px);background:#fdf8f0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 16px;">
@@ -554,6 +613,8 @@
   <div id="bibleHymnView" style="display:none;">[찬송가 뷰]</div>
   <div id="bibleAppendixView" style="display:none;">[부록 뷰]</div>
 </div>
+
+
 
 
 <!-- ==================== p6: 관리 ==================== -->
@@ -604,7 +665,11 @@
 </div>
 
 
+
+
 </div><!-- swipe-container -->
+
+
 
 
 <!-- ==================== 추가 모달 ==================== -->
@@ -636,7 +701,7 @@
       <br>
       <p><strong>5. 이용자 및 법정대리인의 권리와 그 행사방법</strong><br>이용자 및 법정대리인은 언제든지 등록되어 있는 자신 혹은 당해 만 14세 미만 아동의 개인정보를 조회하거나 수정할 수 있으며 가입해지를 요청할 수도 있습니다.</p>
       <br>
-      <p><strong>6. 개인정보 자동 수집 장치의 설치·운영 및 그 거부에 관한 사항</strong><br>교회는 이용자에게 개별적인 맞춤서비스를 제공하기 위해 이용정보를 저장하고 수시로 불러오는 ‘쿠키(cookie)’를 사용합니다. 쿠키는 웹사이트를 운영하는데 이용되는 서버(http)가 이용자의 컴퓨터 브라우저에게 보내는 소량의 정보이며 이용자들의 PC 컴퓨터내의 하드디스크에 저장되기도 합니다.</p>
+      <p><strong>6. 개인정보 자동 수집 장치의 설치·운영 및 그 거부에 관한 사항</strong><br>교회는 이용자에게 개별적인 맞춤서비스를 제공하기 위해 이용정보를 저장하고 수시로 불러오는 '쿠키(cookie)'를 사용합니다. 쿠키는 웹사이트를 운영하는데 이용되는 서버(http)가 이용자의 컴퓨터 브라우저에게 보내는 소량의 정보이며 이용자들의 PC 컴퓨터내의 하드디스크에 저장되기도 합니다.</p>
       <br>
       <p><strong>7. 개인정보 보호책임자</strong><br>· 성명: 김명서 목사<br>· 전화: 032-581-4048</p>
       <br>
@@ -646,7 +711,11 @@
 </div>
 
 
+
+
 <div id="modal-staff" class="modal-overlay">[섬기는 분들 수정 모달]</div>
+
+
 
 
 <!-- ==================== 하단 광고 ==================== -->
@@ -658,6 +727,8 @@
   </div>
   <div class="ad-banner" id="adBannerContainer"></div>
 </div>
+
+
 
 
 <!-- ==================== JS 파일 로드 ==================== -->
@@ -679,239 +750,18 @@
 <script src="js_liturgy.js"></script>
 
 
-<!-- ==================== 공지사항 간단 기능 (독립 실행) ==================== -->
+
+
+<!-- ==================== 공지사항 초기 실행 ==================== -->
 <script>
-// 공지사항 localStorage 키 (독립적)
-const NOTICE_STORAGE_KEY = 'church_notices_data';
-
-
-// 공지사항 로드 및 표시
-function loadChurchNotices() {
-  console.log('📢 loadChurchNotices 실행');
-  
-  const container = document.getElementById('home-notices');
-  if (!container) {
-    console.warn('home-notices 요소 없음');
-    return;
-  }
-  
-  try {
-    const saved = localStorage.getItem(NOTICE_STORAGE_KEY);
-    const notices = saved ? JSON.parse(saved) : [];
-    
-    console.log('로드된 공지 개수:', notices.length);
-    
-    if (notices.length === 0) {
-      container.innerHTML = `
-        <div style="text-align:center; padding:30px; color:var(--text2);">
-          📢 등록된 공지가 없습니다<br>
-          <span style="font-size:12px;">➕ 공지 작성 버튼을 클릭하세요</span>
-        </div>
-      `;
-      return;
-    }
-    
-    let html = '';
-    for (let i = 0; i < Math.min(3, notices.length); i++) {
-      const n = notices[i];
-      const preview = n.content.length > 80 ? n.content.substring(0, 80) + '...' : n.content;
-      html += `
-        <div style="padding:12px 0; border-bottom:1px solid var(--border); cursor:pointer;" onclick="viewChurchNotice('${n.id}')">
-          <div style="font-weight:700; font-size:14px;">${escapeHtml(n.title)}</div>
-          <div style="font-size:11px; color:var(--text2); margin-top:4px;">${n.date || ''}</div>
-          <div style="font-size:12px; color:var(--text2); margin-top:6px;">${escapeHtml(preview)}</div>
-        </div>
-      `;
-    }
-    container.innerHTML = html;
-    
-    if (notices.length > 3) {
-      container.innerHTML += `
-        <div style="text-align:center; padding:12px;">
-          <button class="btn-secondary" onclick="showAllChurchNotices()">📋 모든 공지 보기 (${notices.length}개)</button>
-        </div>
-      `;
-    }
-  } catch(e) {
-    console.error('공지 로드 오류:', e);
-    container.innerHTML = '<div style="padding:20px;text-align:center;color:red;">오류가 발생했습니다</div>';
-  }
-}
-
-
-// 공지 작성 모달 열기
-function openNoticeModal() {
-  console.log('🔧 openNoticeModal 실행');
-  
-  const modal = document.getElementById('modal-notice');
-  if (!modal) {
-    console.error('modal-notice 요소 없음');
-    alert('모달을 찾을 수 없습니다');
-    return;
-  }
-  
-  // 입력 필드 초기화
-  const titleInput = document.getElementById('notice-title-input');
-  const contentInput = document.getElementById('notice-content-input');
-  if (titleInput) titleInput.value = '';
-  if (contentInput) contentInput.value = '';
-  
-  modal.style.display = 'flex';
-  console.log('✅ 모달 열림');
-}
-
-
-// 공지 저장
-function saveNoticeData() {
-  console.log('💾 saveNoticeData 실행');
-  
-  const titleInput = document.getElementById('notice-title-input');
-  const contentInput = document.getElementById('notice-content-input');
-  
-  const title = titleInput ? titleInput.value.trim() : '';
-  const content = contentInput ? contentInput.value.trim() : '';
-  
-  if (!title) {
-    alert('제목을 입력하세요');
-    return;
-  }
-  if (!content) {
-    alert('내용을 입력하세요');
-    return;
-  }
-  
-  // 기존 공지 불러오기
-  let notices = [];
-  try {
-    const saved = localStorage.getItem(NOTICE_STORAGE_KEY);
-    if (saved) notices = JSON.parse(saved);
-  } catch(e) {}
-  
-  // 새 공지 추가
-  const newNotice = {
-    id: Date.now().toString(),
-    title: title,
-    content: content,
-    date: new Date().toLocaleString(),
-    timestamp: Date.now()
-  };
-  
-  notices.unshift(newNotice);
-  localStorage.setItem(NOTICE_STORAGE_KEY, JSON.stringify(notices));
-  
-  // 모달 닫기
-  const modal = document.getElementById('modal-notice');
-  if (modal) modal.style.display = 'none';
-  
-  // 화면 갱신
-  loadChurchNotices();
-  
-  alert('✅ 공지사항이 등록되었습니다');
-  console.log('저장 완료, 총 공지 수:', notices.length);
-}
-
-
-// 공지 상세 보기
-function viewChurchNotice(noticeId) {
-  try {
-    const saved = localStorage.getItem(NOTICE_STORAGE_KEY);
-    const notices = saved ? JSON.parse(saved) : [];
-    const notice = notices.find(n => n.id === noticeId);
-    
-    if (notice) {
-      alert(`📢 ${notice.title}\n\n${notice.content}`);
-    } else {
-      alert('공지를 찾을 수 없습니다');
-    }
-  } catch(e) {
-    alert('오류가 발생했습니다');
-  }
-}
-
-
-// 모든 공지 보기
-function showAllChurchNotices() {
-  try {
-    const saved = localStorage.getItem(NOTICE_STORAGE_KEY);
-    const notices = saved ? JSON.parse(saved) : [];
-    
-    if (notices.length === 0) {
-      alert('등록된 공지가 없습니다');
-      return;
-    }
-    
-    let message = '📢 전체 공지사항\n\n';
-    for (let i = 0; i < notices.length; i++) {
-      const n = notices[i];
-      message += `${i+1}. ${n.title}\n   ${n.content.substring(0, 50)}...\n\n`;
-    }
-    alert(message);
-  } catch(e) {
-    alert('오류가 발생했습니다');
-  }
-}
-
-
-// HTML 이스케이프
-function escapeHtml(str) {
-  if (!str) return '';
-  return str.replace(/[&<>]/g, function(m) {
-    if (m === '&') return '&amp;';
-    if (m === '<') return '&lt;';
-    if (m === '>') return '&gt;';
-    return m;
+  // 페이지 로드 후 공지사항 표시
+  document.addEventListener('DOMContentLoaded', function() {
+    // js_notices.js에서 자동 실행됨
+    console.log('📢 공지사항 초기화 완료');
   });
-}
-
-
-// 테스트 공지 추가 (개발용)
-function addTestChurchNotice() {
-  try {
-    let notices = [];
-    const saved = localStorage.getItem(NOTICE_STORAGE_KEY);
-    if (saved) notices = JSON.parse(saved);
-    
-    notices.unshift({
-      id: Date.now().toString(),
-      title: '📢 테스트 공지입니다',
-      content: '공지사항 기능이 정상 작동하고 있습니다. "➕ 공지 작성" 버튼을 클릭하여 새 공지를 등록할 수 있습니다.',
-      date: new Date().toLocaleString(),
-      timestamp: Date.now()
-    });
-    
-    localStorage.setItem(NOTICE_STORAGE_KEY, JSON.stringify(notices));
-    loadChurchNotices();
-    console.log('✅ 테스트 공지 추가됨');
-  } catch(e) {
-    console.error('테스트 공지 추가 실패:', e);
-  }
-}
-
-
-// 전역 함수 등록
-window.openNoticeModal = openNoticeModal;
-window.saveNoticeData = saveNoticeData;
-window.viewChurchNotice = viewChurchNotice;
-window.showAllChurchNotices = showAllChurchNotices;
-window.addTestChurchNotice = addTestChurchNotice;
-window.closeModal = function(id) {
-  const modal = document.getElementById(id);
-  if (modal) modal.style.display = 'none';
-};
-
-
-// 페이지 로드 시 실행
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', loadChurchNotices);
-} else {
-  loadChurchNotices();
-}
-
-
-// 콘솔에 안내 메시지
-console.log('✅ 공지사항 독립 스크립트 로드됨');
-console.log('💡 테스트 공지 추가: addTestChurchNotice()');
 </script>
+
+
 
 
 <script>
@@ -921,6 +771,8 @@ console.log('💡 테스트 공지 추가: addTestChurchNotice()');
     }
   }, 2000);
 </script>
+
+
 
 
 </body>

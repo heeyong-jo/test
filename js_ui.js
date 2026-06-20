@@ -10,12 +10,16 @@ if (typeof tabScrollStartX === 'undefined') var tabScrollStartX = 0;
 if (typeof tabOriginalScroll === 'undefined') var tabOriginalScroll = 0;
 
 
+
+
 // ==================== 현재 사용자 가져오기 ====================
 function getCurrentUser() {
   if (typeof window.currentUser !== 'undefined' && window.currentUser) return window.currentUser;
   if (typeof currentUser !== 'undefined' && currentUser) return currentUser;
   return null;
 }
+
+
 
 
 // ==================== 시계 업데이트 ====================
@@ -26,6 +30,8 @@ function tick() {
 }
 setInterval(tick, 1000);
 tick();
+
+
 
 
 // ==================== 토스트 메시지 ====================
@@ -39,11 +45,15 @@ function showToast(msg) {
 }
 
 
+
+
 // ==================== 모달 닫기 ====================
 function closeModal(id) {
   const modal = document.getElementById(id);
   if (modal) modal.style.display = 'none';
 }
+
+
 
 
 // ==================== XSS 방지 ====================
@@ -56,6 +66,8 @@ function escapeHtml(str) {
     return m;
   });
 }
+
+
 
 
 // ==================== 권한 적용 ====================
@@ -105,14 +117,19 @@ function applyRole(role) {
 }
 
 
-// ==================== 탭 전환 ====================
+
+
+// ==================== 탭 전환 (index.html의 .tab, .page 사용) ====================
 function showTab(n) {
   console.log('showTab 호출:', n);
   
-  n = Math.max(0, Math.min(TOTAL_TABS - 1, n));
-  const needLoginTabs = [2, 3, 6];
-  const user = getCurrentUser();
+  const totalTabs = 7;
+  n = Math.max(0, Math.min(totalTabs - 1, n));
   
+  const user = getCurrentUser();
+  const needLoginTabs = [2, 3, 6];
+  
+  // 로그인 체크
   if (!user && needLoginTabs.includes(n)) {
     console.log('로그인 필요 탭 접근:', n);
     const loginScreen = document.getElementById('screen-login');
@@ -120,11 +137,12 @@ function showTab(n) {
     return;
   }
   
+  // 관리탭 권한 체크
   if (n === 6 && user) {
     const role = user.role;
     if (role !== 'admin' && role !== 'manager') {
       console.log('권한 없음 - 관리탭 접근 불가:', role);
-      if (typeof showToast === 'function') showToast('⚠️ 관리자 또는 매니저만 접근 가능합니다');
+      showToast('⚠️ 관리자 또는 매니저만 접근 가능합니다');
       showTab(0);
       return;
     }
@@ -132,12 +150,14 @@ function showTab(n) {
   
   currentTab = n;
   
+  // 탭 버튼 활성화 (.tab 사용)
   document.querySelectorAll('.tab').forEach((t, i) => {
     if (i === n) t.classList.add('active');
     else t.classList.remove('active');
   });
   
-  for (let i = 0; i < TOTAL_TABS; i++) {
+  // 페이지 표시 (.page 사용)
+  for (let i = 0; i < totalTabs; i++) {
     const page = document.getElementById('p' + i);
     if (page) {
       if (i === n) {
@@ -150,28 +170,48 @@ function showTab(n) {
     }
   }
   
+  // 관리탭 UI 업데이트
   if (n === 6 && user) {
     const role = user.role;
-    if (role === 'admin' || role === 'manager') {
-      document.querySelectorAll('.admin-only, .admin-manager-only').forEach(el => {
-        if (role === 'admin' && el.classList.contains('admin-only')) {
-          el.style.display = 'block';
-        } else if (el.classList.contains('admin-manager-only')) {
-          el.style.display = 'block';
-        }
-      });
+    document.querySelectorAll('.admin-only, .admin-manager-only').forEach(el => {
+      if (role === 'admin' && el.classList.contains('admin-only')) {
+        el.style.display = 'block';
+      } else if (el.classList.contains('admin-manager-only')) {
+        el.style.display = 'block';
+      }
+    });
+    
+    const settingInfoSpan = document.getElementById('setting-user-info');
+    if (settingInfoSpan) {
+      const roleText = user.role === 'admin' ? '관리자' : (user.role === 'manager' ? '매니저' : '일반성도');
+      settingInfoSpan.textContent = `${user.name} (${roleText})`;
     }
   }
   
   setTimeout(() => window.scrollTo(0, 0), 50);
   
+  // 탭 전환 후 처리
   afterTab(n);
 }
+
+
 
 
 // ==================== 탭 전환 후 작업 ====================
 function afterTab(n) {
   console.log('afterTab 실행:', n);
+  
+  // 관리자/매니저 버튼 표시 제어 (.tab이 아닌 일반 버튼용)
+  if (n === 0) {
+    const user = getCurrentUser();
+    document.querySelectorAll('.admin-only, .admin-manager-only').forEach(el => {
+      if (user && (user.role === 'admin' || user.role === 'manager')) {
+        el.style.display = 'block';
+      } else {
+        el.style.display = 'none';
+      }
+    });
+  }
   
   if (n === 0) {
     // 홈
@@ -237,6 +277,8 @@ function afterTab(n) {
   
   console.log('afterTab 완료:', n);
 }
+
+
 
 
 // ==================== 관리탭 렌더링 함수들 ====================
@@ -349,14 +391,52 @@ window.renderApprovalsAccord = function() {
 
 window.approveUser = function(userId) {
   if (!confirm('이 사용자를 승인하시겠습니까?')) return;
-  // ... 기존 코드 유지
+  // Firebase 승인 처리
+  if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
+    const db = firebase.database();
+    const pendingRef = db.ref('pendingUsers/' + userId);
+    pendingRef.once('value')
+      .then(snap => {
+        const userData = snap.val();
+        if (userData) {
+          // members로 이동
+          const membersRef = db.ref('members');
+          membersRef.push(userData);
+          // pending에서 삭제
+          pendingRef.remove();
+          showToast('✅ 승인 완료되었습니다.');
+          renderApprovalsAccord();
+          renderMembersAccord();
+        }
+      })
+      .catch(err => {
+        console.error('승인 처리 실패:', err);
+        showToast('❌ 승인 처리에 실패했습니다.');
+      });
+  } else {
+    showToast('⚠️ Firebase 연결이 필요합니다.');
+  }
 };
 
 
 window.rejectUser = function(userId) {
   if (!confirm('이 사용자를 거절하시겠습니까?')) return;
-  // ... 기존 코드 유지
+  if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
+    firebase.database().ref('pendingUsers/' + userId).remove()
+      .then(() => {
+        showToast('✅ 거절 처리되었습니다.');
+        renderApprovalsAccord();
+      })
+      .catch(err => {
+        console.error('거절 처리 실패:', err);
+        showToast('❌ 거절 처리에 실패했습니다.');
+      });
+  } else {
+    showToast('⚠️ Firebase 연결이 필요합니다.');
+  }
 };
+
+
 
 
 // ==================== 탭 스타일 복원 ====================
@@ -375,6 +455,8 @@ function restoreTabStyles() {
     tab.style.color = '';
   });
 }
+
+
 
 
 // ==================== 스와이프 제스처 ====================
@@ -469,7 +551,7 @@ function restoreTabStyles() {
       if (role !== 'admin' && role !== 'manager') {
         setTimeout(() => {
           showTab(0);
-          if (typeof showToast === 'function') showToast('⚠️ 관리자 또는 매니저만 접근 가능합니다');
+          showToast('⚠️ 관리자 또는 매니저만 접근 가능합니다');
         }, 50);
         return;
       }
@@ -633,7 +715,7 @@ function restoreTabStyles() {
             const role = user.role;
             if (role !== 'admin' && role !== 'manager') {
               cleanup(currentTab);
-              if (typeof showToast === 'function') showToast('⚠️ 관리자 또는 매니저만 접근 가능합니다');
+              showToast('⚠️ 관리자 또는 매니저만 접근 가능합니다');
               restoreTabStyles();
               return;
             }
@@ -647,9 +729,7 @@ function restoreTabStyles() {
               tb.style.color = '';
             });
             cleanup(currentTab);
-            if (typeof showToast === 'function') {
-              showToast('🔐 로그인이 필요한 기능입니다');
-            }
+            showToast('🔐 로그인이 필요한 기능입니다');
           } else {
             currentTab = ni;
             document.querySelectorAll('.tab').forEach((tb, i) => {
@@ -705,4 +785,45 @@ function restoreTabStyles() {
 })();
 
 
-console.log('✅ js_ui.js 로드 완료');
+
+
+// ==================== 개인정보 처리방침 ====================
+
+
+function showPrivacyPolicy() {
+    const modal = document.getElementById('modal-privacy');
+    if (!modal) {
+        console.error('❌ modal-privacy 요소를 찾을 수 없음');
+        alert('개인정보 처리방침을 불러올 수 없습니다.');
+        return;
+    }
+    
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.position = 'fixed';
+    modal.style.inset = '0';
+    modal.style.zIndex = '10001';
+    modal.style.background = 'rgba(0,0,0,0.6)';
+    modal.style.padding = '16px';
+}
+
+
+
+
+// ==================== 전역 함수 등록 ====================
+window.showTab = showTab;
+window.afterTab = afterTab;
+window.showToast = showToast;
+window.closeModal = closeModal;
+window.escapeHtml = escapeHtml;
+window.getCurrentUser = getCurrentUser;
+window.applyRole = applyRole;
+window.showPrivacyPolicy = showPrivacyPolicy;
+window.approveUser = approveUser;
+window.rejectUser = rejectUser;
+window.renderMembersAccord = renderMembersAccord;
+window.renderApprovalsAccord = renderApprovalsAccord;
+
+
+console.log('✅ js_ui.js 로드 완료 (index.html 완전 호환)');

@@ -36,8 +36,6 @@
 <body>
 
 
-
-
 <!-- ==================== 스플래시 ==================== -->
 <div id="splash">
   <img src="logo.png" alt="로고" style="width:80px;height:80px;object-fit:contain;animation:float 1.5s ease-in-out infinite;">
@@ -45,8 +43,6 @@
   <div style="color:rgba(255,255,255,0.55);font-size:12px;">대한예수교 장로회</div>
   <div class="splash-spinner"></div>
 </div>
-
-
 
 
 <!-- ==================== 로그인 ==================== -->
@@ -143,8 +139,6 @@
 </div>
 
 
-
-
 <!-- ==================== 헤더 ==================== -->
 <header>
   <div class="logo">
@@ -169,8 +163,6 @@
     </div>
   </div>
 </header>
-
-
 
 
 <!-- ==================== 탭 ==================== -->
@@ -209,8 +201,6 @@
 </div>
 
 
-
-
 <!-- ==================== 글쓰기 모달 ==================== -->
 <div id="board-write-overlay" class="modal-overlay" style="position:fixed; inset:0; z-index:10000; display:none; align-items:flex-start; justify-content:center; padding:0; overflow-y:auto; background:rgba(0,0,0,0.5);">
   <div class="modal-box" style="border-radius:24px; max-width:600px; width:92%; margin:60px auto 40px auto; padding:20px; max-height:calc(100vh - 100px); overflow-y:auto;">
@@ -236,8 +226,6 @@
 </div>
 
 
-
-
 <!-- ==================== 기도제목 작성 모달 ==================== -->
 <div id="modal-prayer" class="modal-overlay">
   <div class="modal-box">
@@ -256,8 +244,6 @@
     <button class="btn-primary" onclick="submitPrayer()">기도제목 등록</button>
   </div>
 </div>
-
-
 
 
 <!-- ==================== p0: 홈 ==================== -->
@@ -322,8 +308,6 @@
 </div>
 
 
-
-
 <!-- ==================== 공지 작성 모달 ==================== -->
 <div id="modal-notice" class="modal-overlay">
   <div class="modal-box">
@@ -354,28 +338,6 @@
     </div>
     <input type="hidden" id="n-edit-id" value="">
     <button class="btn-primary" id="notice-submit-btn" onclick="saveNotice()">등록하기</button>
-  </div>
-</div>
-<!-- 주보 헤더 (p4 맨 위에 추가) -->
-<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
-  <h2 style="margin:0; font-size:18px; font-weight:800;">📰 주보</h2>
-  <button class="btn-primary admin-manager-only" style="padding:5px 12px; font-size:12px;" onclick="openBulletinWrite()">✏️ 주보 작성</button>
-</div>
-
-
-<!-- 주보 내용 -->
-<div id="bulletin-list"></div>
-<div id="modal-bulletin" class="modal-overlay">
-  <div class="modal-box" style="border-radius:24px;max-width:600px;">
-    <div class="modal-header">
-      <div class="modal-title">📰 주보 작성</div>
-      <button class="modal-close" onclick="closeModal('modal-bulletin')">✕</button>
-    </div>
-    <div class="modal-body">
-      <input type="text" class="input-field" id="b-title" placeholder="주보 제목" style="margin-bottom:12px;">
-      <textarea class="input-field" id="b-body" rows="5" placeholder="주보 내용을 입력하세요" style="margin-bottom:12px;"></textarea>
-      <button class="btn-primary" style="width:100%;" onclick="saveBulletin()">등록하기</button>
-    </div>
   </div>
 </div>
 
@@ -414,8 +376,6 @@
     <div id="prayer-list" class="prayer-list-container"></div>
   </div>
 </div>
-
-
 
 
 <!-- ==================== 말씀 등록 모달 ==================== -->
@@ -463,8 +423,6 @@
 </div>
 
 
-
-
 <!-- ==================== p2: 게시물 ==================== -->
 <div id="p2" class="page">
   <div id="board-category-list" class="board-tab-col">
@@ -497,8 +455,6 @@
 </div>
 
 
-
-
 <!-- ==================== p3: 성경읽기 ==================== -->
 <div id="p3" class="page">
   <div id="bible-reader-home">
@@ -528,8 +484,6 @@
     </div>
   </div>
 </div>
-
-
 
 
 <!-- ==================== p4: 안내 ==================== -->
@@ -608,8 +562,6 @@
 </div>
 
 
-
-
 <!-- ==================== p5: 성경책 ==================== -->
 <div id="p5" class="page" style="padding:0;padding-bottom:0;">
   <div id="bibleMain" style="height:calc(100dvh - 163px);background:#fdf8f0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 16px;">
@@ -627,8 +579,6 @@
   <div id="bibleHymnView" style="display:none;">[찬송가 뷰]</div>
   <div id="bibleAppendixView" style="display:none;">[부록 뷰]</div>
 </div>
-
-
 
 
 <!-- ==================== p6: 관리 ==================== -->
@@ -679,11 +629,7 @@
 </div>
 
 
-
-
-</div>
-
-
+</div> <!-- ===== swipe-container 닫힘 ===== -->
 
 
 <!-- ==================== 추가 모달 ==================== -->
@@ -695,6 +641,8 @@
 <div id="modal-add-schedule" class="modal-overlay">[예배 시간표 추가 모달]</div>
 <div id="modal-edit-churchinfo" class="modal-overlay">[교회 정보 수정 모달]</div>
 <div id="modal-notice-view" class="modal-overlay">[공지 보기 모달]</div>
+
+
 <!-- 개인정보 처리방침 모달 -->
 <div id="modal-privacy" class="modal-overlay">
   <div class="modal-box">
@@ -725,13 +673,10 @@
 </div>
 
 
-
-
 <div id="modal-staff" class="modal-overlay">[섬기는 분들 수정 모달]</div>
 
 
-
-
+<!-- ==================== 하단 광고 바 ==================== -->
 <div class="ad-bar">
   <div class="ad-addr">
     <img src="logo.png" style="width:22px;height:22px;">
@@ -761,29 +706,19 @@
 <script src="js_liturgy.js"></script>
 
 
-
-
-<!-- ==================== 공지사항 초기 실행 ==================== -->
+<!-- ==================== 초기 실행 ==================== -->
 <script>
-  // 페이지 로드 후 공지사항 표시
   document.addEventListener('DOMContentLoaded', function() {
-    // js_notices.js에서 자동 실행됨
     console.log('📢 공지사항 초기화 완료');
   });
-</script>
 
 
-
-
-<script>
   setTimeout(function() {
     if (typeof loadChurchInfo === 'function') {
       loadChurchInfo();
     }
   }, 2000);
 </script>
-
-
 
 
 </body>

@@ -1,0 +1,70 @@
+﻿/* ========== 하단 광고 ========== */
+.ad-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  background: white;
+  border-top: 2px solid var(--border);
+  z-index: 9999;
+  display: flex !important;
+  flex-direction: column;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  padding: 8px 12px;
+  /* max-width 제거! */
+  min-height: 50px;
+}
+
+
+.ad-addr {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--text2);
+  flex-wrap: wrap;
+  padding: 4px 0;
+}
+
+
+.ad-addr img {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  display: inline-block !important;
+}
+
+
+.ad-addr span {
+  font-size: 10px;
+  color: var(--text2);
+  text-align: center;
+}
+
+
+.ad-addr a {
+  color: var(--purple);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+
+.ad-addr a:hover {
+  text-decoration: underline;
+}
+
+
+.ad-banner {
+  display: none;
+  padding: 6px;
+  text-align: center;
+  background: #faf5ff;
+  font-size: 11px;
+  color: var(--text2);
+  border-top: 1px solid var(--border);
+}

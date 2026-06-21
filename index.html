@@ -314,7 +314,6 @@
   <div class="card" style="background:linear-gradient(135deg,#f0fff4,#e8f5e9);">
     <div class="card-title" style="color:#2e7d32;">
       <span>📖 주보란</span>
-      <span style="font-size:11px;color:var(--text2);font-weight:400;">주보 공지입니다</span>
     </div>
     <div id="jubo-notices">
       <div style="text-align:center; padding:20px; color:var(--text2); font-size:13px;">⏳ 로딩 중...</div>
@@ -341,7 +340,6 @@
       <select class="input-field" id="n-cat">
         <option>📢 일반</option>
         <option>🎉 행사</option>
-        <option>📅 주보</option>
       </select>
     </div>
     <!-- 사진 첨부 (여러장) -->
@@ -358,8 +356,28 @@
     <button class="btn-primary" id="notice-submit-btn" onclick="saveNotice()">등록하기</button>
   </div>
 </div>
+<!-- 주보 헤더 (p4 맨 위에 추가) -->
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+  <h2 style="margin:0; font-size:18px; font-weight:800;">📰 주보</h2>
+  <button class="btn-primary admin-manager-only" style="padding:5px 12px; font-size:12px;" onclick="openBulletinWrite()">✏️ 주보 작성</button>
+</div>
 
 
+<!-- 주보 내용 -->
+<div id="bulletin-list"></div>
+<div id="modal-bulletin" class="modal-overlay">
+  <div class="modal-box" style="border-radius:24px;max-width:600px;">
+    <div class="modal-header">
+      <div class="modal-title">📰 주보 작성</div>
+      <button class="modal-close" onclick="closeModal('modal-bulletin')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="text" class="input-field" id="b-title" placeholder="주보 제목" style="margin-bottom:12px;">
+      <textarea class="input-field" id="b-body" rows="5" placeholder="주보 내용을 입력하세요" style="margin-bottom:12px;"></textarea>
+      <button class="btn-primary" style="width:100%;" onclick="saveBulletin()">등록하기</button>
+    </div>
+  </div>
+</div>
 
 
 <!-- ==================== p1: 말씀 ==================== -->

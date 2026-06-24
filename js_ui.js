@@ -202,13 +202,15 @@ function afterTab(n) {
   console.log('afterTab 실행:', n);
   
   // 관리자/매니저 버튼 표시 제어 (.tab이 아닌 일반 버튼용)
+  // classList 사용하여 CSS 클래스로 제어 (CSS !important 문제 해결)
   if (n === 0) {
     const user = getCurrentUser();
     document.querySelectorAll('.admin-only, .admin-manager-only').forEach(el => {
       if (user && (user.role === 'admin' || user.role === 'manager')) {
-        el.style.display = 'block';
+        el.classList.add('visible');
+        console.log('✅ 버튼 표시됨:', el.className);
       } else {
-        el.style.display = 'none';
+        el.classList.remove('visible');
       }
     });
   }
@@ -332,6 +334,8 @@ window.renderMembersAccord = function() {
 };
 
 
+
+
 window.renderApprovalsAccord = function() {
   console.log('renderApprovalsAccord 실행');
   const container = document.getElementById('accord-approval-list');
@@ -389,6 +393,8 @@ window.renderApprovalsAccord = function() {
 };
 
 
+
+
 window.approveUser = function(userId) {
   if (!confirm('이 사용자를 승인하시겠습니까?')) return;
   // Firebase 승인 처리
@@ -417,6 +423,8 @@ window.approveUser = function(userId) {
     showToast('⚠️ Firebase 연결이 필요합니다.');
   }
 };
+
+
 
 
 window.rejectUser = function(userId) {
@@ -824,6 +832,8 @@ window.approveUser = approveUser;
 window.rejectUser = rejectUser;
 window.renderMembersAccord = renderMembersAccord;
 window.renderApprovalsAccord = renderApprovalsAccord;
+
+
 
 
 console.log('✅ js_ui.js 로드 완료 (index.html 완전 호환)');

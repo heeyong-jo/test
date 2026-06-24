@@ -22,9 +22,11 @@
   
   <!-- CSS 파일 -->
   <link rel="stylesheet" href="css_style.css">
+  
+  <!-- 내부 스타일: !important 제거 -->
   <style>
-    .page { display: none !important; width: 100%; height: 100%; }
-    .page.show { display: block !important; }
+    .page { display: none; width: 100%; height: 100%; }
+    .page.show { display: block; }
     .tab { transition: all 0.2s ease; }
     .tab.active { border-bottom: 3px solid #5c3d1e; font-weight: 700; }
   </style>
@@ -34,6 +36,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 </head>
 <body>
+
+
+<!-- ==================== 토스트 ==================== -->
+<div id="toast"></div>
 
 
 <!-- ==================== 스플래시 ==================== -->
@@ -708,16 +714,97 @@
 
 <!-- ==================== 초기 실행 ==================== -->
 <script>
+  // ==================== 페이지 로드 후 실행 ====================
   document.addEventListener('DOMContentLoaded', function() {
-    console.log('📢 공지사항 초기화 완료');
+    console.log('✅ 가좌제일교회 앱 로드 완료');
+    
+    // 스플래시 숨기기
+    setTimeout(function() {
+      const splash = document.getElementById('splash');
+      if (splash) {
+        splash.classList.add('hidden');
+        setTimeout(function() {
+          splash.style.display = 'none';
+        }, 500);
+      }
+    }, 1500);
+
+
+    // 공지사항 초기화
+    if (typeof loadNoticesFromFirebase === 'function') {
+      loadNoticesFromFirebase();
+    } else if (typeof loadNoticesFromLocalStorage === 'function') {
+      loadNoticesFromLocalStorage();
+    }
+
+
+    // 교회 정보 로드
+    setTimeout(function() {
+      if (typeof loadChurchInfo === 'function') {
+        loadChurchInfo();
+      }
+    }, 2000);
+
+
+    // 현재 사용자 복원
+    if (typeof restoreUserSession === 'function') {
+      restoreUserSession();
+    }
   });
 
 
-  setTimeout(function() {
-    if (typeof loadChurchInfo === 'function') {
-      loadChurchInfo();
+  // ==================== 전역 함수 등록 ====================
+  function toggleProfileDropdown() {
+    const dropdown = document.getElementById('profile-dropdown');
+    if (dropdown) {
+      dropdown.classList.toggle('show');
     }
-  }, 2000);
+  }
+
+
+  // 다른 곳에서 클릭하면 드롭다운 닫기
+  document.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('profile-dropdown');
+    const badge = document.querySelector('.user-badge');
+    if (dropdown && badge && !badge.contains(e.target)) {
+      dropdown.classList.remove('show');
+    }
+  });
+
+
+  // ==================== 아코디언 토글 ====================
+  function toggleAccord(type) {
+    const body = document.getElementById('ac-' + type + '-body');
+    const arrow = document.getElementById('ac-' + type + '-arrow');
+    if (body) {
+      if (body.style.display === 'block') {
+        body.style.display = 'none';
+        if (arrow) arrow.textContent = '›';
+      } else {
+        body.style.display = 'block';
+        if (arrow) arrow.textContent = '‹';
+        // 데이터 로드
+        if (type === 'member' && typeof renderMembersAccord === 'function') {
+          renderMembersAccord();
+        } else if (type === 'approval' && typeof renderApprovalsAccord === 'function') {
+          renderApprovalsAccord();
+        }
+      }
+    }
+  }
+
+
+  // ==================== 전역 노출 ====================
+  window.toggleProfileDropdown = toggleProfileDropdown;
+  window.toggleAccord = toggleAccord;
+  window.closeNoticeModal = function() {
+    const modal = document.getElementById('modal-notice');
+    if (modal) modal.style.display = 'none';
+  };
+  window.closeNoticeDetailModal = function() {
+    const modal = document.getElementById('modal-notice-detail');
+    if (modal) modal.style.display = 'none';
+  };
 </script>
 
 

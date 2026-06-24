@@ -28,7 +28,7 @@ body {
   margin: 0;
   padding: 0;
   padding-top: 120px;
-  padding-bottom: 80px;
+  padding-bottom: 100px !important; /* 광고 높이 + 여유 공간 */
 }
 
 
@@ -589,7 +589,7 @@ textarea.input-field {
 /* ========== 토스트 ========== */
 #toast {
   position: fixed;
-  bottom: 80px;
+  bottom: 100px;
   left: 50%;
   transform: translateX(-50%) translateY(20px);
   background: #5c3d1e;
@@ -598,7 +598,7 @@ textarea.input-field {
   border-radius: 99px;
   font-size: 13px;
   font-weight: 600;
-  z-index: 9999;
+  z-index: 100000;
   opacity: 0;
   transition: all 0.3s;
   pointer-events: none;
@@ -616,7 +616,7 @@ textarea.input-field {
 #screen-login {
   position: fixed;
   inset: 0;
-  z-index: 10000;
+  z-index: 100000;
   background: linear-gradient(160deg, #2e1a08, #5c3520, #8c5530);
   display: none;
   overflow-y: auto;
@@ -725,7 +725,7 @@ textarea.input-field {
   background: 
     linear-gradient(rgba(250, 245, 235, 0.15), rgba(250, 245, 235, 0.15)),
     url('https://raw.githubusercontent.com/heeyong-jo/test/main/5555.png') center/cover no-repeat;
-  z-index: 99999;
+  z-index: 999999;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -760,12 +760,16 @@ textarea.input-field {
   width: 100%;
   background: white;
   border-top: 2px solid var(--border);
-  z-index: 9999;
+  z-index: 99999 !important;
   display: flex !important;
   flex-direction: column;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
   padding: 8px 12px;
   min-height: 50px;
+  max-height: 80px;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 
@@ -794,6 +798,7 @@ textarea.input-field {
   font-size: 10px;
   color: var(--text2);
   text-align: center;
+  line-height: 1.4;
 }
 
 

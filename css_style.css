@@ -28,7 +28,7 @@ body {
   margin: 0;
   padding: 0;
   padding-top: 120px;
-  padding-bottom: 80px !important; /* 광고 높이만큼 하단 여백 확보 */
+  padding-bottom: 80px ; /* 광고 높이만큼 하단 여백 확보 */
 }
 
 
@@ -824,32 +824,32 @@ textarea.input-field {
 
 /* ========== 숨김 클래스 ========== */
 .admin-only {
-  display: none !important;
+  display: none;
 }
 
 
 .admin-only.visible {
-  display: block !important;
+  display: block;
 }
 
 
 .admin-only.visible-inline {
-  display: inline-block !important;
+  display: inline-block;
 }
 
 
 .admin-manager-only {
-  display: none !important;
+  display: none;
 }
 
 
 .admin-manager-only.visible {
-  display: block !important;
+  display: block;
 }
 
 
 .admin-manager-only.visible-inline {
-  display: inline-block !important;
+  display: inline-block;
 }
 
 

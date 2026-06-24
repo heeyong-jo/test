@@ -28,7 +28,7 @@ body {
   margin: 0;
   padding: 0;
   padding-top: 120px;
-  padding-bottom: 80px;
+  padding-bottom: 80px !important; /* 광고 높이만큼 하단 여백 확보 */
 }
 
 
@@ -755,22 +755,22 @@ textarea.input-field {
 .ad-bar {
   position: fixed;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
   width: 100%;
-  max-width: 430px;
   background: white;
   border-top: 2px solid var(--border);
-  z-index: 1000;
-  display: flex;
+  z-index: 9999;
+  display: flex !important;
   flex-direction: column;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
   padding: 8px 12px;
+  min-height: 50px;
 }
 
 
 .ad-addr {
-  display: flex;
+  display: flex !important;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -786,6 +786,7 @@ textarea.input-field {
   height: 20px;
   flex-shrink: 0;
   border-radius: 4px;
+  display: inline-block !important;
 }
 
 

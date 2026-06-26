@@ -11,16 +11,12 @@
   --blue:#1d4ed8;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100dvh;
-  overflow-x:hidden;
-  margin-top:120px;  /* 헤더(60px) + 탭(60px) 높이만큼 여백 */
-}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+  background:var(--bg);color:var(--text);min-height:100dvh;overflow-x:hidden;}
 ::-webkit-scrollbar{height:4px;width:4px;background:var(--bg2);}
 ::-webkit-scrollbar-thumb{background:#d4bfa0;border-radius:9px;}
+
+
 
 
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
@@ -28,27 +24,30 @@ body{
 @keyframes spin{to{transform:rotate(360deg)}}
 
 
-/* ── 헤더 (상단 고정) ── */
+
+
+/* ── 헤더 ── */
 header {
   background: linear-gradient(135deg,#5c3d1e 0%,#7a5230 50%,#9e6b3e 100%);
   padding: 14px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: fixed;
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
   z-index: 100;
   box-shadow: 0 4px 24px rgba(80,50,20,0.35);
   flex-wrap: nowrap;
 }
 
 
+
+
 .logo {
   flex-shrink: 0;
 }
+
+
 
 
 .user-badge {
@@ -63,6 +62,8 @@ header {
 .user-dot{width:7px;height:7px;background:#ffd966;border-radius:50%;animation:pulse 2s infinite;}
 .user-name-txt{font-size:11px;color:white;font-weight:700;}
 .user-role-txt{font-size:9px;color:rgba(255,255,255,0.6);font-weight:600;}
+
+
 
 
 /* 개인정보 드롭다운 */
@@ -89,21 +90,11 @@ header {
 .profile-dropdown-item.danger{color:var(--red);}
 
 
-/* ── 탭 (헤더 아래 고정) ── */
-.tabs{
-  display:flex;
-  background:white;
-  border-bottom:2px solid var(--border);
-  overflow-x:auto;
-  box-shadow:0 2px 10px rgba(0,0,0,0.06);
-  position:fixed;
-  top:60px;
-  left:0;
-  right:0;
-  width:100%;
-  z-index:100;
-  background-color:white;
-}
+
+
+/* ── 탭 ── */
+.tabs{display:flex;background:white;border-bottom:2px solid var(--border);overflow-x:auto;
+  box-shadow:0 2px 10px rgba(0,0,0,0.06);}
 .tabs::-webkit-scrollbar{display:none;}
 .tab{padding:13px 15px;cursor:pointer;white-space:nowrap;font-size:12px;font-weight:600;
   color:var(--text2);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all 0.2s;user-select:none;}
@@ -111,66 +102,14 @@ header {
 .tab:hover{color:var(--purple);background:#fdf0e0;}
 
 
+
+
 /* ── 페이지 ── */
-.page{
-  display:none !important;
-  padding:14px;
-  padding-bottom:100px;
-  padding-top:0;
-}
-.page.show{
-  display:block !important;
-}
+.page{display:none !important;padding:14px;padding-bottom:100px;}
+.page.show{display:block !important;}
+#swipe-container{touch-action:pan-x pan-y pinch-zoom;user-select:none;-webkit-user-select:none;}
 
 
-/* ── 게시물 탭 상단 고정 및 뒤로가기 버튼 ── */
-#board-content {
-  padding-top: 120px !important;
-}
-
-
-#board-back-btn {
-  position: sticky;
-  top: 70px;
-  left: 14px;
-  z-index: 101;
-  background: var(--bg2);
-  border: 1.5px solid var(--border);
-  border-radius: 8px;
-  padding: 5px 12px;
-  cursor: pointer;
-  font-weight: 600;
-  color: var(--text);
-  font-size: 13px;
-  display: inline-block;
-  margin: 12px 0 0 14px;
-}
-
-
-/* ── 모달 헤더 (탭 위에 표시) ── */
-.modal-header {
-  position: relative;
-  z-index: 1001;
-  background: white;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-
-.modal-close {
-  position: relative;
-  z-index: 1001;
-  background: var(--bg2);
-  border: none;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  font-size: 16px;
-  cursor: pointer;
-}
 
 
 /* ── 카드 ── */
@@ -183,11 +122,15 @@ header {
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
 
 
+
+
 /* ── 통계 ── */
 .stat-box{background:var(--bg);border:1.5px solid var(--border);border-radius:14px;padding:14px 12px;text-align:center;}
 .stat-label{font-size:10px;color:var(--text2);font-weight:600;margin-bottom:6px;}
 .stat-val{font-size:22px;font-weight:800;color:var(--purple);}
 .stat-sub{font-size:10px;color:var(--text2);margin-top:3px;}
+
+
 
 
 /* ── 리스트 ── */
@@ -207,11 +150,15 @@ header {
 .notice-body{font-size:12px;color:var(--text2);line-height:1.6;}
 
 
+
+
 /* ── 예배 안내 ── */
 .service-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border);}
 .service-row:last-child{border-bottom:none;}
 .service-name{font-weight:600;color:var(--text);font-size:13px;}
 .service-time{font-size:12px;color:var(--text2);}
+
+
 
 
 /* ── 헌금 ── */
@@ -221,10 +168,14 @@ header {
 .offering-amount{font-size:13px;font-weight:700;color:var(--green);}
 
 
+
+
 /* ── 배지 ── */
 .badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:10px;font-weight:700;}
 .badge-new{background:#fef3c7;color:#92400e;}
 .badge-ok{background:#dcfce7;color:#166534;}
+
+
 
 
 /* ── 버튼 ── */
@@ -236,6 +187,8 @@ header {
   color:var(--red);padding:10px 16px;font-size:12px;font-weight:600;cursor:pointer;}
 
 
+
+
 /* ── 입력 ── */
 .input-group{margin-bottom:14px;}
 .input-label{font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px;}
@@ -243,6 +196,8 @@ header {
   padding:12px 14px;font-size:14px;color:var(--text);outline:none;transition:border-color 0.2s;font-family:inherit;}
 .input-field:focus{border-color:var(--purple);}
 textarea.input-field{resize:vertical;min-height:80px;}
+
+
 
 
 /* ── 약도 ── */
@@ -253,11 +208,15 @@ textarea.input-field{resize:vertical;min-height:80px;}
   padding:3px 8px;border-radius:99px;margin-top:-4px;box-shadow:0 2px 8px rgba(0,0,0,0.25);white-space:nowrap;}
 
 
+
+
 /* ── 토스트 ── */
 #toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
   background:#5c3d1e;color:white;padding:10px 22px;border-radius:99px;font-size:13px;font-weight:600;
   z-index:9999;opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap;}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+
 
 
 /* ── 로그인 ── */
@@ -275,6 +234,8 @@ textarea.input-field{resize:vertical;min-height:80px;}
   border:none;border-radius:12px;color:white;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px;}
 .login-err{display:none;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);
   border-radius:10px;padding:10px 14px;color:#fca5a5;font-size:12px;margin-bottom:12px;text-align:left;}
+
+
 
 
 /* ── 스플래시 ── */
@@ -296,10 +257,16 @@ textarea.input-field{resize:vertical;min-height:80px;}
   border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite;}
 
 
+
+
+
+
 /* ── 하단 광고 ── */
 .ad-bar{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--border);z-index:90;display:flex;flex-direction:column;}
 .ad-addr{display:flex;align-items:center;justify-content:center;padding:8px 12px;background:white;flex-wrap:wrap;gap:6px;}
 .ad-banner{padding:6px;text-align:center;background:#faf5ff;}
+
+
 
 
 /* ── 숨김 클래스 ── */
@@ -313,14 +280,20 @@ textarea.input-field{resize:vertical;min-height:80px;}
 .admin-show-inline{display:inline-block;}
 
 
+
+
 /* ── 섹션 헤더 ── */
 .sec-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
 .sec-title{font-weight:700;font-size:15px;color:var(--text);}
 
 
+
+
 .c-purple{color:var(--purple);}
 .c-green{color:var(--green);}
 .c-red{color:var(--red);}
+
+
 
 
 /* ── 아코디언 ── */
@@ -338,6 +311,8 @@ textarea.input-field{resize:vertical;min-height:80px;}
 .accord-body.open{max-height:3000px;padding:0 16px 16px;}
 
 
+
+
 /* ── 묵상 카드 ── */
 .meditation-card{background:var(--bg);border-radius:14px;padding:14px;margin-bottom:10px;}
 .meditation-header{display:flex;justify-content:space-between;margin-bottom:6px;}
@@ -352,6 +327,8 @@ textarea.input-field{resize:vertical;min-height:80px;}
 .meditation-edit-btn:hover, .meditation-del-btn:hover{background:var(--bg2);}
 
 
+
+
 /* ── 묵상 쓰기 ── */
 .write-area{background:var(--bg);border-radius:14px;padding:14px;margin-bottom:14px;}
 .write-textarea{width:100%;background:white;border:1.5px solid var(--border);border-radius:12px;
@@ -359,6 +336,8 @@ textarea.input-field{resize:vertical;min-height:80px;}
 .write-textarea:focus{border-color:var(--purple);}
 .write-submit{background:linear-gradient(135deg,#6b2577,#9c3a8a);border:none;border-radius:10px;
   color:white;padding:9px 18px;font-size:12px;font-weight:700;cursor:pointer;float:right;margin-top:8px;}
+
+
 
 
 /* ── 예배안내 수정 ── */
@@ -377,12 +356,18 @@ textarea.input-field{resize:vertical;min-height:80px;}
   color:var(--purple);font-size:11px;font-weight:700;padding:5px 12px;cursor:pointer;}
 
 
+
+
 /* ── 모달 ── */
 .modal-overlay{display:none;position:fixed;inset:0;z-index:500;
   background:rgba(0,0,0,0.55);align-items:flex-end;justify-content:center;}
 .modal-box{background:white;border-radius:24px 24px 0 0;padding:24px 20px 40px;
   width:100%;max-width:520px;max-height:85vh;overflow-y:auto;}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
 .modal-title{font-size:16px;font-weight:800;color:var(--text);}
+.modal-close{background:var(--bg2);border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;}
+
+
 
 
 /* 찬송가 탭 스타일 */
@@ -433,6 +418,8 @@ textarea.input-field{resize:vertical;min-height:80px;}
   margin-top: 3px;
   line-height: 1.3;
 }
+
+
 
 
 /* ── 섬기는 분들 ── */
@@ -506,8 +493,6 @@ textarea.input-field{resize:vertical;min-height:80px;}
   cursor: pointer; background: var(--purple); color: #fff;
 }
 .sf-actions .sf-del { background: #e53e3e; }
-
-
 /* ── 게시물 탭: 세로 컬럼 ── */
 .board-tab-col {
   display: flex;
@@ -521,10 +506,14 @@ textarea.input-field{resize:vertical;min-height:80px;}
 }
 
 
+
+
 #board-category-list {
   max-width: 320px;
   margin: 0 auto;
 }
+
+
 
 
 .board-cat-btn {
@@ -548,11 +537,15 @@ textarea.input-field{resize:vertical;min-height:80px;}
 }
 
 
+
+
 .board-cat-btn.active {
   background: var(--purple);
   color: white;
   border-color: var(--purple);
 }
+
+
 
 
 .board-cat-btn:hover:not(.active) {
@@ -561,11 +554,15 @@ textarea.input-field{resize:vertical;min-height:80px;}
 }
 
 
+
+
 .board-tab-sub {
   font-size: 11px;
   font-weight: 400;
   opacity: 0.8;
 }
+
+
 
 
 /* 게시물 목록 컨테이너 */
@@ -655,16 +652,29 @@ textarea.input-field{resize:vertical;min-height:80px;}
   height: 100%;
   background: var(--bg);
   overflow-y: auto;
+  padding: 90px 14px 100px 14px;
   z-index: 10;
 }
 
 
+/* 뒤로 가기 버튼 */
+#board-back-btn {
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 14px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text);
+  font-size: 13px;
+}
 /* ── 섬기는 분들 전체 그룹 ── */
 .sf-group {
   margin-bottom: 24px;
 }
 
 
+/* 그룹 헤더 (변경 없음) */
 .sf-group-header {
   display: flex;
   align-items: center;
@@ -679,13 +689,15 @@ textarea.input-field{resize:vertical;min-height:80px;}
 }
 
 
+/* ── 담임목사 이외의 그룹: 2열 그리드 ── */
 .sf-list {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr;   /* 가로로 두 명 */
   gap: 14px;
 }
 
 
+/* 일반 멤버 카드: 세로 배치 + 중앙 정렬 */
 .sf-card {
   display: flex;
   flex-direction: column;
@@ -699,11 +711,12 @@ textarea.input-field{resize:vertical;min-height:80px;}
 }
 
 
+/* ── 사진 컨테이너: 정사각형(120x120), 둥근 사각형 ── */
 .sf-photo-wrap {
   position: relative;
   width: 120px;
   height: 120px;
-  border-radius: 4px;
+  border-radius: 4px;           /* ★ 원형 대신 사각형 */
   overflow: hidden;
   flex-shrink: 0;
   background: #f0eaf8;
@@ -711,6 +724,7 @@ textarea.input-field{resize:vertical;min-height:80px;}
 }
 
 
+/* 사진 이미지 */
 .sf-photo-wrap img {
   width: 100%;
   height: 100%;
@@ -718,6 +732,7 @@ textarea.input-field{resize:vertical;min-height:80px;}
 }
 
 
+/* 사진 없을 때 플레이스홀더 */
 .sf-photo-ph {
   width: 100%;
   height: 100%;
@@ -729,6 +744,7 @@ textarea.input-field{resize:vertical;min-height:80px;}
 }
 
 
+/* 사진 위 카메라 버튼 */
 .sf-cam-btn {
   position: absolute;
   bottom: 0;
@@ -743,6 +759,7 @@ textarea.input-field{resize:vertical;min-height:80px;}
 }
 
 
+/* ── 카드 본문(이름, 역할) ── */
 .sf-card-body {
   width: 100%;
 }
@@ -756,6 +773,7 @@ textarea.input-field{resize:vertical;min-height:80px;}
 }
 
 
+/* 역할 리스트 */
 .sf-roles {
   list-style: none;
   padding: 0;
@@ -785,6 +803,7 @@ textarea.input-field{resize:vertical;min-height:80px;}
 }
 
 
+/* ── 담임목사 특별 카드 (1열 전체) ── */
 .sf-pastor-card {
   background: linear-gradient(145deg, #fdf5e8, #f5e8d5);
   border-radius: 16px;
@@ -813,13 +832,15 @@ textarea.input-field{resize:vertical;min-height:80px;}
 }
 
 
+/* 담임목사 사진은 조금 더 크게 (130x130 사각형) */
 .sf-photo-wrap--lg {
   width: 140px;
   height: 140px;
-  border-radius: 6px;
+  border-radius: 6px;   /* 사각형 유지 */
 }
 
 
+/* 저서 목록 */
 .sf-books-label {
   font-size: 12px;
   font-weight: 700;
@@ -846,6 +867,7 @@ textarea.input-field{resize:vertical;min-height:80px;}
 }
 
 
+/* 수정/삭제 버튼 */
 .sf-actions {
   display: flex;
   gap: 6px;
@@ -869,6 +891,7 @@ textarea.input-field{resize:vertical;min-height:80px;}
 }
 
 
+/* 추가 버튼 */
 .sf-btn-add {
   background: var(--purple);
   color: #fff;
@@ -882,8 +905,6 @@ textarea.input-field{resize:vertical;min-height:80px;}
   position: relative;
   z-index: 1;
 }
-
-
 /* ── 게시판 페이지네이션 ── */
 .board-page-btn {
   padding: 6px 12px;

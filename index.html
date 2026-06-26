@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>가좌제일교회</title>
   
-  <!-- PWA 메타태그, manifest, 아이콘 등은 그대로 유지 -->
+  <!-- PWA 메타태그 -->
   <meta name="application-name" content="가좌제일교회">
   <meta name="description" content="대한예수교 장로회 가좌제일 공식 앱">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -23,7 +23,7 @@
   <!-- CSS 파일 -->
   <link rel="stylesheet" href="css_style.css">
   
-  <!-- Firebase SDK (CDN) -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   
@@ -121,15 +121,15 @@
 <header>
   <div class="logo">
     <div class="logo-icon">
-  <img src="logo.png" alt="로고" style="width:42px;height:42px;object-fit:contain;border-radius:8px;">
-</div>
+      <img src="logo.png" alt="로고" style="width:42px;height:42px;object-fit:contain;border-radius:8px;">
+    </div>
     <div>
       <div class="logo-text">가좌제일교회</div>
       <div class="logo-sub">GAJWAJEIL · <span id="htime">--:--</span></div>
     </div>
   </div>
   <div class="user-badge" onclick="currentUser ? toggleProfileDropdown() : (document.getElementById('screen-login').style.display='flex')">
-   <div class="user-dot"></div>
+    <div class="user-dot"></div>
     <div style="display:flex;flex-direction:column;align-items:flex-start;gap:1px;">
       <span class="user-name-txt" id="user-name-display">-</span>
       <span class="user-role-txt" id="user-role-display"></span>
@@ -156,28 +156,30 @@
 
 
 <div id="swipe-container">
-<!-- 글 상세 모달 -->
-  <div id="board-detail-overlay" class="modal-overlay" style="align-items:center;">
-    <div class="modal-box" style="border-radius:24px;max-width:600px;max-height:90vh;overflow-y:auto;">
-      <div class="modal-header">
-        <div class="modal-title" id="board-detail-title"></div>
-        <button class="modal-close" onclick="closeBoardDetail()">✕</button>
+
+
+<!-- ==================== 게시판 모달 ==================== -->
+<div id="board-detail-overlay" class="modal-overlay" style="align-items:center;">
+  <div class="modal-box" style="border-radius:24px;max-width:600px;max-height:90vh;overflow-y:auto;">
+    <div class="modal-header">
+      <div class="modal-title" id="board-detail-title"></div>
+      <button class="modal-close" onclick="closeBoardDetail()">✕</button>
+    </div>
+    <div id="board-detail-content" style="margin-bottom:16px;"></div>
+    <div class="board-comments-section">
+      <div class="board-comments-title">💬 댓글</div>
+      <div id="board-comments-list"></div>
+      <div id="board-comment-input-wrap" class="input-group" style="margin-top:12px;">
+        <textarea id="board-comment-input" class="input-field" rows="2" placeholder="댓글을 입력하세요..."></textarea>
+        <button class="btn-primary" onclick="submitBoardComment()" style="margin-top:8px;">등록</button>
       </div>
-      <div id="board-detail-content" style="margin-bottom:16px;"></div>
-      <div class="board-comments-section">
-        <div class="board-comments-title">💬 댓글</div>
-        <div id="board-comments-list"></div>
-        <div id="board-comment-input-wrap" class="input-group" style="margin-top:12px;">
-          <textarea id="board-comment-input" class="input-field" rows="2" placeholder="댓글을 입력하세요..."></textarea>
-          <button class="btn-primary" onclick="submitBoardComment()" style="margin-top:8px;">등록</button>
-        </div>
-        <div id="board-comment-login-msg" style="display:none;text-align:center;padding:12px;font-size:12px;color:var(--text2);">댓글을 작성하려면 로그인이 필요합니다.</div>
-      </div>
+      <div id="board-comment-login-msg" style="display:none;text-align:center;padding:12px;font-size:12px;color:var(--text2);">댓글을 작성하려면 로그인이 필요합니다.</div>
     </div>
   </div>
+</div>
 
 
-  <!-- 글쓰기 모달 -->
+<!-- ==================== 글쓰기 모달 ==================== -->
 <div id="board-write-overlay" class="modal-overlay"
      style="position:fixed; inset:0; z-index:10000; display:none;
             align-items:flex-start; justify-content:center;
@@ -186,27 +188,29 @@
        style="border-radius:24px; max-width:600px; width:92%;
               margin:60px auto 40px auto; padding:20px;
               max-height:calc(100vh - 100px); overflow-y:auto;">
-      <div class="modal-header">
-        <div class="modal-title">✏️ 글쓰기</div>
-        <button class="modal-close" onclick="closeBoardWrite()">✕</button>
-      </div>
-      <div class="input-group">
-        <div class="input-label">제목</div>
-        <input class="input-field" id="board-write-title" placeholder="제목">
-      </div>
-      <div class="input-group">
-        <div class="input-label">내용</div>
-        <textarea class="input-field" id="board-write-content" rows="6" placeholder="내용을 입력하세요..."></textarea>
-      </div>
-      <div class="input-group">
-        <div class="input-label">사진 첨부</div>
-        <input type="file" id="board-write-photo" accept="image/*" onchange="boardPhotoPreview(this)">
-        <div id="board-photo-preview" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;"></div>
-      </div>
-      <button class="btn-primary" onclick="submitBoardPost()">등록</button>
+    <div class="modal-header">
+      <div class="modal-title">✏️ 글쓰기</div>
+      <button class="modal-close" onclick="closeBoardWrite()">✕</button>
     </div>
+    <div class="input-group">
+      <div class="input-label">제목</div>
+      <input class="input-field" id="board-write-title" placeholder="제목">
+    </div>
+    <div class="input-group">
+      <div class="input-label">내용</div>
+      <textarea class="input-field" id="board-write-content" rows="6" placeholder="내용을 입력하세요..."></textarea>
+    </div>
+    <div class="input-group">
+      <div class="input-label">사진 첨부</div>
+      <input type="file" id="board-write-photo" accept="image/*" onchange="boardPhotoPreview(this)">
+      <div id="board-photo-preview" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;"></div>
+    </div>
+    <button class="btn-primary" onclick="submitBoardPost()">등록</button>
   </div>
-<!-- 기도제목 작성 모달 -->
+</div>
+
+
+<!-- ==================== 기도제목 작성 모달 ==================== -->
 <div id="modal-prayer" class="modal-overlay">
   <div class="modal-box">
     <div class="modal-header">
@@ -228,19 +232,15 @@
 
 <!-- ══════════════════════ p0: 홈 ══════════════════════ -->
 <div id="p0" class="page show">
-
-
   <!-- ⛪ 주일 예배 카드 -->
   <div class="card">
     <div class="card-title" style="justify-content:space-between;">
       <span>⛪ 주일 예배</span>
       <button class="edit-mode-btn admin-only" onclick="toggleSundayEdit()" id="sunday-edit-btn">✏️ 수정</button>
     </div>
-    <!-- 주일 예배 목록 (렌더링 전용) -->
     <div id="sunday-service-view">
       <div id="sunday-service-list-view"></div>
     </div>
-    <!-- 주일 예배 편집 영역 -->
     <div id="sunday-service-edit" style="display:none;">
       <div id="sunday-service-list-edit"></div>
       <button class="service-add-btn" onclick="addSundayServiceRow()">+ 예배 추가</button>
@@ -258,11 +258,9 @@
       <span>📅 그 외 예배 안내</span>
       <button class="edit-mode-btn admin-only" onclick="toggleOtherEdit()" id="other-edit-btn">✏️ 수정</button>
     </div>
-    <!-- 기타 예배 목록 (아코디언 포함) -->
     <div id="other-service-view">
       <div id="other-service-list-view"></div>
     </div>
-    <!-- 기타 예배 편집 영역 -->
     <div id="other-service-edit" style="display:none;">
       <div id="other-service-list-edit"></div>
       <button class="service-add-btn" onclick="addOtherServiceRow()">+ 예배 추가</button>
@@ -278,7 +276,7 @@
   <div class="card">
     <div class="sec-hd">
       <div class="card-title">📢 최근 공지</div>
-      <button class="edit-mode-btn admin-only" onclick="openAddNotice()" style="padding:5px 10px; font-size:11px;">➕ 공지 작성</button>
+      <button class="edit-mode-btn admin-manager-only" onclick="openAddNotice()" style="padding:5px 10px; font-size:11px;">➕ 공지 작성</button>
     </div>
     <div id="home-notices"></div>
   </div>
@@ -314,7 +312,6 @@
     <div id="meditation-list"></div>
   </div>
   
-  <!-- 기도제목 목록 영역을 p1 내부로 이동 -->
   <div class="card">
     <div class="card-title" style="justify-content:space-between;">
       <span>🙏 기도제목</span>
@@ -327,8 +324,8 @@
 
 <!-- ══════════════════════ p2: 게시물 ══════════════════════ -->
 <div id="p2" class="page">
-  <!-- 카테고리 목록 -->
-  <div id="board-category-list" class="board-tab-col">    <button class="board-cat-btn active" data-cat="일반성도">📌 일반성도<span class="board-tab-sub">&nbsp;</span></button>
+  <div id="board-category-list" class="board-tab-col">
+    <button class="board-cat-btn active" data-cat="일반성도">📌 일반성도<span class="board-tab-sub">&nbsp;</span></button>
     <button class="board-cat-btn" data-cat="꿈지락">🐣 꿈지락<span class="board-tab-sub">0~4세</span></button>
     <button class="board-cat-btn" data-cat="꿈트리">🌱 꿈트리<span class="board-tab-sub">5~7세</span></button>
     <button class="board-cat-btn" data-cat="꿈마루">📚 꿈마루<span class="board-tab-sub">초등</span></button>
@@ -337,7 +334,6 @@
   </div>
 
 
-  <!-- 게시판 본문 -->
   <div id="board-content" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); overflow-y:auto; padding: 90px 14px 100px 14px;">
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
       <button id="board-back-btn" style="background:var(--bg2); border:1.5px solid var(--border); border-radius:8px; padding:5px 12px; cursor:pointer; color:var(--text); font-weight:600;" onclick="showBoardCategoryList()">← 목록</button>
@@ -354,11 +350,11 @@
     </div>
     <div id="board-post-list"></div>
     <div id="board-pagination" style="display:flex; justify-content:center; gap:6px; margin-top:16px; flex-wrap:wrap;"></div>
-  </div> <!-- ✅ board-content 닫는 태그 -->
-</div> <!-- ✅ p2 닫는 태그 -->
+  </div>
+</div>
 
 
-<!-- ==================== p3: 성경읽기 (p2 밖으로 나와야 함) ==================== -->
+<!-- ══════════════════════ p3: 성경읽기 ══════════════════════ -->
 <div id="p3" class="page">
   <div id="bible-reader-home">
     <div class="card" style="text-align:center; padding:24px;">
@@ -418,123 +414,107 @@
       </div>
     </div>
   </div>
-  <!-- 기존 인사말 카드와 card-title 사이에 수정 버튼 추가 -->
-<div class="card">
-  <div class="card-title" style="justify-content:space-between;">
-    <span>👨‍💼 담임목사 인사말</span>
-    <button class="edit-mode-btn admin-only" onclick="openEditGreeting()" id="greeting-edit-btn" style="display:none;">✏️ 수정</button>
-  </div>
-  <div id="greeting-content">
-    <div style="background:linear-gradient(135deg,#f9f2f9,#f5eaf5);border-radius:16px;padding:18px;margin-bottom:6px;">
-      <div style="font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:12px;">
-        "인생은 만남입니다.<br><br>
-        우리는 부모와의 만남에서 인생의 지침을 배우고 스승과의 만남에서
-삶의 방법을 터득하며 배우자와의 만남에서 새로운 인생을 시작합니다.
-그리고 우리의 인생이 가치 있는 삶이 되도록 하는 또 하나의 중요한 만남을 가져야 합니다.
-바로 예수 그리스도와의 만남입니다.
-영원한 생명이시며 사랑이신 그 분과의 만남은 고달프고 지친 우리의 인생에 커다란 활력과 생기를 줍니다.
-우리 교회는 이런 만남이 있는 좋은 교회입니다.
 
 
-사람들은 죄인의 모습으로 하나님의 뜻을 떠나 있습니다.
-하나님의 아들이신 예수님이 우리의 죄 문제를 해결하시기 위해 십자가에서 돌아가셨습니다.
-그 예수님을 믿음으로 구원을 얻을 수 있습니다.<br><br>
-        하나님은 오늘도 당신을 기다리고 계십니다.
-하나님은 당신을 사랑하십니다."
-      </div>
-      <div style="text-align:right;margin-top:8px;">
-        <div style="font-weight:800;color:var(--purple);">김명서 목사</div>
-        <div style="font-size:11px;color:var(--text2);">가좌제일교회 담임</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-  <!-- 📜 교회 연혁 카드 추가 -->
   <div class="card">
-  <div class="card-title" style="justify-content:space-between;">
-    <span>📜 교회 연혁</span>
-    <button class="edit-mode-btn admin-only" onclick="openEditHistory()" id="history-edit-btn" style="display:none;">✏️ 수정</button>
-  </div>
-  <div id="history-content">
-    <div style="display:flex;flex-direction:column;gap:12px;">
-      <div style="border-left:3px solid var(--purple);padding-left:14px;">
-        <div style="font-weight:800;color:var(--purple);margin-bottom:4px;">1972년 1월 23일</div>
-        <div style="font-size:13px;color:var(--text2);">가좌제일교회 창립 </div>
-      </div>
-      <div style="border-left:3px solid var(--purple);padding-left:14px;">
-        <div style="font-weight:800;color:var(--purple);margin-bottom:4px;">2026년 5월</div>
-        <div style="font-size:13px;color:var(--text2);">교회 공식 앱 '가좌제일교회’ 론칭</div>
-      </div>
-      <div style="border-left:3px solid var(--purple);padding-left:14px;">
-        <div style="font-weight:800;color:var(--purple);margin-bottom:4px;">2026년 현재</div>
-        <div style="font-size:13px;color:var(--text2);">가좌제일교회는 대한예수교 장로회 통합측에 소속된 교회입니다.
+    <div class="card-title" style="justify-content:space-between;">
+      <span>👨‍💼 담임목사 인사말</span>
+      <button class="edit-mode-btn admin-only" onclick="openEditGreeting()" id="greeting-edit-btn" style="display:none;">✏️ 수정</button>
+    </div>
+    <div id="greeting-content">
+      <div style="background:linear-gradient(135deg,#f9f2f9,#f5eaf5);border-radius:16px;padding:18px;margin-bottom:6px;">
+        <div style="font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:12px;">
+          "인생은 만남입니다.<br><br>
+          우리는 부모와의 만남에서 인생의 지침을 배우고 스승과의 만남에서
+  삶의 방법을 터득하며 배우자와의 만남에서 새로운 인생을 시작합니다.
+  그리고 우리의 인생이 가치 있는 삶이 되도록 하는 또 하나의 중요한 만남을 가져야 합니다.
+  바로 예수 그리스도와의 만남입니다.
+  영원한 생명이시며 사랑이신 그 분과의 만남은 고달프고 지친 우리의 인생에 커다란 활력과 생기를 줍니다.
+  우리 교회는 이런 만남이 있는 좋은 교회입니다.
 
 
-장로교 통합측은 1884년 우리나라 최초의 선교사 중 하나인 언더우드 선교사의 선교 등에 영향받아 세워진 교단으로,
-서울의 영락교회, 새문안교회, 소망교회, 동안교회, 서울온누리교회, 천안중앙교회 등과 같은 대표적인 교회들이 있으며,
-건강하고 균형잡힌 신앙을 추구하는 교단입니다.
-통합측의 신학대학교로는 1907년에 세워진 장로회신학대학교를 비롯하여, 서울장신대학교, 대전신학대학교,
-호남신학대학교, 영남신학대학교, 한일장신대학교, 부산장신대학교 등의 7개 신학대학교가 있습니다.</div>
+  사람들은 죄인의 모습으로 하나님의 뜻을 떠나 있습니다.
+  하나님의 아들이신 예수님이 우리의 죄 문제를 해결하시기 위해 십자가에서 돌아가셨습니다.
+  그 예수님을 믿음으로 구원을 얻을 수 있습니다.<br><br>
+          하나님은 오늘도 당신을 기다리고 계십니다.
+  하나님은 당신을 사랑하십니다."
+        </div>
+        <div style="text-align:right;margin-top:8px;">
+          <div style="font-weight:800;color:var(--purple);">김명서 목사</div>
+          <div style="font-size:11px;color:var(--text2);">가좌제일교회 담임</div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
 
+  <div class="card">
+    <div class="card-title" style="justify-content:space-between;">
+      <span>📜 교회 연혁</span>
+      <button class="edit-mode-btn admin-only" onclick="openEditHistory()" id="history-edit-btn" style="display:none;">✏️ 수정</button>
+    </div>
+    <div id="history-content">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="border-left:3px solid var(--purple);padding-left:14px;">
+          <div style="font-weight:800;color:var(--purple);margin-bottom:4px;">1972년 1월 23일</div>
+          <div style="font-size:13px;color:var(--text2);">가좌제일교회 창립</div>
+        </div>
+        <div style="border-left:3px solid var(--purple);padding-left:14px;">
+          <div style="font-weight:800;color:var(--purple);margin-bottom:4px;">2026년 5월</div>
+          <div style="font-size:13px;color:var(--text2);">교회 공식 앱 '가좌제일교회' 론칭</div>
+        </div>
+        <div style="border-left:3px solid var(--purple);padding-left:14px;">
+          <div style="font-weight:800;color:var(--purple);margin-bottom:4px;">2026년 현재</div>
+          <div style="font-size:13px;color:var(--text2);">가좌제일교회는 대한예수교 장로회 통합측에 소속된 교회입니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 
   <div class="card">
     <div class="card-title">🗺 위치 안내</div>
     <div style="border-radius:16px; overflow:hidden; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-  <img src="map-gj.jpg" alt="가좌제일교회 약도"
-    style="width:100%; display:block; object-fit:contain;">
-</div>
-    
-    <!-- 찾아오는 길 안내 -->
+      <img src="map-gj.jpg" alt="가좌제일교회 약도" style="width:100%; display:block; object-fit:contain;">
+    </div>
     <div style="margin-top:20px; background:linear-gradient(135deg,#f5ede0,#ede0ce); border-radius:16px; padding:16px;">
       <div style="font-size:13px; font-weight:800; color:var(--purple); margin-bottom:12px; display:flex; align-items:center; gap:6px;">
         <span>📍</span> 찾아오는 길
       </div>
-    <div style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
-      <div style="background:var(--bg); border-radius:12px; padding:12px 14px;">
-        <div style="font-size:11px; font-weight:700; color:var(--purple); margin-bottom:3px;">🚌 대중교통</div>
-        <div style="font-size:12px; color:var(--text2); line-height:1.7;">​1. 지하철 (전철)<br>
-​인천도시철도 2호선 가재울역 ​4번 출구.<br>
-​2. 버스<br>
-가재울역 인근 정류장 '가재울역' 또는 '가재울사거리'<br>
-​간선버스: 10, 12, 24, 28, 42, 67-1, 80<br>
-​지선버스: 592, 593<br>
-​좌석버스: 800</div>
-      </div>
-      <div style="background:var(--bg); border-radius:12px; padding:12px 14px;">
-        <div style="font-size:11px; font-weight:700; color:var(--purple); margin-bottom:3px;">🚗 자가용
-</div>
-     <div style="font-size:12px; color:var(--text2); line-height:1.7;">인천광역시 서구 열우물로 247 <br>가재울역 4번 출구</div>
-         </div>
+      <div style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
+        <div style="background:var(--bg); border-radius:12px; padding:12px 14px;">
+          <div style="font-size:11px; font-weight:700; color:var(--purple); margin-bottom:3px;">🚌 대중교통</div>
+          <div style="font-size:12px; color:var(--text2); line-height:1.7;">
+            인천도시철도 2호선 가재울역 4번 출구<br>
+            버스: 10, 12, 24, 28, 42, 67-1, 80, 592, 593, 800
+          </div>
+        </div>
+        <div style="background:var(--bg); border-radius:12px; padding:12px 14px;">
+          <div style="font-size:11px; font-weight:700; color:var(--purple); margin-bottom:3px;">🚗 자가용</div>
+          <div style="font-size:12px; color:var(--text2); line-height:1.7;">인천광역시 서구 열우물로 247<br>가재울역 4번 출구</div>
+        </div>
       </div>
     </div>
   </div>
 
 
-<!-- 👥 섬기는 분들 카드 -->
-<div class="card">
-  <div class="card-title">👥 섬기는 분들</div>
-  <div id="staff-container">
-    <div style="text-align:center;padding:20px;color:var(--text2);font-size:13px;">불러오는 중...</div>
+  <div class="card">
+    <div class="card-title">👥 섬기는 분들</div>
+    <div id="staff-container">
+      <div style="text-align:center;padding:20px;color:var(--text2);font-size:13px;">불러오는 중...</div>
+    </div>
   </div>
- </div>
 </div>
+
+
 <!-- ══════════════════════ p5: 성경책 ══════════════════════ -->
 <div id="p5" class="page" style="padding:0;padding-bottom:0;">
   <div id="bibleMain" style="height:calc(100dvh - 163px);background:#fdf8f0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 16px;position:relative;overflow:hidden;">
     <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 2px,rgba(255,255,255,0.012) 2px,rgba(255,255,255,0.012) 4px);pointer-events:none;"></div>
-    <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 2px,rgba(255,255,255,0.012) 2px,rgba(255,255,255,0.012) 4px);pointer-events:none;"></div>
     <div style="position:absolute;top:12px;left:22px;width:28px;height:28px;border-top:3px solid #b8942a;border-left:3px solid #b8942a;border-radius:3px 0 0 0;"></div>
-<div style="position:absolute;top:12px;right:12px;width:28px;height:28px;border-top:3px solid #b8942a;border-right:3px solid #b8942a;border-radius:0 3px 0 0;"></div>
-<div style="position:absolute;bottom:12px;left:22px;width:28px;height:28px;border-bottom:3px solid #b8942a;border-left:3px solid #b8942a;border-radius:0 0 0 3px;"></div>
-<div style="position:absolute;bottom:12px;right:12px;width:28px;height:28px;border-bottom:3px solid #b8942a;border-right:3px solid #b8942a;border-radius:0 0 3px 0;"></div>
+    <div style="position:absolute;top:12px;right:12px;width:28px;height:28px;border-top:3px solid #b8942a;border-right:3px solid #b8942a;border-radius:0 3px 0 0;"></div>
+    <div style="position:absolute;bottom:12px;left:22px;width:28px;height:28px;border-bottom:3px solid #b8942a;border-left:3px solid #b8942a;border-radius:0 0 0 3px;"></div>
+    <div style="position:absolute;bottom:12px;right:12px;width:28px;height:28px;border-bottom:3px solid #b8942a;border-right:3px solid #b8942a;border-radius:0 0 3px 0;"></div>
     <div style="text-align:center;margin-bottom:48px;position:relative;z-index:1;">
       <div style="font-size:15px;letter-spacing:4px;color:#b8942a;margin-bottom:8px;font-weight:600;">개역개정</div>
       <div style="font-size:38px;font-weight:900;letter-spacing:-1px;background:linear-gradient(180deg,#f0d060 0%,#c8922a 40%,#a06018 70%,#d4a840 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 2px 8px rgba(180,130,40,0.4));">성경전서</div>
@@ -547,75 +527,124 @@
   </div>
   <div id="bibleScriptureView" style="display:none;padding:0;"><div style="padding:10px 14px 0;"><button onclick="closeBibleSection()" style="background:#2a1a08;border:1px solid #5a3a10;border-radius:30px;padding:8px 16px;font-size:13px;font-weight:600;color:#d4a840;cursor:pointer;margin-bottom:10px;display:inline-block;">← 뒤로</button></div><div id="bibleListView" style="display:block;"><div style="background:#faf0e0;border-radius:0;padding:14px;margin-bottom:0;"><div style="font-size:10px;font-weight:700;color:#7a4a1a;letter-spacing:1.5px;margin-bottom:10px;">📖 구약 39권</div><div id="otBooks" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div><div style="display:flex;align-items:center;gap:8px;margin:14px 0 10px;"><div style="flex:1;height:1px;background:rgba(122,74,26,0.2);"></div><span style="font-size:9px;font-weight:700;color:#7a4a1a;letter-spacing:1px;white-space:nowrap;">신약 27권</span><div style="flex:1;height:1px;background:rgba(122,74,26,0.2);"></div></div><div id="ntBooks" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div></div></div><div id="bibleChapterView" style="display:none;"><button onclick="showBibleList()" style="background:#f5e8d0;border:1px solid #c8a060;border-radius:30px;padding:8px 16px;font-size:13px;font-weight:600;color:#7a4010;cursor:pointer;margin-bottom:10px;display:inline-block;">← 책 목록</button><div class="card" style="border-radius:0;margin:0;border-left:none;border-right:none;"><div class="card-title" id="selectedBookTitle"></div><div id="chapterButtons" style="display:flex;flex-wrap:wrap;gap:8px;margin:16px 0;max-height:200px;overflow-y:auto;"></div></div></div><div id="bibleVerseView" style="display:none;"><div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px 8px;"><button onclick="showChapterView()" style="background:#f5e8d0;border:1px solid #c8a060;border-radius:30px;padding:7px 14px;font-size:13px;font-weight:600;color:#7a4010;cursor:pointer;">← 장 선택</button><div style="display:flex;gap:6px;"><button onclick="changeFontSize(-1)" style="width:34px;height:34px;border-radius:50%;border:1px solid #c8a060;background:#f5e8d0;cursor:pointer;color:#7a4010;font-size:15px;font-weight:700;">A-</button><button onclick="changeFontSize(1)" style="width:34px;height:34px;border-radius:50%;border:1px solid #c8a060;background:#f5e8d0;cursor:pointer;color:#7a4010;font-size:17px;font-weight:700;">A+</button></div></div><div class="card" style="border-radius:0;margin:0;border-left:none;border-right:none;"><div class="card-title" id="verseTitle"></div><div id="verseContent"></div></div><div style="display:flex;gap:12px;margin:12px 14px 8px;"><button onclick="prevChapter()" style="flex:1;padding:12px;background:#f5e8d0;border:1.5px solid #c8a060;border-radius:30px;font-size:14px;font-weight:600;color:#7a4010;cursor:pointer;">◀ 이전 장</button><button onclick="nextChapter()" style="flex:1;padding:12px;background:#f5e8d0;border:1.5px solid #c8a060;border-radius:30px;font-size:14px;font-weight:600;color:#7a4010;cursor:pointer;">다음 장 ▶</button></div></div></div>
   
-<!-- 찬송가 이미지 뷰어 (성경책 영역 내) 수정 -->
-<div id="bibleHymnView" style="display:none;padding:0;">
-  <!-- 헤더 바 -->
-<div id="hymnHeader" style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:#fdf8f0;border-bottom:1px solid #e2d5c0;position:sticky;top:0;z-index:10;">
-    <button onclick="closeBibleSection()" style="background:#2a1a08;border:1px solid #5a3a10;border-radius:30px;padding:7px 14px;font-size:13px;font-weight:600;color:#d4a840;cursor:pointer;">← 뒤로</button>
-    <div style="font-size:15px;font-weight:800;color:#d4a840;">🎵 찬송가</div>
-    <div style="width:60px;"></div>
-  </div>
-  <!-- 목록 뷰 -->
-<div id="hymnListView" style="display:block;">
-  <div style="padding:10px 14px 6px;background:#fdf8f0;">
-      <div style="display:flex;gap:8px;align-items:center;background:#2a1a08;border:1.5px solid rgba(184,148,42,0.4);border-radius:12px;padding:8px 14px;">
-        <span style="font-size:16px;">🔍</span>
-        <input id="hymnSearchInput" type="text" inputmode="search" placeholder="번호 또는 제목 검색 (예: 1, 찬양)" style="flex:1;background:none;border:none;outline:none;color:#d4a840;font-size:13px;font-family:inherit;" oninput="filterHymns(this.value)">
-        <button onclick="document.getElementById('hymnSearchInput').value='';filterHymns('');" style="background:none;border:none;color:#7a6030;font-size:16px;cursor:pointer;padding:0;">✕</button>
+  <div id="bibleHymnView" style="display:none;padding:0;">
+    <div id="hymnHeader" style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:#fdf8f0;border-bottom:1px solid #e2d5c0;position:sticky;top:0;z-index:10;">
+      <button onclick="closeBibleSection()" style="background:#2a1a08;border:1px solid #5a3a10;border-radius:30px;padding:7px 14px;font-size:13px;font-weight:600;color:#d4a840;cursor:pointer;">← 뒤로</button>
+      <div style="font-size:15px;font-weight:800;color:#d4a840;">🎵 찬송가</div>
+      <div style="width:60px;"></div>
+    </div>
+    <div id="hymnListView" style="display:block;">
+      <div style="padding:10px 14px 6px;background:#fdf8f0;">
+        <div style="display:flex;gap:8px;align-items:center;background:#2a1a08;border:1.5px solid rgba(184,148,42,0.4);border-radius:12px;padding:8px 14px;">
+          <span style="font-size:16px;">🔍</span>
+          <input id="hymnSearchInput" type="text" inputmode="search" placeholder="번호 또는 제목 검색 (예: 1, 찬양)" style="flex:1;background:none;border:none;outline:none;color:#d4a840;font-size:13px;font-family:inherit;" oninput="filterHymns(this.value)">
+          <button onclick="document.getElementById('hymnSearchInput').value='';filterHymns('');" style="background:none;border:none;color:#7a6030;font-size:16px;cursor:pointer;padding:0;">✕</button>
+        </div>
+      </div>
+      <div id="hymnRangeTabs" style="display:flex;overflow-x:auto;padding:12px 14px;gap:8px;background:#fdf8f0;border-bottom:1px solid #e2d5c0;">
+        <button onclick="setHymnRange(0)" id="hymnTab0" class="hymn-range-tab active">전체</button>
+        <button onclick="setHymnRange(1)" id="hymnTab1" class="hymn-range-tab">1~100</button>
+        <button onclick="setHymnRange(101)" id="hymnTab101" class="hymn-range-tab">101~200</button>
+        <button onclick="setHymnRange(201)" id="hymnTab201" class="hymn-range-tab">201~300</button>
+        <button onclick="setHymnRange(301)" id="hymnTab301" class="hymn-range-tab">301~400</button>
+        <button onclick="setHymnRange(401)" id="hymnTab401" class="hymn-range-tab">401~500</button>
+        <button onclick="setHymnRange(501)" id="hymnTab501" class="hymn-range-tab">501~600</button>
+        <button onclick="setHymnRange(601)" id="hymnTab601" class="hymn-range-tab">601~645</button>
+      </div>
+      <div id="hymnGrid" style="padding:10px 14px 80px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#fdf8f0;min-height:300px;">
+        <div style="grid-column:1/-1;text-align:center;padding:40px 0;color:#7a6030;">불러오는 중...</div>
       </div>
     </div>
-<!-- 찬송가 범위 탭 (가독성 개선) -->
-<div id="hymnRangeTabs" style="display:flex;overflow-x:auto;padding:12px 14px;gap:8px;background:#fdf8f0;border-bottom:1px solid #e2d5c0;">
-  <button onclick="setHymnRange(0)" id="hymnTab0" class="hymn-range-tab active">전체</button>
-  <button onclick="setHymnRange(1)" id="hymnTab1" class="hymn-range-tab">1~100</button>
-  <button onclick="setHymnRange(101)" id="hymnTab101" class="hymn-range-tab">101~200</button>
-  <button onclick="setHymnRange(201)" id="hymnTab201" class="hymn-range-tab">201~300</button>
-  <button onclick="setHymnRange(301)" id="hymnTab301" class="hymn-range-tab">301~400</button>
-  <button onclick="setHymnRange(401)" id="hymnTab401" class="hymn-range-tab">401~500</button>
-  <button onclick="setHymnRange(501)" id="hymnTab501" class="hymn-range-tab">501~600</button>
-  <button onclick="setHymnRange(601)" id="hymnTab601" class="hymn-range-tab">601~645</button>
-</div>
-<!-- 찬송가 그리드 (스타일 적용) -->
-<div id="hymnGrid" style="padding:10px 14px 80px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#fdf8f0;min-height:300px;">
-  <div style="grid-column:1/-1;text-align:center;padding:40px 0;color:#7a6030;">불러오는 중...</div>
-</div>
-    </div>
   </div>
-  <!-- 이미지 뷰 -->
-<!-- 이미지 뷰어 (성경책 영역 내) - 이미지 상단 정렬 -->
-<div id="hymnImageView" style="display:none;">
-  <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:#0a0804;z-index:1000;display:flex;flex-direction:column;">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#1a1008;border-bottom:1px solid rgba(184,148,42,0.3);">
-      <button onclick="closeHymnView()" style="background:#2a1a08;border:1px solid #5a3a10;border-radius:30px;padding:8px 16px;color:#d4a840;font-size:13px;font-weight:600;cursor:pointer;">← 목록으로</button>
-      <div style="font-size:16px;font-weight:600;color:#d4a840;" id="hymnViewTitle">🎵 찬송가</div>
-      <div style="width:80px;"></div>
-    </div>
-    <div style="flex:1;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:0;">
-      <!-- align-items: flex-start로 변경하여 이미지 상단부터 표시 -->
-      <img id="hymnViewImg" src="" alt="찬송가" style="max-width:100%;width:100%;height:auto;object-fit:cover;object-position:top;display:none;">
-      <div id="hymnViewLoading" style="display:none;text-align:center;color:#a08040;margin-top:50px;">
-        <div class="splash-spinner" style="width:48px;height:48px;margin:0 auto 20px;"></div>
-        <div style="font-size:16px;">이미지를 불러오는 중입니다...</div>
+
+
+  <div id="hymnImageView" style="display:none;">
+    <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:#0a0804;z-index:1000;display:flex;flex-direction:column;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#1a1008;border-bottom:1px solid rgba(184,148,42,0.3);">
+        <button onclick="closeHymnView()" style="background:#2a1a08;border:1px solid #5a3a10;border-radius:30px;padding:8px 16px;color:#d4a840;font-size:13px;font-weight:600;cursor:pointer;">← 목록으로</button>
+        <div style="font-size:16px;font-weight:600;color:#d4a840;" id="hymnViewTitle">🎵 찬송가</div>
+        <div style="width:80px;"></div>
+      </div>
+      <div style="flex:1;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:0;">
+        <img id="hymnViewImg" src="" alt="찬송가" style="max-width:100%;width:100%;height:auto;object-fit:cover;object-position:top;display:none;">
+        <div id="hymnViewLoading" style="display:none;text-align:center;color:#a08040;margin-top:50px;">
+          <div class="splash-spinner" style="width:48px;height:48px;margin:0 auto 20px;"></div>
+          <div style="font-size:16px;">이미지를 불러오는 중입니다...</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:30px;padding:20px;background:#1a1008;border-top:1px solid rgba(184,148,42,0.3);">
+        <button id="hymnPrevBtn" onclick="prevHymnView()" style="background:#2a1a08;border:1.5px solid #5a3a10;border-radius:40px;padding:12px 32px;color:#d4a840;font-size:16px;font-weight:600;cursor:pointer;">◀ 이전</button>
+        <button id="hymnNextBtn" onclick="nextHymnView()" style="background:#2a1a08;border:1.5px solid #5a3a10;border-radius:40px;padding:12px 32px;color:#d4a840;font-size:16px;font-weight:600;cursor:pointer;">다음 ▶</button>
       </div>
     </div>
-    <div style="display:flex;justify-content:center;gap:30px;padding:20px;background:#1a1008;border-top:1px solid rgba(184,148,42,0.3);">
-      <button id="hymnPrevBtn" onclick="prevHymnView()" style="background:#2a1a08;border:1.5px solid #5a3a10;border-radius:40px;padding:12px 32px;color:#d4a840;font-size:16px;font-weight:600;cursor:pointer;">◀ 이전</button>
-      <button id="hymnNextBtn" onclick="nextHymnView()" style="background:#2a1a08;border:1.5px solid #5a3a10;border-radius:40px;padding:12px 32px;color:#d4a840;font-size:16px;font-weight:600;cursor:pointer;">다음 ▶</button>
+  </div>
+</div>
+
+
+<div id="bibleAppendixView" style="display:none;padding:0;">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px 8px;background:#fdf8f0;">
+    <button onclick="closeBibleSection()" style="background:#fdf8f0;border:1px solid #7a5c38;border-radius:30px;padding:7px 14px;font-size:13px;font-weight:600;color:#7a5c38;cursor:pointer;">← 뒤로</button>
+    <div style="display:flex;gap:6px;">
+      <button onclick="changeAppendixFont(-1)" style="width:34px;height:34px;border-radius:50%;border:1px solid #5a3a10;background:#2a1a08;cursor:pointer;color:#d4a840;font-size:15px;font-weight:700;">A-</button>
+      <button onclick="changeAppendixFont(1)" style="width:34px;height:34px;border-radius:50%;border:1px solid #5a3a10;background:#2a1a08;cursor:pointer;color:#d4a840;font-size:17px;font-weight:700;">A+</button>
+    </div>
+  </div>
+  <div style="background:#fdf8f0;border-radius:0;padding:4px 0;margin-bottom:14px;">
+    <div style="padding:14px 18px;border-bottom:1px solid rgba(184,148,42,0.2);cursor:pointer;" onclick="toggleAppendix('dokun')">
+      <div style="font-size:15px;font-weight:700;color:#7a5c38;">교독문</div>
+    </div>
+    <div id="app-dokun" style="display:none;padding:16px 18px;border-bottom:1px solid rgba(184,148,42,0.1);">
+      <div style="font-size:13px;color:#1a1008;line-height:2.0;">
+        <div style="font-weight:700;color:#d4a840;margin-bottom:10px;">1. 예배 부름 교독문 (시편 95편)</div>
+        <div><span style="color:#f0d080;">인도자:</span> 오라 우리가 여호와께 노래하며 우리의 구원의 반석을 향하여 즐거이 외치자</div>
+        <div style="margin-top:8px;"><span style="color:#a0c0ff;">회중:</span> 우리가 감사함으로 그 앞에 나아가며 시를 지어 즐거이 그를 노래하자</div>
+        <div style="margin-top:8px;"><span style="color:#f0d080;">인도자:</span> 여호와는 크신 하나님이시요 모든 신들보다 크신 왕이시기 때문이로다</div>
+        <div style="margin-top:8px;"><span style="color:#a0c0ff;">회중:</span> 땅의 깊은 곳이 그의 손안에 있으며 산들의 높은 곳도 그의 것이로다</div>
+        <div style="margin-top:8px;"><span style="color:#f0d080;">인도자:</span> 바다도 그의 것이라 그가 만드셨고 육지도 그의 손이 지으셨도다</div>
+        <div style="margin-top:8px;"><span style="color:#a0c0ff;">회중:</span> 오라 우리가 굽혀 경배하며 우리를 지으신 여호와 앞에 무릎을 꿇자</div>
+        <div style="margin-top:8px;"><span style="color:#f0d080;">인도자:</span> 그는 우리의 하나님이시요 우리는 그가 기르시는 백성이며 그의 손이 돌보시는 양이기 때문이라</div>
+        <div style="margin-top:12px;font-weight:700;color:#d4a840;"><span style="color:#f0d080;">다함께:</span> 오늘 너희가 그의 음성을 듣거든 너희는 마음을 완고하게 하지 말지어다 (아멘)</div>
+      </div>
+    </div>
+    <div style="padding:14px 18px;border-bottom:1px solid rgba(184,148,42,0.2);cursor:pointer;" onclick="toggleAppendix('apostle')">
+      <div style="font-size:15px;font-weight:700;color:#d4a840;">사도신경</div>
+    </div>
+    <div id="app-apostle" style="display:none;padding:16px 18px;border-bottom:1px solid rgba(184,148,42,0.1);">
+      <div style="font-size:14px;color:#1a1008;line-height:2.2;text-align:center;">
+        나는 전능하신 아버지 하나님,<br>천지의 창조주를 믿습니다.<br><br>나는 그의 유일하신 아들,<br>우리 주 예수 그리스도를 믿습니다.<br>그는 성령으로 잉태되어<br>동정녀 마리아에게서 나시고,<br>본디오 빌라도에게 고난을 받아<br>십자가에 못 박혀 죽으시고,<br>장사된 지 사흘 만에<br>죽은 자 가운데서 다시 살아나셨으며,<br>하늘에 오르시어<br>전능하신 아버지 하나님 우편에 앉아 계시다가,<br>거기로부터 살아있는 자와 죽은 자를<br>심판하러 오십니다.<br><br>나는 성령을 믿으며,<br>거룩한 공교회와<br>성도의 교제와<br>죄를 용서받는 것과<br>몸의 부활과<br>영생을 믿습니다.<br><br><span style="color:#d4a840;font-weight:700;">아멘</span>
+      </div>
+    </div>
+    <div style="padding:14px 18px;border-bottom:1px solid rgba(184,148,42,0.2);cursor:pointer;" onclick="toggleAppendix('lords')">
+      <div style="font-size:15px;font-weight:700;color:#d4a840;">주기도문</div>
+    </div>
+    <div id="app-lords" style="display:none;padding:16px 18px;border-bottom:1px solid rgba(184,148,42,0.1);">
+      <div style="font-size:14px;color:#1a1008;line-height:2.2;text-align:center;">
+        하늘에 계신 우리 아버지여,<br>이름이 거룩히 여김을 받으시오며,<br>나라가 임하시오며,<br>뜻이 하늘에서 이루어진 것같이<br>땅에서도 이루어지이다.<br><br>오늘 우리에게 일용할 양식을 주시옵고,<br>우리가 우리에게 죄 지은 자를<br>사하여 준 것같이<br>우리 죄를 사하여 주시옵고,<br>우리를 시험에 들게 하지 마시옵고<br>다만 악에서 구하시옵소서.<br><br>나라와 권세와 영광이<br>아버지께 영원히 있사옵나이다.<br><br><span style="color:#d4a840;font-weight:700;">아멘</span>
+      </div>
+    </div>
+    <div style="padding:14px 18px;cursor:pointer;" onclick="toggleAppendix('ten')">
+      <div style="font-size:15px;font-weight:700;color:#d4a840;">십계명</div>
+    </div>
+    <div id="app-ten" style="display:none;padding:16px 18px;">
+      <div style="font-size:13px;color:#1a1008;line-height:1.9;">
+        <div style="color:#d4a840;font-size:12px;margin-bottom:12px;">출애굽기 20:1-17</div>
+        <div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 1계명</span><br>너는 나 외에는 다른 신들을 네게 두지 말라</div>
+        <div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 2계명</span><br>너를 위하여 새긴 우상을 만들지 말고 그것들에게 절하지 말며 그것들을 섬기지 말라</div>
+        <div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 3계명</span><br>너는 네 하나님 여호와의 이름을 망령되게 부르지 말라</div>
+        <div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 4계명</span><br>안식일을 기억하여 거룩하게 지키라</div>
+        <div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 5계명</span><br>네 부모를 공경하라</div>
+        <div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 6계명</span><br>살인하지 말라</div>
+        <div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 7계명</span><br>간음하지 말라</div>
+        <div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 8계명</span><br>도둑질하지 말라</div>
+        <div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 9계명</span><br>네 이웃에 대하여 거짓 증거하지 말라</div>
+        <div><span style="color:#f0d080;font-weight:700;">제 10계명</span><br>네 이웃의 집을 탐내지 말라 네 이웃의 아내나 그의 남종이나 그의 여종이나 그의 소나 그의 나귀나 무릇 네 이웃의 소유를 탐내지 말라</div>
+      </div>
     </div>
   </div>
 </div>
 
 
-
-
-</div>
-<div id="bibleAppendixView" style="display:none;padding:0;"><div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px 8px;background:#fdf8f0;"><button onclick="closeBibleSection()" style="background:#fdf8f0;border:1px solid #7a5c38;border-radius:30px;padding:7px 14px;font-size:13px;font-weight:600;color:#7a5c38;cursor:pointer;">← 뒤로</button>
-<div style="display:flex;gap:6px;"><button onclick="changeAppendixFont(-1)" style="width:34px;height:34px;border-radius:50%;border:1px solid #5a3a10;background:#2a1a08;cursor:pointer;color:#d4a840;font-size:15px;font-weight:700;">A-</button><button onclick="changeAppendixFont(1)" style="width:34px;height:34px;border-radius:50%;border:1px solid #5a3a10;background:#2a1a08;cursor:pointer;color:#d4a840;font-size:17px;font-weight:700;">A+</button></div></div>
-<div style="background:#fdf8f0;border-radius:0;padding:4px 0;margin-bottom:14px;"><div style="padding:14px 18px;border-bottom:1px solid rgba(184,148,42,0.2);cursor:pointer;" onclick="toggleAppendix('dokun')">
-<div style="font-size:15px;font-weight:700;color:#7a5c38;">교독문</div></div><div id="app-dokun" style="display:none;padding:16px 18px;border-bottom:1px solid rgba(184,148,42,0.1);"><div style="font-size:13px;color:#1a1008;line-height:2.0;"><div style="font-weight:700;color:#d4a840;margin-bottom:10px;">1. 예배 부름 교독문 (시편 95편)</div><div><span style="color:#f0d080;">인도자:</span> 오라 우리가 여호와께 노래하며 우리의 구원의 반석을 향하여 즐거이 외치자</div><div style="margin-top:8px;"><span style="color:#a0c0ff;">회중:</span> 우리가 감사함으로 그 앞에 나아가며 시를 지어 즐거이 그를 노래하자</div><div style="margin-top:8px;"><span style="color:#f0d080;">인도자:</span> 여호와는 크신 하나님이시요 모든 신들보다 크신 왕이시기 때문이로다</div><div style="margin-top:8px;"><span style="color:#a0c0ff;">회중:</span> 땅의 깊은 곳이 그의 손안에 있으며 산들의 높은 곳도 그의 것이로다</div><div style="margin-top:8px;"><span style="color:#f0d080;">인도자:</span> 바다도 그의 것이라 그가 만드셨고 육지도 그의 손이 지으셨도다</div><div style="margin-top:8px;"><span style="color:#a0c0ff;">회중:</span> 오라 우리가 굽혀 경배하며 우리를 지으신 여호와 앞에 무릎을 꿇자</div><div style="margin-top:8px;"><span style="color:#f0d080;">인도자:</span> 그는 우리의 하나님이시요 우리는 그가 기르시는 백성이며 그의 손이 돌보시는 양이기 때문이라</div><div style="margin-top:12px;font-weight:700;color:#d4a840;"><span style="color:#f0d080;">다함께:</span> 오늘 너희가 그의 음성을 듣거든 너희는 마음을 완고하게 하지 말지어다 (아멘)</div></div></div><div style="padding:14px 18px;border-bottom:1px solid rgba(184,148,42,0.2);cursor:pointer;" onclick="toggleAppendix('apostle')"><div style="font-size:15px;font-weight:700;color:#d4a840;">사도신경</div></div><div id="app-apostle" style="display:none;padding:16px 18px;border-bottom:1px solid rgba(184,148,42,0.1);"><div style="font-size:14px;color:#1a1008;line-height:2.2;text-align:center;">나는 전능하신 아버지 하나님,<br>천지의 창조주를 믿습니다.<br><br>나는 그의 유일하신 아들,<br>우리 주 예수 그리스도를 믿습니다.<br>그는 성령으로 잉태되어<br>동정녀 마리아에게서 나시고,<br>본디오 빌라도에게 고난을 받아<br>십자가에 못 박혀 죽으시고,<br>장사된 지 사흘 만에<br>죽은 자 가운데서 다시 살아나셨으며,<br>하늘에 오르시어<br>전능하신 아버지 하나님 우편에 앉아 계시다가,<br>거기로부터 살아있는 자와 죽은 자를<br>심판하러 오십니다.<br><br>나는 성령을 믿으며,<br>거룩한 공교회와<br>성도의 교제와<br>죄를 용서받는 것과<br>몸의 부활과<br>영생을 믿습니다.<br><br><span style="color:#d4a840;font-weight:700;">아멘</span></div></div><div style="padding:14px 18px;border-bottom:1px solid rgba(184,148,42,0.2);cursor:pointer;" onclick="toggleAppendix('lords')"><div style="font-size:15px;font-weight:700;color:#d4a840;">주기도문</div></div><div id="app-lords" style="display:none;padding:16px 18px;border-bottom:1px solid rgba(184,148,42,0.1);"><div style="font-size:14px;color:#1a1008;line-height:2.2;text-align:center;">하늘에 계신 우리 아버지여,<br>이름이 거룩히 여김을 받으시오며,<br>나라가 임하시오며,<br>뜻이 하늘에서 이루어진 것같이<br>땅에서도 이루어지이다.<br><br>오늘 우리에게 일용할 양식을 주시옵고,<br>우리가 우리에게 죄 지은 자를<br>사하여 준 것같이<br>우리 죄를 사하여 주시옵고,<br>우리를 시험에 들게 하지 마시옵고<br>다만 악에서 구하시옵소서.<br><br>나라와 권세와 영광이<br>아버지께 영원히 있사옵나이다.<br><br><span style="color:#d4a840;font-weight:700;">아멘</span></div></div><div style="padding:14px 18px;cursor:pointer;" onclick="toggleAppendix('ten')"><div style="font-size:15px;font-weight:700;color:#d4a840;">십계명</div></div><div id="app-ten" style="display:none;padding:16px 18px;"><div style="font-size:13px;color:#1a1008;line-height:1.9;"><div style="color:#d4a840;font-size:12px;margin-bottom:12px;">출애굽기 20:1-17</div><div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 1계명</span><br>너는 나 외에는 다른 신들을 네게 두지 말라</div><div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 2계명</span><br>너를 위하여 새긴 우상을 만들지 말고 그것들에게 절하지 말며 그것들을 섬기지 말라</div><div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 3계명</span><br>너는 네 하나님 여호와의 이름을 망령되게 부르지 말라</div><div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 4계명</span><br>안식일을 기억하여 거룩하게 지키라</div><div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 5계명</span><br>네 부모를 공경하라</div><div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 6계명</span><br>살인하지 말라</div><div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 7계명</span><br>간음하지 말라</div><div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 8계명</span><br>도둑질하지 말라</div><div style="margin-bottom:10px;"><span style="color:#f0d080;font-weight:700;">제 9계명</span><br>네 이웃에 대하여 거짓 증거하지 말라</div><div><span style="color:#f0d080;font-weight:700;">제 10계명</span><br>네 이웃의 집을 탐내지 말라 네 이웃의 아내나 그의 남종이나 그의 여종이나 그의 소나 그의 나귀나 무릇 네 이웃의 소유를 탐내지 말라</div></div></div></div></div>
-
-
-<!-- ══════════════════════ p6: 관리 (관리자) ══════════════════════ -->
+<!-- ══════════════════════ p6: 관리 ══════════════════════ -->
 <div id="p6" class="page">
   <div class="card" style="margin-bottom:14px;">
     <div style="display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:1px solid var(--border);">
@@ -632,7 +661,6 @@
   </div>
 
 
-  <!-- 성도 관리 -->
   <div class="accord-card admin-only">
     <div class="accord-header" onclick="toggleAccord('member')">
       <div class="accord-title">
@@ -656,7 +684,6 @@
   </div>
 
 
-    <!-- 가입 승인 -->
   <div class="accord-card admin-manager-only">
     <div class="accord-header" onclick="toggleAccord('approval')">
       <div class="accord-title">
@@ -670,12 +697,14 @@
     </div>
   </div>
   <button class="btn-danger" style="width:100%;margin-top:8px;" onclick="doLogout()">🚪 로그아웃</button>
-  <div style="text-align:center;padding:20px;color:var(--text2);font-size:11px;">가좌제일교회 · since 1972 1.23 </div>
+  <div style="text-align:center;padding:20px;color:var(--text2);font-size:11px;">가좌제일교회 · since 1972 1.23</div>
 </div>
-</div><!-- /swipe-container -->
 
 
-<!-- 성도 등록 모달 -->
+</div> <!-- /swipe-container -->
+
+
+<!-- ==================== 모달들 ==================== -->
 <div id="modal-member" class="modal-overlay">
   <div class="modal-box">
     <div class="modal-header"><div class="modal-title">👤 성도 등록</div><button class="modal-close" onclick="closeModal('modal-member')">✕</button></div>
@@ -704,15 +733,12 @@
 </div>
 
 
-<!-- 성도 프로필 모달 -->
 <div id="modal-member-profile" class="modal-overlay">
   <div class="modal-box">
     <div class="modal-header">
       <div class="modal-title" id="profile-modal-title">👤 성도 프로필</div>
       <button class="modal-close" onclick="closeModal('modal-member-profile')">✕</button>
     </div>
-    
-    <!-- 프로필 보기 -->
     <div id="profile-view">
       <div style="text-align:center;margin-bottom:20px;">
         <div id="profile-photo-view" style="width:90px;height:90px;border-radius:50%;margin:0 auto 10px;background:linear-gradient(135deg,#7a5230,#9e6b3e);display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden;">
@@ -735,8 +761,6 @@
         <button onclick="deleteCurrentMember()" style="flex:1;padding:12px;background:#fef2f2;border:1.5px solid #fecaca;border-radius:12px;color:#b91c1c;font-size:13px;font-weight:700;cursor:pointer;">🗑 삭제</button>
       </div>
     </div>
-    
-    <!-- 프로필 수정 -->
     <div id="profile-edit" style="display:none;">
       <div style="text-align:center;margin-bottom:18px;">
         <div id="edit-photo-preview" onclick="document.getElementById('edit-photo-input').click()" style="width:90px;height:90px;border-radius:50%;margin:0 auto 10px;cursor:pointer;background:linear-gradient(135deg,#7a5230,#9e6b3e);display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden;border:2px dashed #d4bfa0;position:relative;">
@@ -771,7 +795,6 @@
 </div>
 
 
-<!-- 내 정보 모달 (ID 변경됨) -->
 <div id="modal-my-profile" class="modal-overlay">
   <div class="modal-box">
     <div class="modal-header">
@@ -802,9 +825,6 @@
 </div>
 
 
-
-
-<!-- 비밀번호 변경 모달 -->
 <div id="modal-change-pw" class="modal-overlay">
   <div class="modal-box">
     <div class="modal-header"><div class="modal-title">🔑 비밀번호 변경</div><button class="modal-close" onclick="closeModal('modal-change-pw')">✕</button></div>
@@ -816,9 +836,6 @@
 </div>
 
 
-
-
-<!-- 말씀 등록 모달 -->
 <div id="modal-verse-selector" class="modal-overlay">
   <div class="modal-box" style="max-height:90vh;">
     <div class="modal-header"><div class="modal-title" id="verse-modal-title">📖 말씀 선택</div><button class="modal-close" onclick="closeVerseSelector()">✕</button></div>
@@ -830,9 +847,6 @@
 </div>
 
 
-
-
-<!-- 예배안내 항목 추가 모달 -->
 <div id="modal-add-service" class="modal-overlay">
   <div class="modal-box">
     <div class="modal-header"><div class="modal-title">➕ 예배 추가</div><button class="modal-close" onclick="closeModal('modal-add-service')">✕</button></div>
@@ -845,7 +859,6 @@
 </div>
 
 
-<!-- 예배시간표 항목 추가 모달 -->
 <div id="modal-add-schedule" class="modal-overlay">
   <div class="modal-box">
     <div class="modal-header"><div class="modal-title">➕ 예배 시간표 추가</div><button class="modal-close" onclick="closeModal('modal-add-schedule')">✕</button></div>
@@ -858,22 +871,23 @@
 </div>
 
 
-<!-- 공지 작성 모달 -->
 <div id="modal-notice" class="modal-overlay">
   <div class="modal-box">
     <div class="modal-header"><div class="modal-title" id="notice-modal-title">📢 공지 작성</div><button class="modal-close" onclick="closeModal('modal-notice')">✕</button></div>
     <div class="input-group"><div class="input-label">제목</div><input class="input-field" id="n-title" placeholder="공지 제목"></div>
     <div class="input-group"><div class="input-label">카테고리</div><select class="input-field" id="n-cat"><option>📢 일반</option><option>🎉 행사</option><option>📅 주보</option><option>🙏 기도</option><option>⚠️ 중요</option></select></div>
-<div class="input-group">
-  <div class="input-label">사진 첨부</div>
-  <input type="file" id="n-photo" accept="image/*" multiple onchange="noticePhotoPreview(this)">
-  <div id="notice-photo-preview" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:8px;"></div>
-</div>
+    <div class="input-group">
+      <div class="input-label">사진 첨부</div>
+      <input type="file" id="n-photo" accept="image/*" multiple onchange="noticePhotoPreview(this)">
+      <div id="notice-photo-preview" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:8px;"></div>
+    </div>
     <div class="input-group"><div class="input-label">내용</div><textarea class="input-field" id="n-body" rows="5" placeholder="공지 내용을 입력하세요"></textarea></div>
     <input type="hidden" id="n-edit-id" value="">
     <button class="btn-primary" id="notice-submit-btn" onclick="saveNotice()">등록하기</button>
   </div>
 </div>
+
+
 <div id="toast"></div>
 
 
@@ -894,6 +908,8 @@
     <button class="btn-primary" onclick="saveChurchInfo()">저장</button>
   </div>
 </div>
+
+
 <div id="modal-notice-view" class="modal-overlay" style="display:none;">
   <div class="modal-box" style="max-width:500px;">
     <div class="modal-header">
@@ -905,7 +921,8 @@
     <div id="notice-view-date" style="font-size:11px; color:var(--text2);"></div>
   </div>
 </div>
-<!-- 개인정보 처리방침 모달 -->
+
+
 <div id="modal-privacy" class="modal-overlay">
   <div class="modal-box">
     <div class="modal-header">
@@ -925,7 +942,7 @@
       <br>
       <p><strong>5. 이용자 및 법정대리인의 권리와 그 행사방법</strong><br>이용자 및 법정대리인은 언제든지 등록되어 있는 자신 혹은 당해 만 14세 미만 아동의 개인정보를 조회하거나 수정할 수 있으며 가입해지를 요청할 수도 있습니다.</p>
       <br>
-      <p><strong>6. 개인정보 자동 수집 장치의 설치·운영 및 그 거부에 관한 사항</strong><br>교회는 이용자에게 개별적인 맞춤서비스를 제공하기 위해 이용정보를 저장하고 수시로 불러오는 ‘쿠키(cookie)’를 사용합니다. 쿠키는 웹사이트를 운영하는데 이용되는 서버(http)가 이용자의 컴퓨터 브라우저에게 보내는 소량의 정보이며 이용자들의 PC 컴퓨터내의 하드디스크에 저장되기도 합니다.</p>
+      <p><strong>6. 개인정보 자동 수집 장치의 설치·운영 및 그 거부에 관한 사항</strong><br>교회는 이용자에게 개별적인 맞춤서비스를 제공하기 위해 이용정보를 저장하고 수시로 불러오는 '쿠키(cookie)'를 사용합니다. 쿠키는 웹사이트를 운영하는데 이용되는 서버(http)가 이용자의 컴퓨터 브라우저에게 보내는 소량의 정보이며 이용자들의 PC 컴퓨터내의 하드디스크에 저장되기도 합니다.</p>
       <br>
       <p><strong>7. 개인정보 보호책임자</strong><br>· 성명: 김명서 목사<br>· 전화: 032-581-4048</p>
       <br>
@@ -940,20 +957,18 @@
     <div style="display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap;">
       <img src="logo.png" alt="로고" style="width:22px;height:22px;object-fit:contain;vertical-align:middle;">
       <span style="font-size:11px;">가좌제일교회 | 인천광역시 서구 열우물로 247 (가재울역 4번 출구)</span>
-    
       <a href="javascript:void(0);" onclick="showPrivacyPolicy();" style="font-size:11px; color:#7c2d7e; text-decoration:none; cursor:pointer;">
         📋 개인정보
       </a>
     </div>
   </div>
   <div class="ad-banner" id="adBannerContainer" style="min-height:66px; display:flex; align-items:center; justify-content:center;">
-    
-<ins class="kakao_ad_area"
-     id="kakaoAdSlot"
-     style="display:none;"
-     data-ad-unit="DAN-qLgRBM3YOzEjXClm"
-     data-ad-width="320"
-     data-ad-height="50"></ins>
+    <ins class="kakao_ad_area"
+         id="kakaoAdSlot"
+         style="display:none;"
+         data-ad-unit="DAN-qLgRBM3YOzEjXClm"
+         data-ad-width="320"
+         data-ad-height="50"></ins>
     <div id="adFallback" style="display:none; text-align:center; font-size:11px; color:#aaa;">
       <img src="logo.png" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;"> 가좌제일교회를 사랑해 주셔서 감사합니다
     </div>
@@ -961,20 +976,12 @@
 </div>
 
 
-
-
 <div id="modal-staff" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:20000;align-items:center;justify-content:center;">
   <div style="background:#fff;border-radius:20px;width:92%;max-width:400px;max-height:88vh;overflow-y:auto;padding:20px;">
-
-
-    <!-- 헤더 -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
       <div id="sf-modal-title" style="font-size:16px;font-weight:800;color:var(--purple);">✏️ 정보 수정</div>
       <button onclick="staffCloseModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#888;">✕</button>
     </div>
-
-
-    <!-- 사진 업로드 영역 -->
     <div style="margin-bottom:16px;">
       <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px;">사진</div>
       <div style="display:flex;align-items:center;gap:12px;">
@@ -991,25 +998,16 @@
         </div>
       </div>
     </div>
-
-
-    <!-- 이름 -->
     <div style="margin-bottom:12px;">
       <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;">이름 *</div>
       <input id="sf-input-name" type="text" placeholder="예: 홍길동 목사"
         style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;">
     </div>
-
-
-    <!-- 담당사역 / 저서 -->
     <div style="margin-bottom:16px;">
       <div id="sf-content-label" style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;">담당사역 (줄바꿈으로 구분)</div>
       <textarea id="sf-input-content" rows="6" placeholder="예: 소망목장&#10;새가족위원회"
         style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;resize:vertical;"></textarea>
     </div>
-
-
-    <!-- 저장 버튼 -->
     <button onclick="staffSave()"
       style="width:100%;background:var(--purple);color:#fff;border:none;padding:13px;border-radius:30px;font-size:15px;font-weight:700;cursor:pointer;">
       💾 저장하기
@@ -1018,7 +1016,7 @@
 </div>
 
 
-<!-- 분할된 JS 파일 로드 (원본 script는 제거) -->
+<!-- JS 파일 로드 -->
 <script src="js_confige.js"></script>
 <script src="js_storage.js"></script>
 <script src="js_auth.js"></script>
@@ -1034,8 +1032,10 @@
 <script src="js_service.js"></script>
 <script src="js_staff.js"></script>
 <script src="js_app.js"></script>
+
+
 <script>
-  // 페이지 로드 후 예배 안내 강제 로드 (안전장치)
+  // 페이지 로드 후 예배 안내 강제 로드
   window.addEventListener('load', function() {
     setTimeout(function() {
       if (typeof renderServiceView === 'function') {
@@ -1045,77 +1045,75 @@
   });
 
 
-// 페이지 로드 후 초기화 (기존 코드 대체)
-window.addEventListener('DOMContentLoaded', function() {
-  console.log('DOMContentLoaded - 초기화 시작');
-  
-  // ✅ 교회 정보 로드 추가
-  setTimeout(function() {
-    if (typeof loadChurchInfo === 'function') {
-      loadChurchInfo();
-      console.log('교회 정보 로드 요청됨');
-    }
-  }, 500);
-  
-  // 스플래시 숨김
-  setTimeout(function() {
-    var splash = document.getElementById('splash');
-    if (splash) {
-      splash.style.opacity = '0';
-      setTimeout(function() {
-        if (splash) splash.style.display = 'none';
-      }, 500);
-    }
-  }, 1500);
-  
-  // 현재 로그인 상태 확인 (localStorage에서 복원)
-  try {
-    const logged = localStorage.getItem('ch2_logged');
-    if (logged) {
-      const userData = JSON.parse(logged);
-      // 실제 사용자 정보는 approvedUsers나 ADMIN_ACCOUNTS에서 찾아야 함
-      console.log('저장된 로그인 정보 있음:', userData);
-    }
-  } catch(e) {}
-  
-  // 예배 데이터 초기화 (가장 중요)
-  if (typeof initServiceData === 'function') {
-    initServiceData();
-  } else if (typeof renderServiceView === 'function') {
-    // initServiceData가 없으면 serviceList 직접 초기화
-    if (typeof serviceList !== 'undefined' && (!serviceList || serviceList.length === 0)) {
-      if (typeof DEFAULT_SERVICE_LIST !== 'undefined') {
-        serviceList = JSON.parse(JSON.stringify(DEFAULT_SERVICE_LIST));
-        console.log('serviceList 기본값 설정 완료');
+  // 페이지 로드 후 초기화
+  window.addEventListener('DOMContentLoaded', function() {
+    console.log('DOMContentLoaded - 초기화 시작');
+    
+    setTimeout(function() {
+      if (typeof loadChurchInfo === 'function') {
+        loadChurchInfo();
+        console.log('교회 정보 로드 요청됨');
       }
+    }, 500);
+    
+    // 스플래시 숨김
+    setTimeout(function() {
+      var splash = document.getElementById('splash');
+      if (splash) {
+        splash.style.opacity = '0';
+        setTimeout(function() {
+          if (splash) splash.style.display = 'none';
+        }, 500);
+      }
+    }, 1500);
+    
+    // 로그인 상태 복원
+    try {
+      const logged = localStorage.getItem('ch2_logged');
+      if (logged) {
+        const userData = JSON.parse(logged);
+        console.log('저장된 로그인 정보 있음:', userData);
+      }
+    } catch(e) {}
+    
+    // 예배 데이터 초기화
+    if (typeof initServiceData === 'function') {
+      initServiceData();
+    } else if (typeof renderServiceView === 'function') {
+      if (typeof serviceList !== 'undefined' && (!serviceList || serviceList.length === 0)) {
+        if (typeof DEFAULT_SERVICE_LIST !== 'undefined') {
+          serviceList = JSON.parse(JSON.stringify(DEFAULT_SERVICE_LIST));
+          console.log('serviceList 기본값 설정 완료');
+        }
+      }
+      renderServiceView();
     }
-    renderServiceView();
-  }
-  
-  // 공지사항 렌더링
-  if (typeof renderHomeNotices === 'function') {
-    renderHomeNotices();
-  }
-  
-  // 기도제목 렌더링
-  setTimeout(function() {
-    if (typeof renderPrayers === 'function') {
-      renderPrayers();
+    
+    // 공지사항 렌더링
+    if (typeof renderHomeNotices === 'function') {
+      renderHomeNotices();
     }
-  }, 300);
-  
-  // 말씀 렌더링
-  setTimeout(function() {
-    if (typeof renderTodayVerse === 'function') {
-      renderTodayVerse();
-    }
-    if (typeof renderMeditations === 'function') {
-      renderMeditations();
-    }
-  }, 400);
-});
+    
+    // 기도제목 렌더링
+    setTimeout(function() {
+      if (typeof renderPrayers === 'function') {
+        renderPrayers();
+      }
+    }, 300);
+    
+    // 말씀 렌더링
+    setTimeout(function() {
+      if (typeof renderTodayVerse === 'function') {
+        renderTodayVerse();
+      }
+      if (typeof renderMeditations === 'function') {
+        renderMeditations();
+      }
+    }, 400);
+  });
 </script>
-<!-- 카카오 광고 스크립트 (필요시) -->
+
+
 <script type="text/javascript" src="//t1.kakaocdn.net/kas/static/ba.min.js" async></script>
 
 

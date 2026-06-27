@@ -156,19 +156,10 @@ header {
 .tab:hover{color:var(--purple);background:#fdf0e0;}
 
 
-/* ========== 페이지 ========== */
-.page {
-  display: none;
-  padding: 15px;
-  padding-bottom: 100px;
-  padding-top: 0;
-  min-height: calc(100vh - 120px);  /* 120px = 헤더(60px) + 탭(60px) */
-}
-
-
-.page.show {
-  display: block;
-}
+/* ── 페이지 ── */
+.page{display:none !important;padding:14px;padding-bottom:100px;}
+.page.show{display:block !important;}
+#swipe-container{touch-action:pan-x pan-y pinch-zoom;user-select:none;-webkit-user-select:none;}
 
 
 /* ========== 카드 ========== */
